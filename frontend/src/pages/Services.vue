@@ -48,7 +48,7 @@
           <!-- Service Stats with Counters -->
           <div class="flex flex-wrap justify-center gap-8 mt-10">
             <div class="text-center group hover:scale-110 transition-transform duration-300">
-              <div class="text-3xl font-black text-yellow-400">15+</div>
+              <div class="text-3xl font-black text-yellow-400">5+</div>
               <div class="text-xs text-white/60 uppercase tracking-wider">Services Available</div>
             </div>
             <div class="w-px h-12 bg-white/20"></div>
