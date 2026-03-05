@@ -6,8 +6,8 @@ use App\Http\Controllers\Api\VisitorCounterController;
 
 Route::prefix('v1')->group(function () {
     // Visitor counter routes
-    Route::get('/visitor-count', [VisitorCounterController::class, 'getCount']);
-    Route::post('/visitor-count/increment', [VisitorCounterController::class, 'incrementCount']);
+    Route::get('/visitor-count', [VisitorCounterController::class, 'getSimpleCount']);
+    Route::post('/visitor/track', [VisitorCounterController::class, 'trackVisitor']);
 });
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
