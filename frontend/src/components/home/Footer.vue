@@ -40,9 +40,8 @@ const quickLinks = [
               >
             </div>
             <div class="flex flex-col">
-              <p class="text-[0.58rem] font-semibold tracking-[0.22em] uppercase text-white/55 m-0">Barangay</p>
-              <p class="text-xl font-extrabold text-white tracking-tight m-0 leading-tight" style="text-shadow:0 2px 8px rgba(0,0,0,0.3)">Dolores</p>
-              <p class="text-[0.6rem] text-white/40 tracking-wide m-0">Capas, Tarlac</p>
+              <p class="text-[0.58rem] font-semibold tracking-[0.22em] uppercase text-white/55 m-0">Barangay Dolores</p>
+              <p class="text-[0.6rem] text-white/40 tracking-wide m-0">Capas, Tarlac | Official Website</p>
             </div>
           </div>
 
