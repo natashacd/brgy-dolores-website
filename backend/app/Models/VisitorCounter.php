@@ -8,9 +8,14 @@ class VisitorCounter extends Model
 {
     protected $table = 'visitor_counter';
     
-    protected $fillable = ['count', 'date'];
+    protected $fillable = [
+        'ip_address',
+        'user_agent',
+        'page_url',
+        'visited_at'
+    ];
     
     protected $casts = [
-        'count' => 'integer',
+        'visited_at' => 'datetime'
     ];
 }
