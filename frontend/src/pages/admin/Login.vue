@@ -193,8 +193,12 @@
 
 <script setup>
 import { ref, reactive } from "vue";
+import { useRouter } from 'vue-router'
 import Swal from "sweetalert2";
 import authService from "@/services/authService";
+
+
+const router = useRouter()
 
 const form = reactive({ email: "", password: "" });
 const showPassword = ref(false);
@@ -244,6 +248,10 @@ const handleLogin = async () => {
       timer: 2000,
       timerProgressBar: true,
     });
+
+    // 🔴 REDIRECT TO ADMIN DASHBOARD
+    router.push('/admin');
+
   } catch (err) {
     // 4. Error
     Swal.fire({
@@ -260,7 +268,6 @@ const handleLogin = async () => {
   }
 };
 </script>
-
 <style scoped>
 @keyframes glowPulse {
   0%,
