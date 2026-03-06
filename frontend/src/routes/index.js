@@ -7,6 +7,7 @@ import Login from '@/pages/admin/Login.vue'
 
 // Admin routes
 import AdminDashboard from '@/pages/admin/Dashboard.vue'
+import Announcement from '@/pages/admin/Announcement.vue'
 // ... other admin imports
 
 const routes = [
@@ -49,7 +50,13 @@ const routes = [
         name: 'admin.dashboard',
         component: AdminDashboard,
         meta: { title: 'Dashboard' }
-      }
+      },
+      {
+        path: 'announcements',
+        name: 'admin.announcements',
+        component: Announcement,
+        meta: { title: 'Manage Announcements' }
+      },
       // ... other admin routes
     ]
   },
