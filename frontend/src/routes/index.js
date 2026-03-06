@@ -5,12 +5,15 @@ import About from '@/pages/About.vue'
 import Services from '@/pages/Services.vue'
 import Login from '@/pages/admin/Login.vue'
 
-// Routes
+// Admin routes
+import AdminDashboard from '@/pages/admin/Dashboard.vue'
+// ... other admin imports
+
 const routes = [
-  // Public home pages
+  // Public routes
   {
     path: '/',
-    name: 'index',
+    name: 'home',
     component: Home
   },
   {
@@ -28,11 +31,29 @@ const routes = [
     name: 'news',
     component: News
   },
-    {
+  {
     path: '/login',
     name: 'login',
-    component: Login
+    component: Login,
+    meta: { guest: true }
   },
+  
+  // Admin routes
+  {
+    path: '/admin',
+    component: () => import('@/layout/admin/Layout.vue'),
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: '',
+        name: 'admin.dashboard',
+        component: AdminDashboard,
+        meta: { title: 'Dashboard' }
+      }
+      // ... other admin routes
+    ]
+  },
+
 ]
 
 const router = createRouter({
@@ -45,6 +66,24 @@ const router = createRouter({
       return { top: 0 }
     }
   }
+})
+
+// Updated navigation guard - no more next() calls
+router.beforeEach((to, from) => {
+  const isAuthenticated = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token')
+  
+  // If route requires auth and user is not authenticated
+  if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
+    return { name: 'login', query: { redirect: to.fullPath } }
+  }
+  
+  // If route is for guests only (login) and user is already authenticated
+  if (to.matched.some(record => record.meta.guest) && isAuthenticated) {
+    return { name: 'admin.dashboard' }
+  }
+  
+  // Allow access
+  return true
 })
 
 export default router

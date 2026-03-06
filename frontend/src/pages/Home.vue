@@ -378,56 +378,190 @@
     </section>
 
 
-    <!-- ═══════════════════════════════════════════
-         LATEST NEWS
-    ════════════════════════════════════════════ -->
-    <section
-      ref="newsRef"
-      class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 news-section"
-      :class="{ 'news-entered': newsVisible }"
-    >
-      <div class="flex items-end justify-between mb-10 news-header">
-        <div>
-          <p class="text-xs font-extrabold tracking-[0.22em] uppercase mb-2 m-0" style="color:#0f2d6b">What's New</p>
-          <h2 class="text-3xl sm:text-4xl font-black text-gray-900 m-0">Latest News</h2>
-        </div>
-        <router-link to="/news"
-          class="hidden sm:inline-flex items-center gap-1.5 text-sm font-bold no-underline transition-colors hover:opacity-70"
-          style="color:#0f2d6b">
-          View all
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
-          </svg>
-        </router-link>
-      </div>
-      <div class="grid md:grid-cols-3 gap-5 sm:gap-6">
-        <div v-for="(news, i) in latestNews" :key="news.title"
-          class="group rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-xl overflow-hidden transition-all duration-300 hover:-translate-y-1.5 cursor-pointer news-card"
-          :style="`animation-delay: ${i * 0.12 + 0.1}s`">
-          <div class="h-44 relative overflow-hidden flex items-center justify-center"
-            :style="`background: linear-gradient(135deg,${news.color1},${news.color2})`">
-            <span class="text-7xl opacity-20 group-hover:opacity-35 group-hover:scale-110 transition-all duration-500 select-none">{{ news.emoji }}</span>
-            <div class="absolute top-3 left-3">
-              <span class="px-2.5 py-1 rounded-full text-[0.62rem] font-extrabold uppercase tracking-wider text-white bg-black/30 backdrop-blur-sm">
-                {{ news.category }}
-              </span>
+<!-- ═══════════════════════════════════════════
+     LATEST ANNOUNCEMENTS
+════════════════════════════════════════════ -->
+<section
+  ref="newsRef"
+  class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 news-section relative"
+  :class="{ 'news-entered': newsVisible }"
+>
+  <!-- Background Decoration -->
+  <div class="absolute inset-0 pointer-events-none overflow-hidden">
+    <div class="absolute top-40 right-0 w-96 h-96 bg-blue-900/5 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-40 left-0 w-80 h-80 bg-red-600/5 rounded-full blur-3xl"></div>
+  </div>
+
+  <!-- Header -->
+  <div class="text-center mb-12 news-header relative">
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 rounded-full mb-4">
+      <span class="w-2 h-2 rounded-full bg-blue-900 animate-pulse"></span>
+      <span class="text-xs font-semibold tracking-wider text-blue-900">Barangay Updates</span>
+    </div>
+    <h2 class="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">Latest Announcements</h2>
+    <div class="w-24 h-1 bg-gradient-to-r from-blue-900 to-red-600 mx-auto mb-4"></div>
+    <p class="text-gray-500 max-w-2xl mx-auto text-lg">Stay informed about the latest news and programs in Barangay Dolores</p>
+  </div>
+
+  <!-- Featured Announcement -->
+  <div class="mb-20 relative">
+    <!-- Decorative elements -->
+    <div class="absolute -top-4 -left-4 w-24 h-24 bg-yellow-400/10 rounded-full blur-2xl"></div>
+    <div class="absolute -bottom-4 -right-4 w-32 h-32 bg-blue-900/10 rounded-full blur-2xl"></div>
+    
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-2xl overflow-hidden relative">
+      <!-- Gradient accent line -->
+      <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-900 via-yellow-400 to-red-600"></div>
+      
+      <div class="p-8 md:p-12">
+        <div class="grid md:grid-cols-5 gap-8">
+          <!-- Left Content - Takes 3 columns -->
+          <div class="md:col-span-3">
+            <!-- Featured Tag with icon -->
+            <div class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-900 to-blue-800 text-white rounded-full mb-6 shadow-lg">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0118 18.75h-2.25m-7.5 0H7.5a2.25 2.25 0 01-2.25-2.25V6.108c0-1.135.845-2.098 1.976-2.192.374-.03.748-.057 1.124-.08" />
+              </svg>
+              <span class="text-xs font-bold uppercase tracking-wider">BARANGAY ORDINANCE</span>
             </div>
-            <div class="news-shimmer"></div>
+            
+            <!-- Title with gradient effect -->
+            <h3 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+              <span class="bg-gradient-to-r from-blue-900 to-red-600 bg-clip-text text-transparent">
+                New Ordinance on Waste Management
+              </span>
+              <br>Effective April 2026
+            </h3>
+            
+            <!-- Date with icon -->
+            <div class="flex items-center gap-2 mb-6">
+              <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                <svg class="w-4 h-4 text-blue-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <span class="text-sm font-semibold text-gray-700">March 5, 2026</span>
+            </div>
+            
+            <!-- Description with improved readability -->
+            <p class="text-gray-600 leading-relaxed mb-8 text-lg">
+              The Sangguniang Barangay has passed Ordinance No. 2026-05, implementing a new waste management system 
+              for all households and establishments in Barangay Dolores. This includes mandatory segregation, 
+              scheduled collection, and composting programs. Fines for non-compliance will take effect starting April 2026.
+            </p>
+            
+            
+            <!-- Buttons with enhanced design -->
+            <div class="flex flex-wrap gap-4">
+              <router-link to="/news" class="group relative px-8 py-3 bg-blue-900 text-white rounded-xl text-sm font-semibold hover:bg-blue-800 transition-all duration-200 hover:-translate-y-0.5 shadow-lg hover:shadow-xl flex items-center gap-2 overflow-hidden">
+                <span class="absolute inset-0 bg-gradient-to-r from-yellow-400 to-yellow-500 opacity-0 group-hover:opacity-20 transition-opacity"></span>
+                <span>Read full ordinance</span>
+                <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                </svg>
+              </router-link>
+
+            </div>
           </div>
-          <div class="p-5">
-            <p class="text-[0.62rem] text-gray-400 uppercase tracking-widest font-semibold m-0 mb-2">{{ news.date }}</p>
-            <h3 class="text-sm font-bold text-gray-800 leading-snug m-0 mb-3 group-hover:text-blue-700 transition-colors">{{ news.title }}</h3>
-            <p class="text-xs text-gray-400 leading-relaxed m-0 line-clamp-2">{{ news.excerpt }}</p>
-            <div class="mt-4 flex items-center gap-1 text-xs font-bold" style="color:#0f2d6b">
+          
+          <!-- Right Side - Visual Element -->
+          <div class="md:col-span-2 hidden md:block">
+            <div class="relative h-full flex items-center justify-center">
+              <!-- Decorative circles -->
+              <div class="relative w-64 h-64">
+                <div class="absolute inset-0 bg-gradient-to-br from-blue-900/10 to-red-600/10 rounded-full animate-pulse"></div>
+                <div class="absolute inset-4 bg-gradient-to-br from-yellow-400/10 to-orange-400/10 rounded-full"></div>
+                <div class="absolute inset-8 bg-white rounded-full shadow-2xl flex items-center justify-center">
+                  <svg class="w-24 h-24 text-blue-900/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 21v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2m8-10a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- More Announcements -->
+  <div class="relative">
+    <!-- Section header -->
+    <div class="flex items-center justify-between mb-8">
+      <div class="flex items-center gap-3">
+        <div class="w-1 h-8 bg-gradient-to-b from-blue-900 to-red-600 rounded-full"></div>
+        <h3 class="text-2xl font-bold text-gray-800">Recent Barangay Updates</h3>
+      </div>
+      <router-link to="/news" class="group flex items-center gap-2 text-blue-900 font-medium hover:gap-3 transition-all duration-200">
+        <span>View all announcements</span>
+        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+          <svg class="w-4 h-4 text-blue-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+          </svg>
+        </div>
+      </router-link>
+    </div>
+    
+    <!-- Cards Grid -->
+    <div class="grid md:grid-cols-3 gap-6">
+      <div v-for="(news, i) in latestNews" :key="news.title"
+        class="group bg-white rounded-2xl border border-gray-100 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden news-card relative"
+        :style="`animation-delay: ${i * 0.12 + 0.1}s`">
+        
+        <!-- Top color accent -->
+        <div class="h-1.5 w-full" :style="`background: linear-gradient(90deg, ${news.color1}, ${news.color2})`"></div>
+        
+        <div class="p-6">
+          <!-- Category with icon -->
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-xs font-bold px-3 py-1 rounded-full" 
+                  :style="`background: ${news.color1}15; color: ${news.color1}`">
+              {{ news.category }}
+            </span>
+            <span class="text-xs text-gray-400">{{ news.date }}</span>
+          </div>
+          
+          <!-- Title -->
+          <h4 class="text-lg font-bold text-gray-900 mb-3 leading-snug group-hover:text-blue-900 transition-colors line-clamp-2">
+            {{ news.title }}
+          </h4>
+          
+          <!-- Excerpt with gradient fade -->
+          <div class="relative">
+            <p class="text-sm text-gray-500 leading-relaxed line-clamp-3 mb-4">
+              {{ news.excerpt }}
+            </p>
+            <div class="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
+          </div>
+          
+          <!-- Read More with arrow animation -->
+          <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+            <span class="text-xs text-gray-400">Posted by: Barangay Secretariat</span>
+            <div class="flex items-center gap-2 text-sm font-medium text-blue-900 group-hover:gap-3 transition-all">
               Read more
-              <svg class="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
               </svg>
             </div>
           </div>
         </div>
+        
+        <!-- Hover glow effect -->
+        <div class="absolute inset-0 -z-10 bg-gradient-to-br from-blue-900/5 to-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
       </div>
-    </section>
+    </div>
+    
+    <!-- View all mobile button -->
+    <div class="text-center mt-10 md:hidden">
+      <router-link to="/news" class="inline-flex items-center gap-2 px-6 py-3 bg-blue-900 text-white rounded-xl font-medium">
+        View all announcements
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        </svg>
+      </router-link>
+    </div>
+  </div>
+</section>
 
 
     <!-- ═══════════════════════════════════════════
@@ -435,32 +569,60 @@
     ════════════════════════════════════════════ -->
     <section
       ref="ctaRef"
-      class="mx-4 sm:mx-6 lg:mx-8 mb-16 rounded-3xl overflow-hidden relative cta-section"
+      class="mx-4 sm:mx-6 lg:mx-8 mb-16 rounded-3xl overflow-hidden relative cta-section border border-gray-200"
       :class="{ 'cta-entered': ctaVisible }"
-      style="background: linear-gradient(135deg,#0f2d6b 0%,#c8102e 100%)"
+      style="background: #ffffff"
     >
-      <div class="absolute inset-0 opacity-[0.04]"
-        style="background-image: repeating-linear-gradient(45deg,white 0,white 1px,transparent 0,transparent 50%); background-size:32px 32px">
+      <!-- Simple decorative elements -->
+      <div class="absolute inset-0 opacity-[0.02]" 
+          style="background-image: radial-gradient(circle at 10px 10px, #0f2d6b 1px, transparent 1px); background-size: 30px 30px">
       </div>
-      <div class="cta-glare"></div>
+      
+      <!-- Accent line at top -->
+      <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-900 via-red-600 to-blue-900"></div>
+      
       <div class="relative max-w-3xl mx-auto text-center px-6 py-14 sm:py-16">
-        <p class="text-xs font-extrabold tracking-[0.2em] uppercase text-white/50 mb-3">Ready to Get Started?</p>
-        <h2 class="text-2xl sm:text-3xl font-black text-white mb-4 leading-tight">
+        
+        <!-- Simple badge -->
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-gray-100 rounded-full mb-4">
+          <span class="w-1.5 h-1.5 rounded-full bg-blue-900"></span>
+          <span class="text-xs font-semibold uppercase tracking-wider text-gray-600">Barangay Assistance</span>
+        </div>
+        
+        <!-- Main heading -->
+        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4 leading-tight">
           Need a Barangay Certificate<br>or Document?
         </h2>
-        <p class="text-white/60 text-sm mb-8 max-w-md mx-auto leading-relaxed">
-          Visit the barangay hall during office hours or learn about our services online. We're here to help!
+        
+        <!-- Description -->
+        <p class="text-gray-500 text-base mb-8 max-w-md mx-auto leading-relaxed">
+          Visit the barangay hall during office hours or explore our services online. We're here to help you!
         </p>
+        
+        <!-- Buttons -->
         <div class="flex flex-wrap justify-center gap-3">
-          <router-link to="/services"
-            class="inline-flex items-center gap-2 px-7 py-3 rounded-xl text-sm font-extrabold no-underline text-blue-900 bg-yellow-400 hover:bg-yellow-300 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl btn-glow">
+          <router-link 
+            to="/services" 
+            class="inline-flex items-center gap-2 px-6 py-3 bg-blue-900 text-white rounded-xl text-sm font-semibold hover:bg-blue-800 transition-all duration-200 shadow-md hover:shadow-lg"
+          >
             Browse Services
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+            </svg>
           </router-link>
-          <router-link to="/about"
-            class="inline-flex items-center gap-2 px-7 py-3 rounded-xl text-sm font-bold no-underline text-white border border-white/30 bg-white/10 hover:bg-white/20 transition-all duration-200 hover:-translate-y-0.5">
+          
+          <router-link 
+            to="/about" 
+            class="inline-flex items-center gap-2 px-6 py-3 bg-white text-gray-700 rounded-xl text-sm font-semibold border border-gray-200 hover:bg-gray-50 transition-all duration-200 shadow-sm hover:shadow-md"
+          >
             Learn About Us
           </router-link>
         </div>
+        
+        <!-- Optional: Hours note -->
+        <p class="text-xs text-gray-400 mt-6">
+          Mon - Fri: 8:00 AM - 5:00 PM | Saturday: 8:00 AM - 12:00 PM
+        </p>
       </div>
     </section>
 
