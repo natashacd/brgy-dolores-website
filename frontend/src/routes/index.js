@@ -3,6 +3,7 @@ import Home from '@/pages/Home.vue'
 import News from '@/pages/News.vue'
 import About from '@/pages/About.vue'
 import Services from '@/pages/Services.vue'
+import Login from '@/pages/admin/Login.vue'
 
 // Routes
 const routes = [
@@ -26,6 +27,11 @@ const routes = [
     path: '/news',
     name: 'news',
     component: News
+  },
+    {
+    path: '/login',
+    name: 'login',
+    component: Login
   },
 ]
 
