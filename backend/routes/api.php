@@ -1,15 +1,18 @@
 <?php
 
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Api\VisitorCounterController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\VisitorCounterController;
 
-Route::prefix('v1')->group(function () {
-    // Visitor counter routes
-    Route::get('/visitor-count', [VisitorCounterController::class, 'getSimpleCount']);
-    Route::post('/visitor/track', [VisitorCounterController::class, 'trackVisitor']);
-});
+Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth:sanctum');
 
-Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
-    return $request->user();
+Route::get('/visitor-count', [VisitorCounterController::class, 'getSimpleCount']);
+Route::post('/visitor/track', [VisitorCounterController::class, 'trackVisitor']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
 });
