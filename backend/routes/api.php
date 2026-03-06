@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Api\VisitorCounterController;
-use App\Http\Controllers\Api\AnnouncementController;
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,21 +17,12 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
-// API routes
-Route::prefix('admin')->group(function () {
-    // Announcement routes
-    Route::get('/announcements', [AnnouncementController::class, 'index']);
-    Route::post('/announcements', [AnnouncementController::class, 'store']);
-    Route::get('/announcements/{id}', [AnnouncementController::class, 'show']);
-    Route::put('/announcements/{id}', [AnnouncementController::class, 'update']);
-    Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy']);
-    
-    // Additional announcement actions
-    Route::post('/announcements/{id}/toggle-urgent', [AnnouncementController::class, 'toggleUrgent']);
-    Route::post('/announcements/{id}/duplicate', [AnnouncementController::class, 'duplicate']);
-    Route::post('/announcements/bulk-delete', [AnnouncementController::class, 'bulkDelete']);
-    Route::post('/announcements/bulk-update-status', [AnnouncementController::class, 'bulkUpdateStatus']);
-});
-
-    
+    Route::prefix('users')->group(function () {
+        Route::get('/', [UserController::class, 'index']);
+        Route::get('/roles', [UserController::class, 'roles']);
+        Route::post('/', [UserController::class, 'store']);
+        Route::put('/{id}', [UserController::class, 'update']);
+        Route::patch('/{id}/reset-password', [UserController::class, 'resetPassword']);
+        Route::delete('/{id}', [UserController::class, 'destroy']);
+    });
 });
