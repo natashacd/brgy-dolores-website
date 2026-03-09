@@ -11,14 +11,24 @@ use Illuminate\Support\Facades\Validator;
 class AnnouncementController extends Controller
 {
     /**
-     * Display a listing of announcements
+     * Display a listing of announcements (excluding trashed)
      */
     public function index(Request $request)
     {
-        $query = Announcement::with('creator');
+        return response()
+            ->json($this->getAnnouncementData($request))
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
+    }
+
+    private function getAnnouncementData(Request $request)
+    {
+        // Only get non-trashed announcements
+        $query = Announcement::with('creator')->whereNull('deleted_at');
 
         // Search
-        if ($request->has('search')) {
+        if ($request->has('search') && !empty($request->search)) {
             $query->where(function($q) use ($request) {
                 $q->where('title', 'like', '%' . $request->search . '%')
                   ->orWhere('content', 'like', '%' . $request->search . '%');
@@ -45,14 +55,53 @@ class AnnouncementController extends Controller
 
         $announcements = $query->paginate($request->get('per_page', 10));
 
-        // Get simple stats
+        // Get stats including trashed count (views removed)
         $stats = [
-            'total' => Announcement::count(),
-            'published' => Announcement::where('status', 'published')->count(),
-            'draft' => Announcement::where('status', 'draft')->count(),
-            'archived' => Announcement::where('status', 'archived')->count(),
-            'urgent' => Announcement::where('is_urgent', true)->count(),
-            'total_views' => Announcement::sum('views')
+            'total' => Announcement::whereNull('deleted_at')->count(),
+            'published' => Announcement::whereNull('deleted_at')->where('status', 'published')->count(),
+            'draft' => Announcement::whereNull('deleted_at')->where('status', 'draft')->count(),
+            'archived' => Announcement::whereNull('deleted_at')->where('status', 'archived')->count(),
+            'urgent' => Announcement::whereNull('deleted_at')->where('is_urgent', true)->count(),
+            'trashed' => Announcement::onlyTrashed()->count()
+        ];
+
+        return [
+            'success' => true,
+            'data' => $announcements,
+            'stats' => $stats
+        ];
+    }
+
+    /**
+     * Get trashed announcements
+     */
+    public function trashed(Request $request)
+    {
+        $query = Announcement::onlyTrashed()->with('creator');
+
+        // Search in trashed
+        if ($request->has('search') && !empty($request->search)) {
+            $query->where(function($q) use ($request) {
+                $q->where('title', 'like', '%' . $request->search . '%')
+                  ->orWhere('content', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        // Filter by category in trashed
+        if ($request->has('category') && $request->category !== 'all') {
+            $query->where('category', $request->category);
+        }
+
+        $announcements = $query->latest('deleted_at')->paginate($request->get('per_page', 10));
+
+        // Get stats including trashed count (views removed)
+        $stats = [
+            'total' => Announcement::whereNull('deleted_at')->count(),
+            'published' => Announcement::whereNull('deleted_at')->where('status', 'published')->count(),
+            'draft' => Announcement::whereNull('deleted_at')->where('status', 'draft')->count(),
+            'archived' => Announcement::whereNull('deleted_at')->where('status', 'archived')->count(),
+            'urgent' => Announcement::whereNull('deleted_at')->where('is_urgent', true)->count(),
+            'trashed' => Announcement::onlyTrashed()->count()
         ];
 
         return response()->json([
@@ -183,30 +232,96 @@ class AnnouncementController extends Controller
     }
 
     /**
-     * Remove the specified announcement
+     * Soft delete (move to trash)
      */
     public function destroy($id)
     {
         $announcement = Announcement::findOrFail($id);
         
-        // Delete featured image
-        if ($announcement->featured_image) {
-            Storage::disk('public')->delete($announcement->featured_image);
-        }
-
-        // Delete attachments
-        if ($announcement->attachments) {
-            foreach ($announcement->attachments as $attachment) {
-                Storage::disk('public')->delete($attachment['path']);
-            }
-        }
-
+        // Soft delete only - don't delete files yet
         $announcement->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Announcement deleted successfully'
+            'message' => 'Announcement moved to trash successfully'
         ]);
+    }
+
+    /**
+     * Restore from trash
+     */
+    public function restore($id)
+    {
+        try {
+            $announcement = Announcement::withTrashed()->findOrFail($id);
+            
+            if (!$announcement->trashed()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This announcement is not in trash'
+                ], 400);
+            }
+            
+            $announcement->restore();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Announcement restored successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error restoring announcement'
+            ], 500);
+        }
+    }
+
+    /**
+     * Permanently delete from trash
+     */
+    public function forceDelete($id)
+    {
+        try {
+            $announcement = Announcement::withTrashed()->findOrFail($id);
+            
+            if (!$announcement->trashed()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Please move to trash first before permanent deletion'
+                ], 400);
+            }
+            
+            // Delete featured image
+            if ($announcement->featured_image) {
+                Storage::disk('public')->delete($announcement->featured_image);
+            }
+
+            // Delete attachments
+            if ($announcement->attachments) {
+                $attachments = is_array($announcement->attachments) 
+                    ? $announcement->attachments 
+                    : json_decode($announcement->attachments, true);
+                
+                foreach ($attachments as $attachment) {
+                    if (is_array($attachment) && isset($attachment['path'])) {
+                        Storage::disk('public')->delete($attachment['path']);
+                    }
+                }
+            }
+
+            // Permanently delete
+            $announcement->forceDelete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Announcement permanently deleted'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error deleting announcement'
+            ], 500);
+        }
     }
 
     /**
@@ -225,7 +340,7 @@ class AnnouncementController extends Controller
     }
 
     /**
-     * Bulk delete announcements
+     * Bulk soft delete (move to trash)
      */
     public function bulkDelete(Request $request)
     {
@@ -238,24 +353,121 @@ class AnnouncementController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $announcements = Announcement::whereIn('id', $request->ids)->get();
-        
-        foreach ($announcements as $announcement) {
-            // Delete files
-            if ($announcement->featured_image) {
-                Storage::disk('public')->delete($announcement->featured_image);
+        // Soft delete only
+        Announcement::whereIn('id', $request->ids)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => count($request->ids) . ' announcements moved to trash successfully'
+        ]);
+    }
+
+    /**
+     * Bulk restore from trash
+     */
+    public function bulkRestore(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $restored = 0;
+        foreach ($request->ids as $id) {
+            $announcement = Announcement::withTrashed()->find($id);
+            if ($announcement && $announcement->trashed()) {
+                $announcement->restore();
+                $restored++;
             }
-            if ($announcement->attachments) {
-                foreach ($announcement->attachments as $attachment) {
-                    Storage::disk('public')->delete($attachment['path']);
-                }
-            }
-            $announcement->delete();
         }
 
         return response()->json([
             'success' => true,
-            'message' => count($request->ids) . ' announcements deleted successfully'
+            'message' => $restored . ' announcements restored successfully'
+        ]);
+    }
+
+    /**
+     * Bulk permanently delete
+     */
+    public function bulkForceDelete(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $deleted = 0;
+        foreach ($request->ids as $id) {
+            $announcement = Announcement::withTrashed()->find($id);
+            if ($announcement && $announcement->trashed()) {
+                // Delete files
+                if ($announcement->featured_image) {
+                    Storage::disk('public')->delete($announcement->featured_image);
+                }
+                if ($announcement->attachments) {
+                    $attachments = is_array($announcement->attachments) 
+                        ? $announcement->attachments 
+                        : json_decode($announcement->attachments, true);
+                    
+                    foreach ($attachments as $attachment) {
+                        if (is_array($attachment) && isset($attachment['path'])) {
+                            Storage::disk('public')->delete($attachment['path']);
+                        }
+                    }
+                }
+                $announcement->forceDelete();
+                $deleted++;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $deleted . ' announcements permanently deleted'
+        ]);
+    }
+
+    /**
+     * Empty trash (permanently delete all)
+     */
+    public function emptyTrash()
+    {
+        $announcements = Announcement::onlyTrashed()->get();
+        $count = $announcements->count();
+        
+        foreach ($announcements as $announcement) {
+            // Delete featured image
+            if ($announcement->featured_image) {
+                Storage::disk('public')->delete($announcement->featured_image);
+            }
+            // Delete attachments
+            if ($announcement->attachments) {
+                $attachments = is_array($announcement->attachments) 
+                    ? $announcement->attachments 
+                    : json_decode($announcement->attachments, true);
+                
+                foreach ($attachments as $attachment) {
+                    if (is_array($attachment) && isset($attachment['path'])) {
+                        Storage::disk('public')->delete($attachment['path']);
+                    }
+                }
+            }
+        }
+
+        // Permanently delete all
+        Announcement::onlyTrashed()->forceDelete();
+
+        return response()->json([
+            'success' => true,
+            'message' => $count . ' items permanently deleted from trash'
         ]);
     }
 
@@ -275,6 +487,7 @@ class AnnouncementController extends Controller
         }
 
         $updated = Announcement::whereIn('id', $request->ids)
+            ->whereNull('deleted_at') // Only update non-trashed
             ->update([
                 'status' => $request->status,
                 'published_at' => $request->status === 'published' ? now() : null
@@ -297,7 +510,7 @@ class AnnouncementController extends Controller
         $newAnnouncement->title = $announcement->title . ' (Copy)';
         $newAnnouncement->status = 'draft';
         $newAnnouncement->published_at = null;
-        $newAnnouncement->views = 0;
+        // 'views' removed
         $newAnnouncement->created_by = auth()->id();
         $newAnnouncement->save();
 

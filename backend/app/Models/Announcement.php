@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Announcement extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'title',
@@ -19,7 +20,6 @@ class Announcement extends Model
         'published_at',
         'featured_image',
         'attachments',
-        'views'
     ];
 
     protected $casts = [
@@ -27,6 +27,8 @@ class Announcement extends Model
         'published_at' => 'datetime',
         'is_urgent' => 'boolean'
     ];
+
+    protected $dates = ['deleted_at'];
 
     // Category constants
     const CATEGORIES = [
@@ -47,4 +49,12 @@ class Announcement extends Model
     {
         return substr(strip_tags($this->content), 0, 100) . '...';
     }
+    public function getFeaturedImageUrlAttribute()
+{
+    if ($this->featured_image) {
+        return asset('storage/' . $this->featured_image);
+    }
+    return null;
+}
+    protected $appends = ['featured_image_url'];
 }
