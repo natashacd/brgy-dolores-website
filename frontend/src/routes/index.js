@@ -8,7 +8,13 @@ import Login from "@/pages/admin/Login.vue";
 // Admin routes
 import AdminDashboard from "@/pages/admin/Dashboard.vue";
 import AdminUsers from "@/pages/admin/Users.vue";
-// ... other admin imports
+import Announcement from "@/pages/admin/Announcement.vue";
+import Complaints from "@/pages/admin/Complaints.vue";
+import Document from "@/pages/admin/Document.vue";
+import Reports from "@/pages/admin/Reports.vue";
+import Resident from "@/pages/admin/Resident.vue";
+import ServiceRequest from "@/pages/admin/ServiceRequest.vue";
+import Settings from "@/pages/admin/Settings.vue";
 
 const routes = [
   // Public routes
@@ -57,7 +63,48 @@ const routes = [
         component: AdminUsers,
         meta: { title: "Users" },
       },
-      // ... other admin routes
+      {
+        path: "announcements",
+        name: "admin.announcements",
+        component: Announcement,
+        meta: { title: "Announcements" },
+      },
+      {
+        path: "complaints",
+        name: "admin.complaints",
+        component: Complaints,
+        meta: { title: "Complaints" },
+      },
+      {
+        path: "documents",
+        name: "admin.documents",
+        component: Document,
+        meta: { title: "Documents" },
+      },
+      {
+        path: "residents",
+        name: "admin.residents",
+        component: Resident,
+        meta: { title: "Residents" },
+      },
+      {
+        path: "service-requests",
+        name: "admin.service-requests",
+        component: ServiceRequest,
+        meta: { title: "Service Requests" },
+      },
+      {
+        path: "reports",
+        name: "admin.reports",
+        component: Reports,
+        meta: { title: "Reports" },
+      },
+      {
+        path: "settings",
+        name: "admin.settings",
+        component: Settings,
+        meta: { title: "Settings" },
+      }
     ],
   },
 ];
