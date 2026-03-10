@@ -231,7 +231,6 @@
         </div>
       </div>
 
-      <!-- Simple count when no pagination needed -->
       <div v-else-if="!loading && filteredUsers.length > 0" class="px-6 py-3.5 border-t border-slate-100 bg-slate-50/60">
         <p class="text-xs text-slate-400 font-mono">
           Showing <span class="font-medium text-slate-700">{{ filteredUsers.length }}</span> {{ filteredUsers.length === 1 ? 'result' : 'results' }}

@@ -470,7 +470,7 @@ async function submit() {
   errors.value = newErrors;
   
   if (Object.keys(newErrors).length > 0) {
-    // Show validation error alert
+
     await Swal.fire({
       icon: 'error',
       title: 'Validation Error',
@@ -481,8 +481,7 @@ async function submit() {
   }
   
   loading.value = true;
-  
-  // Show loading alert
+
   Swal.fire({
     title: 'Please wait...',
     text: 'Creating resident account...',
@@ -493,7 +492,6 @@ async function submit() {
     }
   });
   
-  // Clean phone numbers before sending (remove spaces)
   const formData = {
     ...form.value,
     contact_number: form.value.contact_number.replace(/\s/g, ''),
@@ -503,10 +501,8 @@ async function submit() {
   try {
     await ResidentService.createResident(formData);
     
-    // Close loading alert
     Swal.close();
     
-    // Show success message
     await Swal.fire({
       icon: 'success',
       title: 'Success!',
@@ -515,12 +511,10 @@ async function submit() {
       showConfirmButton: false
     });
     
-    // Emit events and close modal
     emit("saved");
     emit("close");
     
   } catch (err) {
-    // Close loading alert
     Swal.close();
     
     if (err.response?.data?.errors) {
@@ -528,7 +522,6 @@ async function submit() {
         Object.entries(err.response.data.errors).map(([k, v]) => [k, v[0]])
       );
       
-      // Show validation error alert
       Swal.fire({
         icon: 'error',
         title: 'Validation Error',
@@ -536,7 +529,6 @@ async function submit() {
         confirmButtonColor: '#3d4f7c'
       });
     } else {
-      // Show general error alert
       Swal.fire({
         icon: 'error',
         title: 'Error',

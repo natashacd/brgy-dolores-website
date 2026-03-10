@@ -431,16 +431,13 @@ const form = ref({
   role_id: "", status: 1,
 });
 
-// Format phone number as user types (0912 345 6789)
 const formatPhoneNumber = (field, event) => {
-  let value = event.target.value.replace(/\D/g, ''); // Remove non-digits
+  let value = event.target.value.replace(/\D/g, ''); 
   
-  // Limit to 11 digits
   if (value.length > 11) {
     value = value.slice(0, 11);
   }
   
-  // Format as 0912 345 6789
   if (value.length >= 5) {
     value = value.slice(0, 4) + ' ' + value.slice(4, 7) + ' ' + value.slice(7, 11);
   } else if (value.length >= 4) {
@@ -450,7 +447,6 @@ const formatPhoneNumber = (field, event) => {
   form.value[field] = value.trim();
 }
 
-// Format phone number for display when loading from API
 const formatPhoneNumberForDisplay = (phone) => {
   if (!phone) return '';
   const cleaned = phone.replace(/\D/g, '');
@@ -462,7 +458,6 @@ const formatPhoneNumberForDisplay = (phone) => {
   return cleaned;
 }
 
-// Validate phone number (must be 11 digits starting with 0)
 const isValidPhoneNumber = (phone) => {
   const cleaned = phone.replace(/\D/g, '');
   return cleaned.length === 11 && cleaned.startsWith('0');
