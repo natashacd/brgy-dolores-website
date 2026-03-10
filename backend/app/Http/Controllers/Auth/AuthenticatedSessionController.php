@@ -17,7 +17,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        $user = $request->user()->load(['information', 'role']);
+        $user = $request->user()->load(['information', 'role', 'status', 'address']);
 
         return response()->json([
             'message' => 'success',
@@ -27,6 +27,8 @@ class AuthenticatedSessionController extends Controller
                 'first_name' => $user->information?->first_name,
                 'last_name'  => $user->information?->last_name,
                 'role'       => $user->role?->role_name,
+                'status'     => $user->status?->status,
+                'address'    => $user->address?->house_no . ', ' . $user->address?->purok . ', ' . $user->address?->sitio,
             ],
         ]);
     }
