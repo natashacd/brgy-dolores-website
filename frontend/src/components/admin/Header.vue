@@ -8,7 +8,6 @@
           src="@/assets/images/dolores_logo.png"
           alt="Barangay Dolores"
           class="w-10 h-10 rounded-md object-cover"
-          @error="$event.target.src = 'https://placehold.co/40x40/1e3a8a/ffffff?text=BD'"
         />
       </div>
       
