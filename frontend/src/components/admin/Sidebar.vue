@@ -376,7 +376,6 @@ const handleLogout = async () => {
   opacity: 0;
 }
 
-/* Tooltips for collapsed state */
 [title] {
   position: relative;
 }
