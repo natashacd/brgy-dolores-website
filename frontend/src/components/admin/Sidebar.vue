@@ -300,7 +300,6 @@ onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
 })
 
-// Confirm logout with SweetAlert
 const confirmLogout = async () => {
   const result = await Swal.fire({
     title: 'Logout?',
@@ -318,7 +317,6 @@ const confirmLogout = async () => {
   }
 }
 
-// Logout function
 const handleLogout = async () => {
   try {
     localStorage.removeItem('auth_token')

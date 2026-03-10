@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\VisitorCounterController;
 use App\Http\Controllers\Api\AnnouncementController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ResidentController;
+use App\Http\Controllers\Admin\ServiceRequestController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,9 +15,27 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->midd
 Route::get('/visitor-count', [VisitorCounterController::class, 'getSimpleCount']);
 Route::post('/visitor/track', [VisitorCounterController::class, 'trackVisitor']);
 
+// Route::prefix('admin/service-requests')->group(function () {
+//     Route::get('/staff', [ServiceRequestController::class, 'getStaff']);
+//     Route::get('/', [ServiceRequestController::class, 'index']);
+//     Route::get('/{id}', [ServiceRequestController::class, 'show']);
+//     Route::put('/{id}/reassign', [ServiceRequestController::class, 'reassign']);
+//     Route::put('/{id}/approve', [ServiceRequestController::class, 'approve']);
+//     Route::put('/{id}/cancel', [ServiceRequestController::class, 'cancel']);
+// });
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
+    });
+
+    Route::prefix('admin/service-requests')->group(function () {
+        Route::get('/staff', [ServiceRequestController::class, 'getStaff']);
+        Route::get('/', [ServiceRequestController::class, 'index']);
+        Route::get('/{id}', [ServiceRequestController::class, 'show']);
+        Route::put('/{id}/reassign', [ServiceRequestController::class, 'reassign']);
+        Route::put('/{id}/approve', [ServiceRequestController::class, 'approve']);
+        Route::put('/{id}/cancel', [ServiceRequestController::class, 'cancel']);
     });
 
     Route::prefix('residents')->group(function () {
