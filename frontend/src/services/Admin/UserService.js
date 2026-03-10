@@ -11,11 +11,6 @@ const UserService = {
     return data;
   },
 
-  async createUser(payload) {
-    const { data } = await api.post("/api/users", payload);
-    return data;
-  },
-
   async updateUser(id, payload) {
     const { data } = await api.put(`/api/users/${id}`, payload);
     return data;
