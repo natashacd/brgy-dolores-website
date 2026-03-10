@@ -4,15 +4,9 @@
       <div>
         <h1 class="text-xl font-bold text-gray-900">Users Management</h1>
         <p class="text-sm text-gray-500 mt-1">
-          Manage all system users and their roles.
+          Manage all system users (non-residents).
         </p>
       </div>
-      <button
-        class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-md"
-        @click="showAddModal = true"
-      >
-        + Add User
-      </button>
     </div>
 
     <div class="border border-gray-200 rounded-lg overflow-hidden">
@@ -96,13 +90,6 @@
       </div>
     </div>
 
-    <AddUserModal
-      v-if="showAddModal"
-      :roles="roles"
-      @close="showAddModal = false"
-      @saved="fetchUsers"
-    />
-
     <EditUserModal
       v-if="showEditModal && selectedUser"
       :user="selectedUser"
@@ -116,13 +103,11 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import UserService from "@/services/Admin/UserService";
-import AddUserModal from "@/components/modals/admin/users/AddUserModal.vue";
 import EditUserModal from "@/components/modals/admin/users/EditUserModal.vue";
 
 const users = ref([]);
 const roles = ref([]);
 const loading = ref(false);
-const showAddModal = ref(false);
 const showEditModal = ref(false);
 const selectedUser = ref(null);
 
@@ -154,14 +139,16 @@ function openEditModal(user) {
 
 async function handleDelete(user) {
   if (
-    !confirm(`Delete user "${fullName(user)}"? This action cannot be undone.`)
+    !confirm(
+      `Are you sure you want to change "${fullName(user)}" role to Resident? This will remove them from this list.`,
+    )
   )
     return;
   try {
     await UserService.deleteUser(user.id);
     await fetchUsers();
   } catch {
-    alert("Failed to delete user.");
+    alert("Failed to change user role.");
   }
 }
 

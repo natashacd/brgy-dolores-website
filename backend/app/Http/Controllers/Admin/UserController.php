@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Role;
-use App\Models\User_Information;
-use App\Models\User_Status;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -15,55 +13,19 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::with(['information', 'status', 'role'])->get();
+        $users = User::with(['information', 'status', 'role'])
+            ->whereHas('role', function ($query) {
+                $query->where('role_name', '!=', 'Resident');
+            })
+            ->get();
 
         return response()->json($users);
     }
 
     public function roles()
     {
-        $roles = Role::all();
-
+        $roles = Role::where('role_name', '!=', 'Resident')->get();
         return response()->json($roles);
-    }
-
-    public function store(Request $request)
-    {
-        $request->validate([
-            'email'          => 'required|email|unique:users,email',
-            'role_id'        => 'required|exists:roles,id',
-            'first_name'     => 'required|string|max:255',
-            'middle_name'    => 'nullable|string|max:255',
-            'last_name'      => 'required|string|max:255',
-            'address'        => 'required|string|max:255',
-            'contact_number' => 'required|string|max:20',
-            'status'         => 'required|boolean',
-        ]);
-
-        $user = User::create([
-            'email'    => $request->email,
-            'password' => Hash::make('adminadmin'),
-            'role_id'  => $request->role_id,
-        ]);
-
-        User_Information::create([
-            'user_id'        => $user->id,
-            'first_name'     => $request->first_name,
-            'middle_name'    => $request->middle_name,
-            'last_name'      => $request->last_name,
-            'address'        => $request->address,
-            'contact_number' => $request->contact_number,
-        ]);
-
-        User_Status::create([
-            'user_id' => $user->id,
-            'status'  => $request->status,
-        ]);
-
-        return response()->json([
-            'message' => 'User created successfully.',
-            'user'    => $user->load(['information', 'status', 'role']),
-        ], 201);
     }
 
     public function update(Request $request, $id)
@@ -71,32 +33,14 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         $request->validate([
-            'email'          => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
-            'first_name'     => 'required|string|max:255',
-            'middle_name'    => 'nullable|string|max:255',
-            'last_name'      => 'required|string|max:255',
-            'address'        => 'required|string|max:255',
-            'contact_number' => 'required|string|max:20',
-            'status'         => 'required|boolean',
+            'email'   => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
+            'role_id' => 'required|exists:roles,id',
         ]);
 
-        $user->update(['email' => $request->email]);
-
-        $user->information()->updateOrCreate(
-            ['user_id' => $user->id],
-            [
-                'first_name'     => $request->first_name,
-                'middle_name'    => $request->middle_name,
-                'last_name'      => $request->last_name,
-                'address'        => $request->address,
-                'contact_number' => $request->contact_number,
-            ]
-        );
-
-        $user->status()->updateOrCreate(
-            ['user_id' => $user->id],
-            ['status' => $request->status]
-        );
+        $user->update([
+            'email'   => $request->email,
+            'role_id' => $request->role_id,
+        ]);
 
         return response()->json([
             'message' => 'User updated successfully.',
@@ -115,8 +59,17 @@ class UserController extends Controller
     public function destroy($id)
     {
         $user = User::findOrFail($id);
-        $user->delete();
+        
+        // Get "Resident" role
+        $residentRole = Role::where('role_name', 'Resident')->first();
+        
+        if (!$residentRole) {
+            return response()->json(['message' => 'Resident role not found.'], 404);
+        }
 
-        return response()->json(['message' => 'User deleted successfully.']);
+        // Change user role to Resident instead of deleting
+        $user->update(['role_id' => $residentRole->id]);
+
+        return response()->json(['message' => 'User role changed to Resident successfully.']);
     }
 }

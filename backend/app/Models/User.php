@@ -37,11 +37,16 @@ class User extends Authenticatable
 
     public function information()
     {
-        return $this->hasOne(User_Information::class);
+        return $this->hasOne(Resident_Information::class);
     }
 
     public function status()
     {
-        return $this->hasOne(User_Status::class);
+        return $this->hasOne(Resident_Status::class);
+    }
+
+    public function address()
+    {
+        return $this->hasOne(Resident_Address::class);
     }
 }

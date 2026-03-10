@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Api\VisitorCounterController;
 use App\Http\Controllers\Api\AnnouncementController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\ResidentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,11 +19,19 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
+    Route::prefix('residents')->group(function () {
+        Route::get('/', [ResidentController::class, 'index']);
+        Route::get('/roles', [ResidentController::class, 'roles']);
+        Route::post('/', [ResidentController::class, 'store']);
+        Route::put('/{id}', [ResidentController::class, 'update']);
+        Route::patch('/{id}/reset-password', [ResidentController::class, 'resetPassword']);
+        Route::delete('/{id}', [ResidentController::class, 'destroy']);
+    });
+
     // User management routes
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index']);
         Route::get('/roles', [UserController::class, 'roles']);
-        Route::post('/', [UserController::class, 'store']);
         Route::put('/{id}', [UserController::class, 'update']);
         Route::patch('/{id}/reset-password', [UserController::class, 'resetPassword']);
         Route::delete('/{id}', [UserController::class, 'destroy']);
@@ -35,18 +44,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/announcements/bulk-restore', [AnnouncementController::class, 'bulkRestore']);
         Route::post('/announcements/bulk-force-delete', [AnnouncementController::class, 'bulkForceDelete']);
         Route::post('/announcements/empty-trash', [AnnouncementController::class, 'emptyTrash']);
-        
+
         // SINGLE ANNOUNCEMENT TRASH OPERATIONS
         Route::post('/announcements/{id}/restore', [AnnouncementController::class, 'restore']);
         Route::delete('/announcements/{id}/force-delete', [AnnouncementController::class, 'forceDelete']);
-        
+
         // REGULAR ANNOUNCEMENT ROUTES
         Route::get('/announcements', [AnnouncementController::class, 'index']);
         Route::post('/announcements', [AnnouncementController::class, 'store']);
         Route::get('/announcements/{id}', [AnnouncementController::class, 'show']);
         Route::put('/announcements/{id}', [AnnouncementController::class, 'update']);
         Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy']);
-        
+
         // OTHER ANNOUNCEMENT ROUTES
         Route::post('/announcements/{id}/toggle-urgent', [AnnouncementController::class, 'toggleUrgent']);
         Route::post('/announcements/{id}/duplicate', [AnnouncementController::class, 'duplicate']);
