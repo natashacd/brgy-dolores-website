@@ -274,7 +274,6 @@ const handleResize = () => {
 // Toggle collapse state
 const toggleCollapse = () => {
   isCollapsed.value = !isCollapsed.value
-  console.log('Collapse toggled:', isCollapsed.value)
   localStorage.setItem('sidebarCollapsed', isCollapsed.value.toString())
 }
 
@@ -295,7 +294,6 @@ onMounted(() => {
     isCollapsed.value = saved === 'true'
   }
   window.addEventListener('resize', handleResize)
-  console.log('Sidebar mounted, isDesktop:', isDesktop.value)
 })
 
 onUnmounted(() => {
@@ -338,7 +336,6 @@ const handleLogout = async () => {
     
     await router.push('/login')
   } catch (error) {
-    console.error('Logout failed:', error)
     Swal.fire({
       icon: 'error',
       title: 'Error',
