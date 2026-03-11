@@ -24,6 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index']);
         Route::get('/roles', [UserController::class, 'roles']);
+        Route::post('/appoint', [UserController::class, 'appoint']);
         Route::put('/{id}', [UserController::class, 'update']);
         Route::patch('/{id}/reset-password', [UserController::class, 'resetPassword']);
         Route::delete('/{id}', [UserController::class, 'destroy']);

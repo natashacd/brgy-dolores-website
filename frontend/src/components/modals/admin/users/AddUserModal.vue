@@ -28,7 +28,7 @@
         </div>
 
         <!-- Body -->
-        <div class="px-6 py-5 space-y-5 max-h-[70vh] overflow-y-auto">
+        <div class="px-6 py-5 space-y-5 max-h-[70vh] overflow-y-auto scrollbar-thin">
 
           <!-- Section 1: Role -->
           <div>
@@ -75,29 +75,47 @@
               <input
                 v-model="residentSearch"
                 type="text"
-                placeholder="Type resident name to search..."
+                placeholder="Type resident name or email to search..."
                 class="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3d4f7c]/20 focus:border-[#3d4f7c] hover:border-slate-300 transition-all bg-slate-50 focus:bg-white"
                 @focus="showDropdown = true"
               />
-              <!-- Dropdown -->
-              <div v-if="showDropdown && residentSearch && filteredResidents.length > 0"
+
+              <!-- Loading dropdown -->
+              <div v-if="loadingResidents"
+                class="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-20 px-4 py-3 text-sm text-slate-400 flex items-center gap-2">
+                <svg class="animate-spin w-4 h-4 text-[#3d4f7c]" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                </svg>
+                Loading residents...
+              </div>
+
+              <!-- Results dropdown -->
+              <div v-else-if="showDropdown && residentSearch && filteredResidents.length > 0"
                 class="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-20 overflow-hidden max-h-48 overflow-y-auto">
                 <button
                   v-for="r in filteredResidents" :key="r.id"
                   @click="selectResident(r)"
                   class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#3d4f7c]/5 transition-colors text-left cursor-pointer border-0 bg-transparent border-b border-slate-50 last:border-0">
-                  <!-- Avatar -->
                   <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-slate-100 flex items-center justify-center">
-                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <img
+                      v-if="getImageUrl(r)"
+                      :src="getImageUrl(r)"
+                      class="w-full h-full object-cover"
+                      @error="e => e.target.style.display = 'none'"
+                    />
+                    <svg v-else class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                     </svg>
                   </div>
                   <div>
-                    <p class="text-sm font-semibold text-slate-800">{{ r.name }}</p>
+                    <p class="text-sm font-semibold text-slate-800">{{ getFullName(r) }}</p>
                     <p class="text-xs text-slate-400">{{ r.email }}</p>
                   </div>
                 </button>
               </div>
+
+              <!-- No results -->
               <div v-else-if="showDropdown && residentSearch && filteredResidents.length === 0"
                 class="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-20 px-4 py-3 text-sm text-slate-400">
                 No residents found
@@ -108,14 +126,19 @@
             <div v-if="selectedResident"
               class="mt-3 flex items-center gap-4 px-4 py-3 rounded-xl border border-[#3d4f7c]/20"
               style="background:#3d4f7c08">
-              <!-- Default Profile Image -->
-              <div class="w-14 h-14 rounded-2xl bg-slate-100 border-2 border-white shadow-md flex items-center justify-center flex-shrink-0 overflow-hidden">
-                <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="w-14 h-14 rounded-2xl border-2 border-white shadow-md flex-shrink-0 overflow-hidden bg-slate-100 flex items-center justify-center">
+                <img
+                  v-if="getImageUrl(selectedResident)"
+                  :src="getImageUrl(selectedResident)"
+                  class="w-full h-full object-cover"
+                  @error="e => e.target.style.display = 'none'"
+                />
+                <svg v-else class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                 </svg>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-bold text-[#3d4f7c]">{{ selectedResident.name }}</p>
+                <p class="text-sm font-bold text-[#3d4f7c]">{{ getFullName(selectedResident) }}</p>
                 <p class="text-xs text-slate-400 mt-0.5">{{ selectedResident.email }}</p>
                 <span class="inline-flex items-center gap-1 mt-1.5 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">
                   <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
@@ -153,55 +176,42 @@
                 </div>
                 <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Personal Information</p>
               </div>
-              <!-- Auto-filled badge -->
               <span v-if="selectedResident"
                 class="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#3d4f7c]/10 text-[#3d4f7c] border border-[#3d4f7c]/20">
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                 </svg>
+                Auto-filled
               </span>
               <span v-else class="text-[10px] text-slate-400">Select a resident first</span>
             </div>
 
             <div class="grid grid-cols-2 gap-3 mb-3">
               <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1.5">First Name <span class="text-red-400">*</span></label>
+                <label class="block text-xs font-semibold text-slate-500 mb-1.5">First Name</label>
                 <input v-model="form.first_name" type="text" placeholder="Auto-filled" disabled
                   class="w-full px-3 py-2.5 text-sm border rounded-xl transition-all cursor-not-allowed"
-                  :class="selectedResident
-                    ? 'border-slate-200 bg-slate-50 text-slate-700'
-                    : 'border-slate-100 bg-slate-50/50 text-slate-300'"/>
-                <p v-if="errors.first_name" class="text-[10px] text-red-500 mt-1">{{ errors.first_name }}</p>
+                  :class="selectedResident ? 'border-slate-200 bg-slate-50 text-slate-700' : 'border-slate-100 bg-slate-50/50 text-slate-300'"/>
               </div>
               <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1.5">Middle Name</label>
                 <input v-model="form.middle_name" type="text" placeholder="Auto-filled" disabled
-                  class="w-full px-3 py-2.5 text-sm border border-slate-100 rounded-xl bg-slate-50/50 text-slate-300 transition-all cursor-not-allowed"
-                  :class="selectedResident ? 'text-slate-700 border-slate-200 bg-slate-50' : 'text-slate-300'"/>
+                  class="w-full px-3 py-2.5 text-sm border rounded-xl transition-all cursor-not-allowed"
+                  :class="selectedResident ? 'border-slate-200 bg-slate-50 text-slate-700' : 'border-slate-100 bg-slate-50/50 text-slate-300'"/>
               </div>
             </div>
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1.5">Last Name <span class="text-red-400">*</span></label>
+                <label class="block text-xs font-semibold text-slate-500 mb-1.5">Last Name</label>
                 <input v-model="form.last_name" type="text" placeholder="Auto-filled" disabled
                   class="w-full px-3 py-2.5 text-sm border rounded-xl transition-all cursor-not-allowed"
-                  :class="selectedResident
-                    ? 'border-slate-200 bg-slate-50 text-slate-700'
-                    : 'border-slate-100 bg-slate-50/50 text-slate-300'"/>
-                <p v-if="errors.last_name" class="text-[10px] text-red-500 mt-1">{{ errors.last_name }}</p>
+                  :class="selectedResident ? 'border-slate-200 bg-slate-50 text-slate-700' : 'border-slate-100 bg-slate-50/50 text-slate-300'"/>
               </div>
               <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1.5">Suffix</label>
-                <select v-model="form.suffix" disabled
-                  class="w-full appearance-none px-3 py-2.5 text-sm border border-slate-100 rounded-xl bg-slate-50/50 transition-all cursor-not-allowed"
-                  :class="selectedResident ? 'text-slate-700 border-slate-200 bg-slate-50' : 'text-slate-300'">
-                  <option value="">None</option>
-                  <option>Jr.</option>
-                  <option>Sr.</option>
-                  <option>II</option>
-                  <option>III</option>
-                  <option>IV</option>
-                </select>
+                <input v-model="form.suffix" type="text" placeholder="Auto-filled" disabled
+                  class="w-full px-3 py-2.5 text-sm border rounded-xl transition-all cursor-not-allowed"
+                  :class="selectedResident ? 'border-slate-200 bg-slate-50 text-slate-700' : 'border-slate-100 bg-slate-50/50 text-slate-300'"/>
               </div>
             </div>
           </div>
@@ -216,10 +226,10 @@
               class="px-4 py-2 text-sm font-semibold text-slate-600 border border-slate-200 rounded-xl hover:bg-slate-100 transition-all cursor-pointer bg-white">
               Cancel
             </button>
-            <button @click="handleSubmit" :disabled="saving || !selectedResident"
+            <button @click="handleSubmit" :disabled="saving || !selectedResident || !form.role_id"
               class="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer border-0"
               style="background:#3d4f7c"
-              @mouseenter="e => !saving && selectedResident && (e.currentTarget.style.backgroundColor='#252b3b')"
+              @mouseenter="e => !saving && selectedResident && form.role_id && (e.currentTarget.style.backgroundColor='#252b3b')"
               @mouseleave="e => (e.currentTarget.style.backgroundColor='#3d4f7c')">
               <svg v-if="saving" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
@@ -240,25 +250,16 @@
 
 <script setup>
 import { ref, computed, reactive, onMounted, onUnmounted } from 'vue'
+import UserService from '@/services/Admin/UserService'
+import Swal from 'sweetalert2'
 
 const props = defineProps({
   roles: { type: Array, default: () => [] }
 })
 const emit = defineEmits(['close', 'saved'])
 
-// ── Static residents (replace with API call later) ────────────────
-const allResidents = [
-  { id: 1, name: 'Juan Dela Cruz',   email: 'juan@email.com'   },
-  { id: 2, name: 'Maria Santos',     email: 'maria@email.com'  },
-  { id: 3, name: 'Jose Reyes',       email: 'jose@email.com'   },
-  { id: 4, name: 'Ana Lopez',        email: 'ana@email.com'    },
-  { id: 5, name: 'Pedro Villanueva', email: 'pedro@email.com'  },
-  { id: 6, name: 'Rosa Castillo',    email: 'rosa@email.com'   },
-  { id: 7, name: 'Carlos Mendoza',   email: 'carlos@email.com' },
-  { id: 8, name: 'Liza Fernandez',   email: 'liza@email.com'   },
-]
-
-// ── State ─────────────────────────────────────────────────────────
+const allResidents     = ref([])
+const loadingResidents = ref(false)
 const residentSearch   = ref('')
 const showDropdown     = ref(false)
 const selectedResident = ref(null)
@@ -274,29 +275,55 @@ const form = reactive({
 })
 
 const errors = reactive({
-  first_name: '',
-  last_name:  '',
-  role_id:    '',
+  role_id: '',
 })
+
+// ── Fetch residents on mount ──────────────────────────────────────
+onMounted(async () => {
+  loadingResidents.value = true
+  try {
+    allResidents.value = await UserService.getResidents()
+  } catch {
+    console.error('Failed to fetch residents')
+  } finally {
+    loadingResidents.value = false
+  }
+  document.addEventListener('mousedown', handleClickOutside)
+})
+onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
+
+// ── Helpers ───────────────────────────────────────────────────────
+function getFullName(r) {
+  const info = r.information
+  if (!info) return '—'
+  return [info.first_name, info.middle_name, info.last_name].filter(Boolean).join(' ')
+}
+
+function getImageUrl(r) {
+  return r.information?.image_path
+    ? `/storage/${r.information.image_path}`
+    : null
+}
 
 // ── Resident search ───────────────────────────────────────────────
 const filteredResidents = computed(() => {
   if (!residentSearch.value) return []
   const q = residentSearch.value.toLowerCase()
-  return allResidents.filter(r =>
-    r.name.toLowerCase().includes(q) || r.email.toLowerCase().includes(q)
-  )
+  return allResidents.value.filter(r => {
+    const name = getFullName(r).toLowerCase()
+    return name.includes(q) || r.email?.toLowerCase().includes(q)
+  })
 })
 
 function selectResident(r) {
   selectedResident.value = r
   residentSearch.value   = ''
   showDropdown.value     = false
-  const parts = r.name.trim().split(' ')
-  form.first_name  = parts[0] || ''
-  form.last_name   = parts[parts.length - 1] || ''
-  form.middle_name = parts.length > 2 ? parts.slice(1, -1).join(' ') : ''
-  form.suffix      = ''
+  const info             = r.information
+  form.first_name        = info?.first_name  ?? ''
+  form.middle_name       = info?.middle_name ?? ''
+  form.last_name         = info?.last_name   ?? ''
+  form.suffix            = info?.suffix      ?? ''
 }
 
 function clearResident() {
@@ -307,37 +334,67 @@ function clearResident() {
   form.suffix      = ''
 }
 
-// ── Close dropdown on outside click ──────────────────────────────
 function handleClickOutside(e) {
   if (searchContainer.value && !searchContainer.value.contains(e.target)) {
     showDropdown.value = false
   }
 }
-onMounted(()  => document.addEventListener('mousedown', handleClickOutside))
-onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 
 // ── Validation ────────────────────────────────────────────────────
 function validate() {
-  errors.first_name = ''
-  errors.last_name  = ''
-  errors.role_id    = ''
+  errors.role_id = ''
   let valid = true
-  if (!form.first_name.trim()) { errors.first_name = 'First name is required'; valid = false }
-  if (!form.last_name.trim())  { errors.last_name  = 'Last name is required';  valid = false }
-  if (!form.role_id)           { errors.role_id    = 'Please select a role';   valid = false }
+  if (!form.role_id)         { errors.role_id = 'Please select a role'; valid = false }
+  if (!selectedResident.value) { valid = false }
   return valid
 }
 
 // ── Submit ────────────────────────────────────────────────────────
 async function handleSubmit() {
   if (!validate()) return
+
   saving.value = true
+  Swal.fire({
+    title: 'Please wait...',
+    text: 'Appointing official...',
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    didOpen: () => Swal.showLoading()
+  })
+
   try {
-    // await UserService.createUser({ ...form, resident_id: selectedResident.value?.id })
-    await new Promise(r => setTimeout(r, 800))
-    emit('saved', { ...form, resident: selectedResident.value })
+    await UserService.appointOfficial({
+      user_id: selectedResident.value.id,
+      role_id: form.role_id,
+    })
+    Swal.close()
+    await Swal.fire({
+      icon: 'success',
+      title: 'Success!',
+      text: 'Official has been appointed successfully.',
+      timer: 2000,
+      showConfirmButton: false
+    })
+    emit('saved')
+    emit('close')
+  } catch (err) {
+    Swal.close()
+    if (err.response?.data?.errors) {
+      Object.entries(err.response.data.errors).forEach(([k, v]) => {
+        if (errors[k] !== undefined) errors[k] = v[0]
+      })
+    }
+    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to appoint official. Please try again.', confirmButtonColor: '#3d4f7c' })
   } finally {
     saving.value = false
   }
 }
 </script>
+
+<style scoped>
+.scrollbar-thin { scrollbar-width: thin; }
+.scrollbar-thin::-webkit-scrollbar { width: 4px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 20px; }
+.scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+</style>

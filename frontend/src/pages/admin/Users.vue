@@ -166,10 +166,17 @@
 
               <!-- Profile image — centered, fills nicely -->
               <img
+                v-if="user.information?.image_path"
+                :src="`${baseUrl}/storage/${user.information.image_path}`"
+                alt="Profile"
+                class="relative z-10 w-full h-full object-cover absolute inset-0"
+                @error="e => e.target.style.display = 'none'"
+              />
+              <img
+                v-else
                 src="@/assets/images/icons/profile.png"
                 alt="Profile"
                 class="relative z-10 w-full h-full object-contain absolute inset-0"
-                @error="e => e.target.style.display = 'none'"
               />
 
               <!-- Status dot -->
@@ -289,6 +296,7 @@ import UserService from "@/services/Admin/UserService";
 import EditUserModal from "@/components/modals/admin/users/EditUserModal.vue";
 import AddUserModal from "@/components/modals/admin/users/AddUserModal.vue";
 import Swal from 'sweetalert2';
+const baseUrl = import.meta.env.VITE_API_URL
 
 const users         = ref([]);
 const roles         = ref([]);
