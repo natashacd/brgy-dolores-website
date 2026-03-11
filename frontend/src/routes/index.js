@@ -17,34 +17,33 @@ import ServiceRequest from "@/pages/admin/ServiceRequest.vue";
 import Settings from "@/pages/admin/Settings.vue";
 
 const routes = [
-  // Public routes
+  // Public routes — all wrapped in your layout
   {
     path: "/",
-    name: "home",
-    component: Home,
+    component: () => import("@/layout/Layout.vue"),
+    children: [
+      {
+        path: "",
+        name: "home",
+        component: Home,
+      },
+      {
+        path: "about",
+        name: "about",
+        component: About,
+      },
+      {
+        path: "services",
+        name: "services",
+        component: Services,
+      },
+      {
+        path: "news",
+        name: "news",
+        component: News,
+      },
+    ],
   },
-  {
-    path: "/about",
-    name: "about",
-    component: About,
-  },
-  {
-    path: "/services",
-    name: "services",
-    component: Services,
-  },
-  {
-    path: "/news",
-    name: "news",
-    component: News,
-  },
-  {
-    path: "/login",
-    name: "login",
-    component: Login,
-    meta: { guest: true },
-  },
-
   // Admin routes
   {
     path: "/admin",
@@ -107,7 +106,14 @@ const routes = [
       }
     ],
   },
+    {
+    path: "/login",
+    name: "login",
+    component: Login,
+    meta: { guest: true },
+  },
 ];
+
 
 const router = createRouter({
   history: createWebHistory(),

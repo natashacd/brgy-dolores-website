@@ -16,16 +16,30 @@
             </svg>
           </div>
           <div>
-            <h1 class="text-3xl font-semibold text-slate-800 tracking-tight">User Management</h1>
-            <p class="text-sm text-slate-500 mt-1">Manage all system users (non-residents).</p>
+            <h1 class="text-3xl font-semibold text-slate-800 tracking-tight">Barangay Officials</h1>
+            <p class="text-sm text-slate-500 mt-1">S.Y. 2026-2027</p>
           </div>
         </div>
+        <button
+          class="inline-flex items-center gap-2.5 text-white text-base font-medium px-5 py-3 rounded-lg shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-95 transition-all duration-150 border-0 cursor-pointer"
+          style="background-color: #3d4f7c;"
+          @mouseenter="e => e.currentTarget.style.backgroundColor = '#252b3b'"
+          @mouseleave="e => e.currentTarget.style.backgroundColor = '#3d4f7c'"
+          @click="showAddModal = true"
+        >
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+          </svg>
+          Appoint New Official
+        </button>
       </div>
     </div>
 
-    <!-- Search Bar -->
+    <!-- Search & Filters -->
     <div class="bg-white rounded-xl border border-slate-100 p-4 mb-6 shadow-sm">
       <div class="flex flex-col lg:flex-row lg:items-center gap-3">
+
+        <!-- Search -->
         <div class="relative flex-1">
           <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -33,37 +47,73 @@
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Search users by name, email or contact number..."
-            class="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3d4f7c] focus:ring-opacity-20 focus:border-[#3d4f7c] hover:border-slate-300 transition-all bg-slate-50 focus:bg-white"
+            placeholder="Search by name, email or contact number..."
+            class="w-full pl-10 pr-10 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3d4f7c]/20 focus:border-[#3d4f7c] hover:border-slate-300 transition-all bg-slate-50 focus:bg-white"
           />
           <span v-if="searchQuery" class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
             {{ filteredUsers.length }} found
           </span>
         </div>
-        <div class="flex items-center gap-2">
-          <button
-            v-if="searchQuery"
-            @click="searchQuery = ''"
-            class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-red-600 bg-slate-50 hover:bg-red-50 border border-slate-200 hover:border-red-200 px-3 py-2.5 rounded-xl transition-all cursor-pointer"
-          >
-            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+
+        <!-- Filters Row -->
+        <div class="flex flex-wrap items-center gap-2">
+
+          <!-- Role Filter -->
+          <div class="relative">
+            <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
             </svg>
-            Clear
-          </button>
+            <select
+              v-model="roleFilter"
+              class="pl-8 pr-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3d4f7c]/20 focus:border-[#3d4f7c] hover:border-slate-300 transition-all bg-slate-50 focus:bg-white cursor-pointer text-slate-600 font-medium appearance-none"
+              :class="roleFilter ? 'border-[#3d4f7c]/40 bg-[#3d4f7c]/5 text-[#3d4f7c]' : ''"
+            >
+              <option value="">All Roles</option>
+              <option v-for="role in roles" :key="role.id" :value="String(role.id)">{{ role.role_name }}</option>
+            </select>
+          </div>
+
+          <!-- Status Filter -->
+          <div class="relative">
+            <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <select
+              v-model="statusFilter"
+              class="pl-8 pr-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3d4f7c]/20 focus:border-[#3d4f7c] hover:border-slate-300 transition-all bg-slate-50 focus:bg-white cursor-pointer text-slate-600 font-medium appearance-none"
+              :class="statusFilter === 'active' ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : statusFilter === 'inactive' ? 'border-amber-300 bg-amber-50 text-amber-700' : ''"
+            >
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+
+          <!-- Active filter chips -->
+          <div v-if="activeFilterCount > 0" class="flex items-center gap-1.5">
+            <button
+              @click="clearFilters"
+              class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-red-600 bg-slate-50 hover:bg-red-50 border border-slate-200 hover:border-red-200 px-3 py-2.5 rounded-xl transition-all cursor-pointer whitespace-nowrap"
+            >
+              <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+
         </div>
       </div>
     </div>
 
-    <!-- Table Card -->
+    <!-- Card Container -->
     <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
 
-      <!-- Table Header Gradient -->
-      <div class="px-6 py-4 bg-gradient-to-r from-[#3d4f7c] to-[#252b3b] border-b border-slate-100">
+      <!-- Gradient Header -->
+      <div class="px-6 py-4 bg-gradient-to-r from-[#3d4f7c] to-[#252b3b]">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="w-1.5 h-8 rounded-full bg-white bg-opacity-20"></div>
-            <h2 class="text-lg font-semibold text-white tracking-tight">Users List</h2>
+            <div class="w-1.5 h-8 rounded-full bg-white/20"></div>
+            <h2 class="text-lg font-semibold text-white tracking-tight">Officials List</h2>
           </div>
         </div>
       </div>
@@ -77,115 +127,97 @@
         <p class="text-sm text-slate-400 font-medium">Loading users...</p>
       </div>
 
-      <!-- Table -->
-      <div v-else class="overflow-x-auto">
-        <table class="w-full">
-          <thead>
-            <tr class="border-b border-slate-100 bg-slate-50/60">
-              <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Name</th>
-              <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Email</th>
-              <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Role</th>
-              <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Contact</th>
-              <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Status</th>
-              <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest w-28">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+      <!-- Cards Grid -->
+      <div v-else class="p-6">
 
-            <!-- Rows -->
-            <tr
-              v-for="(user, index) in paginatedUsers"
-              :key="user.id"
-              class="border-b border-slate-50 hover:bg-[#3d4f7c] hover:bg-opacity-5 transition-colors duration-100 group"
-            >
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-3">
-                  <div
-                    class="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold text-white shadow-sm group-hover:scale-105 transition-transform duration-150 flex-shrink-0"
-                    :style="{ background: avatarBg(fullName(user)) }"
-                  >
-                    {{ initials(fullName(user)) }}
-                  </div>
-                  <p class="text-sm font-semibold text-slate-800">{{ fullName(user) }}</p>
-                </div>
-              </td>
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-2">
-                  <span class="text-sm text-slate-600">{{ user.email ?? "—" }}</span>
-                </div>
-              </td>
-              <td class="px-6 py-4">
-                <span class="text-xs font-semibold px-2.5 py-1 rounded-lg"
-                  style="background:#3d4f7c12; color:#3d4f7c">
-                  {{ user.role?.role_name ?? "—" }}
-                </span>
-              </td>
-              <td class="px-6 py-4">
-                <span v-if="user.information?.contact_number" class="text-sm text-slate-600 inline-flex items-center gap-1.5">
-                  <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                  </svg>
-                  {{ user.information.contact_number }}
-                </span>
-                <span v-else class="text-slate-300 text-sm">—</span>
-              </td>
-              <td class="px-6 py-4">
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold"
-                  :class="user.status?.status ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-600'">
+        <!-- Empty State -->
+        <div v-if="filteredUsers.length === 0" class="flex flex-col items-center justify-center py-20 gap-3">
+          <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center">
+            <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+          </div>
+          <div class="text-center">
+            <p class="text-sm font-bold text-slate-600">No users found</p>
+            <p class="text-xs text-slate-400 mt-0.5">Try adjusting your search or filter criteria</p>
+          </div>
+          <button
+            @click="clearFilters"
+            class="text-xs font-semibold text-[#3d4f7c] bg-[#3d4f7c]/10 hover:bg-[#3d4f7c]/20 border border-[#3d4f7c]/20 px-4 py-2 rounded-xl transition-all cursor-pointer"
+          >
+            Clear Filters
+          </button>
+        </div>
+
+        <!-- Cards -->
+        <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+          <div
+            v-for="user in paginatedUsers"
+            :key="user.id"
+            class="group relative bg-white rounded-2xl border border-slate-200 hover:border-[#3d4f7c]/30 hover:shadow-xl transition-all duration-200 overflow-hidden flex flex-col items-center text-center"
+          >
+            <!-- Photo area -->
+            <div class="w-full bg-slate-50 flex items-end justify-center pb-0 h-[160px] relative overflow-hidden">
+
+              <!-- Subtle background pattern -->
+              <div class="absolute inset-0 opacity-30"
+                style="background-image: radial-gradient(circle at 1px 1px, #e2e8f0 1px, transparent 0); background-size: 20px 20px;">
+              </div>
+
+              <!-- Profile image — centered, fills nicely -->
+              <img
+                src="@/assets/images/icons/profile.png"
+                alt="Profile"
+                class="relative z-10 w-full h-full object-contain absolute inset-0"
+                @error="e => e.target.style.display = 'none'"
+              />
+
+              <!-- Status dot -->
+              <div class="absolute top-3 right-3 z-10">
+                <span
+                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                  :class="user.status?.status ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-amber-50 text-amber-500 border border-amber-200'"
+                >
                   <span class="w-1.5 h-1.5 rounded-full"
-                    :class="user.status?.status ? 'bg-emerald-500' : 'bg-amber-400'"></span>
-                  {{ user.status?.status ? "Active" : "Inactive" }}
+                    :class="user.status?.status ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'">
+                  </span>
+                  {{ user.status?.status ? 'Active' : 'Inactive' }}
                 </span>
-              </td>
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-1">
-                  <button
-                    class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#3d4f7c] bg-opacity-10 text-[#3d4f7c] border border-[#3d4f7c] border-opacity-20 hover:bg-[#3d4f7c] hover:text-white hover:border-[#3d4f7c] hover:shadow-md active:scale-95 transition-all duration-150 cursor-pointer group/btn"
-                    @click="openEditModal(user)"
-                    title="Edit user"
-                  >
-                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="group-hover/btn:scale-110 transition-transform duration-150">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                    </svg>
-                  </button>
-                  <button
-                    class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500 border border-red-200 hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-md hover:shadow-red-200 active:scale-95 transition-all duration-150 cursor-pointer group/btn"
-                    @click="handleDelete(user)"
-                    title="Delete user"
-                  >
-                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="group-hover/btn:scale-110 transition-transform duration-150">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                    </svg>
-                  </button>
-                </div>
-              </td>
-            </tr>
+              </div>
+            </div>
 
-            <!-- Empty State -->
-            <tr v-if="filteredUsers.length === 0">
-              <td colspan="7" class="py-20 text-center">
-                <div class="flex flex-col items-center gap-3">
-                  <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center">
-                    <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
-                  </div>
-                  <div>
-                    <p class="text-sm font-bold text-slate-600">No users found</p>
-                    <p class="text-xs text-slate-400 mt-0.5">Try adjusting your search criteria</p>
-                  </div>
-                  <button
-                    v-if="searchQuery"
-                    @click="searchQuery = ''"
-                    class="text-xs font-semibold text-[#3d4f7c] bg-[#3d4f7c] bg-opacity-10 hover:bg-opacity-20 border border-[#3d4f7c] border-opacity-20 px-4 py-2 rounded-xl transition-all cursor-pointer"
-                  >
-                    Clear Search
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+            <!-- Info area -->
+            <div class="w-full px-4 py-3 border-t border-slate-100 flex flex-col items-center gap-0.5">
+              <p class="text-sm font-bold text-slate-800 leading-tight w-full truncate">{{ fullName(user) }}</p>
+              <p class="text-xs font-semibold text-[#3d4f7c]">{{ user.role?.role_name ?? '—' }}</p>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-2 w-full px-4 pb-4">
+              <button
+                class="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 rounded-xl border active:scale-95 transition-all duration-150 cursor-pointer"
+                style="background:#3d4f7c12; color:#3d4f7c; border-color:#3d4f7c30"
+                @mouseenter="e => { e.currentTarget.style.background='#3d4f7c'; e.currentTarget.style.color='white' }"
+                @mouseleave="e => { e.currentTarget.style.background='#3d4f7c12'; e.currentTarget.style.color='#3d4f7c' }"
+                @click="openEditModal(user)"
+              >
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                Edit
+              </button>
+              <button
+                class="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 rounded-xl bg-red-50 text-red-500 border border-red-100 hover:bg-red-500 hover:text-white hover:border-red-500 active:scale-95 transition-all duration-150 cursor-pointer"
+                @click="handleDelete(user)"
+              >
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Pagination -->
@@ -199,7 +231,7 @@
           <button
             :disabled="currentPage === 1"
             @click="currentPage--"
-            class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed hover:border-[#3d4f7c] hover:text-[#3d4f7c] hover:bg-[#3d4f7c] hover:bg-opacity-5 transition-all cursor-pointer"
+            class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed hover:border-[#3d4f7c] hover:text-[#3d4f7c] hover:bg-[#3d4f7c]/5 transition-all cursor-pointer"
           >
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
@@ -212,7 +244,7 @@
               class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all cursor-pointer"
               :class="page === currentPage
                 ? 'bg-[#3d4f7c] text-white shadow-md'
-                : 'text-slate-500 hover:bg-[#3d4f7c] hover:bg-opacity-5 hover:text-[#3d4f7c] border border-transparent'"
+                : 'text-slate-500 hover:bg-[#3d4f7c]/5 hover:text-[#3d4f7c] border border-transparent'"
             >{{ page }}</button>
             <span
               v-else-if="Math.abs(page - currentPage) === 2"
@@ -222,21 +254,24 @@
           <button
             :disabled="currentPage === totalPages"
             @click="currentPage++"
-            class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed hover:border-[#3d4f7c] hover:text-[#3d4f7c] hover:bg-[#3d4f7c] hover:bg-opacity-5 transition-all cursor-pointer"
+            class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed hover:border-[#3d4f7c] hover:text-[#3d4f7c] hover:bg-[#3d4f7c]/5 transition-all cursor-pointer"
           >
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
             </svg>
           </button>
         </div>
-      </div>
-
-      <div v-else-if="!loading && filteredUsers.length > 0" class="px-6 py-3.5 border-t border-slate-100 bg-slate-50/60">
-        <p class="text-xs text-slate-400 font-mono">
-          Showing <span class="font-medium text-slate-700">{{ filteredUsers.length }}</span> {{ filteredUsers.length === 1 ? 'result' : 'results' }}
-        </p>
+      </div> 
+      <div v-else-if="!loading && filteredUsers.length > 0 && filteredUsers.length <= itemsPerPage" class="px-6 py-3.5 border-t border-slate-100 bg-slate-50/60">
       </div>
     </div>
+
+    <AddUserModal
+      v-if="showAddModal"
+      :roles="roles"
+      @close="showAddModal = false"
+      @saved="handleUserAdded"
+    />
 
     <EditUserModal
       v-if="showEditModal && selectedUser"
@@ -252,16 +287,37 @@
 import { ref, computed, onMounted, watch } from "vue";
 import UserService from "@/services/Admin/UserService";
 import EditUserModal from "@/components/modals/admin/users/EditUserModal.vue";
+import AddUserModal from "@/components/modals/admin/users/AddUserModal.vue";
 import Swal from 'sweetalert2';
 
-const users = ref([]);
-const roles = ref([]);
-const loading = ref(false);
+const users         = ref([]);
+const roles         = ref([]);
+const loading       = ref(false);
 const showEditModal = ref(false);
-const selectedUser = ref(null);
-const searchQuery = ref('');
-const currentPage = ref(1);
-const itemsPerPage = 6;
+const showAddModal  = ref(false);
+const selectedUser  = ref(null);
+const searchQuery   = ref('');
+const currentPage   = ref(1);
+const itemsPerPage  = 8;
+const roleFilter    = ref('');
+const statusFilter  = ref('');
+const sortBy        = ref('name_asc');
+
+const activeFilterCount = computed(() => {
+  let count = 0;
+  if (searchQuery.value)       count++;
+  if (roleFilter.value)        count++;
+  if (statusFilter.value)      count++;
+  if (sortBy.value !== 'name_asc') count++;
+  return count;
+});
+
+function clearFilters() {
+  searchQuery.value  = '';
+  roleFilter.value   = '';
+  statusFilter.value = '';
+  sortBy.value       = 'name_asc';
+}
 
 function fullName(user) {
   const info = user.information;
@@ -276,25 +332,57 @@ function initials(name) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-const PALETTE = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#9333ea','#ea580c'];
+const PALETTE      = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#9333ea','#ea580c'];
+const PALETTE_DARK = ['#1d4ed8','#6d28d9','#047857','#b45309','#b91c1c','#0e7490','#7e22ce','#c2410c'];
+
 function avatarBg(name) {
   if (!name || name === '—') return '#94a3b8';
   let h = 0;
   for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
   return PALETTE[Math.abs(h) % PALETTE.length];
 }
+function avatarBgDark(name) {
+  if (!name || name === '—') return '#64748b';
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+  return PALETTE_DARK[Math.abs(h) % PALETTE_DARK.length];
+}
 
 const filteredUsers = computed(() => {
-  if (!searchQuery.value) return users.value;
-  const q = searchQuery.value.toLowerCase();
-  return users.value.filter(u =>
-    fullName(u).toLowerCase().includes(q) ||
-    u.email?.toLowerCase().includes(q) ||
-    u.information?.contact_number?.includes(q)
-  );
+  let list = [...users.value];
+
+  if (searchQuery.value) {
+    const q = searchQuery.value.toLowerCase();
+    list = list.filter(u =>
+      fullName(u).toLowerCase().includes(q) ||
+      u.email?.toLowerCase().includes(q) ||
+      u.information?.contact_number?.includes(q)
+    );
+  }
+
+  if (roleFilter.value) {
+    list = list.filter(u =>
+      String(u.role?.id) === String(roleFilter.value) ||
+      String(u.role_id)  === String(roleFilter.value)
+    );
+  }
+
+  if (statusFilter.value) {
+    list = list.filter(u =>
+      statusFilter.value === 'active' ? !!u.status?.status : !u.status?.status
+    );
+  }
+
+  list.sort((a, b) => {
+    if (sortBy.value === 'name_desc') return fullName(b).localeCompare(fullName(a));
+    if (sortBy.value === 'role')      return (a.role?.role_name ?? '').localeCompare(b.role?.role_name ?? '');
+    return fullName(a).localeCompare(fullName(b));
+  });
+
+  return list;
 });
 
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredUsers.value.length / itemsPerPage)));
+const totalPages     = computed(() => Math.max(1, Math.ceil(filteredUsers.value.length / itemsPerPage)));
 const paginatedUsers = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;
   return filteredUsers.value.slice(start, start + itemsPerPage);
@@ -304,46 +392,33 @@ async function fetchUsers() {
   loading.value = true;
   try {
     users.value = await UserService.getUsers();
-  } catch (error) {
-    console.error("Failed to fetch users:", error);
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'Failed to load users.',
-      confirmButtonColor: '#3d4f7c'
-    });
+  } catch {
+    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load users.', confirmButtonColor: '#3d4f7c' });
   } finally {
     loading.value = false;
   }
 }
 
 async function fetchRoles() {
-  try {
-    roles.value = await UserService.getRoles();
-  } catch (error) {
-    console.error("Failed to fetch roles:", error);
-  }
+  try { roles.value = await UserService.getRoles(); } catch {}
 }
 
 function openEditModal(user) {
-  selectedUser.value = user;
+  selectedUser.value  = user;
   showEditModal.value = true;
 }
 
 async function handleUserUpdated() {
   showEditModal.value = false;
-  selectedUser.value = null;
-  
+  selectedUser.value  = null;
   loading.value = true;
-  
-  await Swal.fire({
-    icon: 'success',
-    title: 'Success!',
-    text: 'User has been updated successfully.',
-    timer: 1500,
-    showConfirmButton: false
-  });
-  
+  await Swal.fire({ icon: 'success', title: 'Success!', text: 'User has been updated successfully.', timer: 1500, showConfirmButton: false });
+  await fetchUsers();
+}
+
+async function handleUserAdded() {
+  showAddModal.value = false;
+  await Swal.fire({ icon: 'success', title: 'Success!', text: 'Official has been added successfully.', timer: 1500, showConfirmButton: false });
   await fetchUsers();
 }
 
@@ -351,7 +426,7 @@ async function handleDelete(user) {
   const result = await Swal.fire({
     title: 'Change User Role?',
     html: `Are you sure you want to change <strong>${fullName(user)}</strong> to Resident?<br><br>
-           <span class="text-xs text-slate-500">This will remove them from the users list.</span>`,
+           <span class="text-xs text-slate-500">This will remove them from the officials list.</span>`,
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#d33',
@@ -361,41 +436,18 @@ async function handleDelete(user) {
   });
 
   if (!result.isConfirmed) return;
-
   loading.value = true;
-
   try {
     await UserService.deleteUser(user.id);
-    
-    await Swal.fire({
-      icon: 'success',
-      title: 'Success!',
-      text: 'User role has been changed to Resident.',
-      timer: 2000,
-      showConfirmButton: false
-    });
-    
+    await Swal.fire({ icon: 'success', title: 'Success!', text: 'User role has been changed to Resident.', timer: 2000, showConfirmButton: false });
     await fetchUsers();
-    
-  } catch (error) {
-    console.error("Failed to change user role:", error);
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'Failed to change user role. Please try again.',
-      confirmButtonColor: '#3d4f7c'
-    });
+  } catch {
+    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to change user role. Please try again.', confirmButtonColor: '#3d4f7c' });
   } finally {
     loading.value = false;
   }
 }
 
-watch(searchQuery, () => { 
-  currentPage.value = 1; 
-});
-
-onMounted(() => { 
-  fetchUsers(); 
-  fetchRoles(); 
-});
+watch([searchQuery, roleFilter, statusFilter, sortBy], () => { currentPage.value = 1; });
+onMounted(() => { fetchUsers(); fetchRoles(); });
 </script>
