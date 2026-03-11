@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Role;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
@@ -37,39 +38,66 @@ class UserController extends Controller
             'role_id' => 'required|exists:roles,id',
         ]);
 
-        $user->update([
-            'email'   => $request->email,
-            'role_id' => $request->role_id,
+        return DB::transaction(function () use ($request, $user) {
+            $user->update([
+                'email'   => $request->email,
+                'role_id' => $request->role_id,
+            ]);
+
+            return response()->json([
+                'message' => 'User updated successfully.',
+                'user'    => $user->load(['information', 'status', 'role']),
+            ]);
+        });
+    }
+
+    public function appoint(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'role_id' => ['required', 'exists:roles,id', function ($attr, $value, $fail) {
+                $role = Role::find($value);
+                if ($role && $role->role_name === 'Resident') {
+                    $fail('Cannot appoint a user with the Resident role.');
+                }
+            }],
         ]);
 
-        return response()->json([
-            'message' => 'User updated successfully.',
-            'user'    => $user->load(['information', 'status', 'role']),
-        ]);
+        return DB::transaction(function () use ($request) {
+            $user = User::findOrFail($request->user_id);
+            $user->update(['role_id' => $request->role_id]);
+
+            return response()->json([
+                'message' => 'User appointed successfully.',
+                'user'    => $user->load(['information', 'status', 'role']),
+            ]);
+        });
     }
 
     public function resetPassword($id)
     {
         $user = User::findOrFail($id);
-        $user->update(['password' => Hash::make('adminadmin')]);
 
-        return response()->json(['message' => 'Password reset to default successfully.']);
+        return DB::transaction(function () use ($user) {
+            $user->update(['password' => Hash::make('adminadmin')]);
+            return response()->json(['message' => 'Password reset to default successfully.']);
+        });
     }
 
     public function destroy($id)
     {
         $user = User::findOrFail($id);
-        
-        // Get "Resident" role
-        $residentRole = Role::where('role_name', 'Resident')->first();
-        
-        if (!$residentRole) {
-            return response()->json(['message' => 'Resident role not found.'], 404);
-        }
 
-        // Change user role to Resident instead of deleting
-        $user->update(['role_id' => $residentRole->id]);
+        return DB::transaction(function () use ($user) {
+            $residentRole = Role::where('role_name', 'Resident')->first();
 
-        return response()->json(['message' => 'User role changed to Resident successfully.']);
+            if (!$residentRole) {
+                return response()->json(['message' => 'Resident role not found.'], 404);
+            }
+
+            $user->update(['role_id' => $residentRole->id]);
+
+            return response()->json(['message' => 'User role changed to Resident successfully.']);
+        });
     }
 }

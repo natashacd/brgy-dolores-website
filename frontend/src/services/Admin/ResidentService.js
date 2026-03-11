@@ -11,8 +11,12 @@ const ResidentService = {
     return data;
   },
 
-  async createResident(payload) {
-    const { data } = await api.post("/api/residents", payload);
+  async createResident(formData) {
+    const { data } = await api.post("/api/residents", formData, {
+      headers: {
+        "Content-Type": undefined,
+      },
+    });
     return data;
   },
 

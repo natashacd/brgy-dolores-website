@@ -11,6 +11,16 @@ const UserService = {
     return data;
   },
 
+  async getResidents() {
+    const { data } = await api.get("/api/residents");
+    return data;
+  },
+
+  async appointOfficial(payload) {
+    const { data } = await api.post("/api/users/appoint", payload);
+    return data;
+  },
+
   async updateUser(id, payload) {
     const { data } = await api.put(`/api/users/${id}`, payload);
     return data;
