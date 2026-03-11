@@ -118,7 +118,7 @@
             <!-- Hidden file input -->
             <input ref="fileInput" @change="handleImageUpload" type="file" accept="image/*" class="hidden" />
             
-            <span v-if="errors.upload_image" class="text-[10px] text-red-400">{{ errors.upload_image }}</span>
+            <span v-if="errors.image" class="text-[10px] text-red-400">{{ errors.image }}</span>
           </div>
         </div>
 
@@ -329,7 +329,7 @@
 
           <div class="grid grid-cols-2 gap-3">
             <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-slate-600">Latitude <span class="text-red-400">*</span></label>
+              <label class="text-xs font-semiball text-slate-600">Latitude <span class="text-red-400">*</span></label>
               <input v-model="form.latitude" type="text" placeholder="e.g., 15.4899"
                 class="border rounded-xl px-3 py-2 text-sm focus:outline-none transition-all bg-slate-50 focus:bg-white placeholder-slate-300"
                 :class="errors.latitude ? 'border-red-300' : 'border-slate-200 focus:border-[#3d4f7c]/50'"/>
@@ -376,7 +376,7 @@
             </div>
           </div>
 
-          <!-- Summary card -->
+          <!-- Summary card with image -->
           <div class="mt-2 p-4 bg-[#3d4f7c]/5 border border-[#3d4f7c]/15 rounded-xl">
             <p class="text-xs font-bold text-[#3d4f7c] mb-3 flex items-center gap-1.5">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -384,6 +384,12 @@
               </svg>
               Review Summary
             </p>
+            
+            <!-- Image preview in summary -->
+            <div v-if="imagePreview" class="mb-3 flex justify-center">
+              <img :src="imagePreview" class="w-20 h-20 rounded-lg object-cover shadow-sm border border-slate-200" alt="Profile preview" />
+            </div>
+            
             <div class="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs">
               <div class="flex justify-between">
                 <span class="text-slate-400">Full Name</span>
@@ -539,14 +545,14 @@ function handleImageUpload(event) {
   if (file) {
     // Check file size (max 4MB)
     if (file.size > 4 * 1024 * 1024) {
-      errors.value.upload_image = 'File size must be less than 4MB';
+      errors.value.image = 'File size must be less than 4MB';
       return;
     }
     
     // Check file type
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
     if (!validTypes.includes(file.type)) {
-      errors.value.upload_image = 'Only JPG, PNG or GIF files are allowed';
+      errors.value.image = 'Only JPG, PNG or GIF files are allowed';
       return;
     }
     
@@ -557,7 +563,7 @@ function handleImageUpload(event) {
     const reader = new FileReader();
     reader.onload = (e) => {
       imagePreview.value = e.target.result;
-      errors.value.upload_image = '';
+      errors.value.image = '';
     };
     reader.readAsDataURL(file);
   }
@@ -576,7 +582,7 @@ function isStepValid(step) {
   const f = form.value;
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email);
   
-  if (step === 1) return !!imageFile.value; // Featured Image is required
+  if (step === 1) return !!imageFile.value; // Profile Image is required
   if (step === 2) return !!(f.first_name && f.last_name && f.email && emailValid && f.contact_number && f.sex && f.birth_place && f.birth_date && f.civil_status && f.nationality);
   if (step === 3) return !!(f.emergency_contact_person && f.emergency_contact_number && f.emergency_contact_relationship);
   if (step === 4) return !!(f.house_no && f.sitio && f.latitude && f.longitude);
@@ -607,7 +613,7 @@ async function submit() {
   const newErrors = {};
 
   // Validate image
-  if (!imageFile.value) newErrors.upload_image = 'Featured image is required.';
+  if (!imageFile.value) newErrors.image = 'Profile image is required.';
 
   if (!f.first_name)   newErrors.first_name   = 'First name is required.';
   if (!f.last_name)    newErrors.last_name    = 'Last name is required.';
@@ -648,13 +654,30 @@ async function submit() {
     }
   });
   
-  // Append formatted phone numbers
+  // Append formatted phone numbers (remove spaces)
   formData.set('contact_number', f.contact_number.replace(/\s/g, ''));
   formData.set('emergency_contact_number', f.emergency_contact_number.replace(/\s/g, ''));
   
   // Append image file
   if (imageFile.value) {
     formData.append('image', imageFile.value);
+    console.log('📸 Image file added to FormData:', {
+      name: imageFile.value.name,
+      size: imageFile.value.size,
+      type: imageFile.value.type
+    });
+  } else {
+    console.error('❌ No image file found!');
+  }
+
+  // Debug: Log all FormData entries
+  console.log('📋 FormData contents:');
+  for (let [key, value] of formData.entries()) {
+    if (value instanceof File) {
+      console.log(`  ${key}:`, `File(${value.name}, ${value.size} bytes)`);
+    } else {
+      console.log(`  ${key}:`, value);
+    }
   }
 
   try {

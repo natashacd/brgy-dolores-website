@@ -15,36 +15,9 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->midd
 Route::get('/visitor-count', [VisitorCounterController::class, 'getSimpleCount']);
 Route::post('/visitor/track', [VisitorCounterController::class, 'trackVisitor']);
 
-// Route::prefix('admin/service-requests')->group(function () {
-//     Route::get('/staff', [ServiceRequestController::class, 'getStaff']);
-//     Route::get('/', [ServiceRequestController::class, 'index']);
-//     Route::get('/{id}', [ServiceRequestController::class, 'show']);
-//     Route::put('/{id}/reassign', [ServiceRequestController::class, 'reassign']);
-//     Route::put('/{id}/approve', [ServiceRequestController::class, 'approve']);
-//     Route::put('/{id}/cancel', [ServiceRequestController::class, 'cancel']);
-// });
-
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
-    });
-
-    Route::prefix('admin/service-requests')->group(function () {
-        Route::get('/staff', [ServiceRequestController::class, 'getStaff']);
-        Route::get('/', [ServiceRequestController::class, 'index']);
-        Route::get('/{id}', [ServiceRequestController::class, 'show']);
-        Route::put('/{id}/reassign', [ServiceRequestController::class, 'reassign']);
-        Route::put('/{id}/approve', [ServiceRequestController::class, 'approve']);
-        Route::put('/{id}/cancel', [ServiceRequestController::class, 'cancel']);
-    });
-
-    Route::prefix('residents')->group(function () {
-        Route::get('/', [ResidentController::class, 'index']);
-        Route::get('/roles', [ResidentController::class, 'roles']);
-        Route::post('/', [ResidentController::class, 'store']);
-        Route::put('/{id}', [ResidentController::class, 'update']);
-        Route::patch('/{id}/reset-password', [ResidentController::class, 'resetPassword']);
-        Route::delete('/{id}', [ResidentController::class, 'destroy']);
     });
 
     // User management routes
@@ -54,6 +27,25 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/{id}', [UserController::class, 'update']);
         Route::patch('/{id}/reset-password', [UserController::class, 'resetPassword']);
         Route::delete('/{id}', [UserController::class, 'destroy']);
+    });
+
+    // Resident Management Routes
+    Route::prefix('residents')->group(function () {
+        Route::get('/', [ResidentController::class, 'index']);
+        Route::get('/roles', [ResidentController::class, 'roles']);
+        Route::post('/', [ResidentController::class, 'store']);
+        Route::put('/{id}', [ResidentController::class, 'update']);
+        Route::patch('/{id}/reset-password', [ResidentController::class, 'resetPassword']);
+        Route::delete('/{id}', [ResidentController::class, 'destroy']);
+    });
+
+    Route::prefix('admin/service-requests')->group(function () {
+        Route::get('/staff', [ServiceRequestController::class, 'getStaff']);
+        Route::get('/', [ServiceRequestController::class, 'index']);
+        Route::get('/{id}', [ServiceRequestController::class, 'show']);
+        Route::put('/{id}/reassign', [ServiceRequestController::class, 'reassign']);
+        Route::put('/{id}/approve', [ServiceRequestController::class, 'approve']);
+        Route::put('/{id}/cancel', [ServiceRequestController::class, 'cancel']);
     });
 
     // Admin API routes
