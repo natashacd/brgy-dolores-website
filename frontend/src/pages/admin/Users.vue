@@ -135,7 +135,7 @@
           @click="openViewModal(user)"
         >
           <!-- Photo -->
-          <div class="w-full bg-slate-50 relative overflow-hidden" style="padding-top: 75%;">
+          <div class="w-full bg-slate-50 relative overflow-hidden" style="padding-top: 60%;">
             <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 1px 1px, #e2e8f0 1px, transparent 0); background-size: 16px 16px;"></div>
             <img
               v-if="user.information?.image_path"
@@ -160,11 +160,12 @@
               </span>
             </div>
           </div>
-
           <!-- Info -->
-          <div class="px-3 py-2.5 border-t border-slate-100 flex-1 flex flex-col">
-            <p class="text-xs font-bold text-slate-800 leading-tight truncate">{{ fullName(user) }}</p>
-            <p class="text-[10px] font-semibold text-[#3d4f7c] mt-0.5 truncate">{{ user.role?.role_name ?? '—' }}</p>
+          <div class="px-3 py-3 border-t border-slate-100 flex-1 flex flex-col items-center text-center">
+            <p class="text-m font-bold text-slate-800 leading-tight line-clamp-2">{{ fullName(user) }}</p>
+            <span class="mt-1.5 inline-block text-[9px] font-semibold px-2 py-0.5 rounded-full" style="background:#3d4f7c12; color:#3d4f7c;">
+              {{ user.role?.role_name ?? '—' }}
+            </span>
           </div>
 
           <!-- Remove button -->

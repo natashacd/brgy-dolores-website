@@ -889,10 +889,6 @@ function downloadDocument(req) {
 async function fetchRequests() {
   loading.value = true
   try {
-    // const data = await ServiceRequestService.getApprovedRequests()
-    // requests.value = Array.isArray(data) ? data : (data.data ?? [])
-    
-    // Using sample data for now
     setTimeout(() => {
       requests.value = sampleRequests
       loading.value = false
@@ -919,5 +915,6 @@ onMounted(() => {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  line-clamp: 2;
 }
 </style>
