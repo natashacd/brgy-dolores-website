@@ -80,10 +80,10 @@
               <option value="inactive">Inactive</option>
             </select>
           </div>
-          <div v-if="activeFilterCount > 0" class="flex items-center gap-1.5">
+          <div v-if="activeFilterCount > 0">
             <button
               @click="clearFilters"
-              class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-red-600 bg-slate-50 hover:bg-red-50 border border-slate-200 hover:border-red-200 px-3 py-2.5 rounded-xl transition-all cursor-pointer whitespace-nowrap"
+              class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-red-600 bg-slate-50 hover:bg-red-50 border border-slate-200 hover:border-red-200 px-3 py-2.5 rounded-xl transition-all cursor-pointer"
             >
               <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -94,28 +94,23 @@
       </div>
     </div>
 
-    <!-- Org Tree Container -->
+    <!-- Cards Container -->
     <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
 
       <!-- Gradient Header -->
       <div class="px-6 py-4 bg-gradient-to-r from-[#3d4f7c] to-[#252b3b]">
-        <div class="flex items-center gap-3">
-          <div class="w-1.5 h-8 rounded-full bg-white/20"></div>
-          <h2 class="text-lg font-semibold text-white tracking-tight">Officials Organizational Chart</h2>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-1.5 h-8 rounded-full bg-white/20"></div>
+            <h2 class="text-lg font-semibold text-white tracking-tight">Barangay Officials</h2>
+          </div>
+          <span class="text-xs font-semibold text-white/60 bg-white/10 px-3 py-1 rounded-full">
+            {{ filteredUsers.length }} {{ filteredUsers.length === 1 ? 'official' : 'officials' }}
+          </span>
         </div>
       </div>
-
-      <!-- Loading -->
-      <div v-if="loading" class="flex flex-col items-center justify-center gap-4 py-24">
-        <div class="relative w-11 h-11">
-          <div class="absolute inset-0 border-[3px] border-slate-100 rounded-full"></div>
-          <div class="absolute inset-0 border-[3px] border-[#3d4f7c] border-t-transparent rounded-full animate-spin"></div>
-        </div>
-        <p class="text-sm text-slate-400 font-medium">Loading officials...</p>
-      </div>
-
-      <!-- Org Tree Body -->
-      <div v-else class="p-8 overflow-x-auto">
+      <!-- Grid Body -->
+      <div class="p-6">
 
         <!-- Empty State -->
         <div v-if="filteredUsers.length === 0" class="flex flex-col items-center justify-center py-20 gap-3">
@@ -131,95 +126,64 @@
           </button>
         </div>
 
-        <!-- Org Tree -->
-        <div v-else class="flex flex-col items-center gap-0 min-w-max mx-auto pb-4">
-          <template v-for="(tier, tierIndex) in orgTiers" :key="tier.label">
-
-            <!-- Connectors between tiers -->
-            <div v-if="tierIndex > 0 && tier.users.length > 0" class="flex flex-col items-center w-full">
-              <div class="w-px h-8 bg-slate-300"></div>
-              <div v-if="tier.users.length > 1" class="relative flex items-start justify-center" :style="{ width: (tier.users.length * 210 + (tier.users.length - 1) * 32) + 'px' }">
-                <div class="absolute top-0 left-[105px] right-[105px] h-px bg-slate-300"></div>
-              </div>
-              <div v-if="tier.users.length > 1" class="flex gap-8">
-                <div v-for="u in tier.users" :key="'drop-'+u.id" class="w-[210px] flex justify-center">
-                  <div class="w-px h-6 bg-slate-300"></div>
-                </div>
-              </div>
-              <div v-else class="w-px h-6 bg-slate-300"></div>
-            </div>
-
-            <!-- Tier label -->
-            <div class="mb-4 mt-1">
-              <span class="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full text-[#3d4f7c] border border-[#3d4f7c]/20" style="background:#3d4f7c10">
-                {{ tier.label }}
+      <!-- Cards Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div
+          v-for="user in filteredUsers"
+          :key="user.id"
+          class="bg-white rounded-2xl border border-slate-200 hover:border-[#3d4f7c]/40 hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col cursor-pointer group"
+          @click="openViewModal(user)"
+        >
+          <!-- Photo -->
+          <div class="w-full bg-slate-50 relative overflow-hidden" style="padding-top: 75%;">
+            <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 1px 1px, #e2e8f0 1px, transparent 0); background-size: 16px 16px;"></div>
+            <img
+              v-if="user.information?.image_path"
+              :src="`${baseUrl}/storage/${user.information.image_path}`"
+              alt="Profile"
+              class="absolute inset-0 w-full h-full object-cover object-top z-10 group-hover:scale-105 transition-transform duration-300"
+              @error="e => e.target.style.display = 'none'"
+            />
+            <img
+              v-else
+              src="@/assets/images/icons/profile.png"
+              alt="Profile"
+              class="absolute inset-0 w-full h-full object-contain z-10 p-4"
+            />
+            <div class="absolute top-2 right-2 z-20">
+              <span
+                class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-semibold"
+                :class="user.status?.status ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-amber-50 text-amber-500 border border-amber-200'"
+              >
+                <span class="w-1 h-1 rounded-full" :class="user.status?.status ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'"></span>
+                {{ user.status?.status ? 'Active' : 'Inactive' }}
               </span>
             </div>
+          </div>
 
-            <!-- Cards row -->
-            <div class="flex items-start justify-center gap-8">
-              <div v-for="user in tier.users" :key="user.id" class="w-[300px] flex flex-col items-center">
+          <!-- Info -->
+          <div class="px-3 py-2.5 border-t border-slate-100 flex-1 flex flex-col">
+            <p class="text-xs font-bold text-slate-800 leading-tight truncate">{{ fullName(user) }}</p>
+            <p class="text-[10px] font-semibold text-[#3d4f7c] mt-0.5 truncate">{{ user.role?.role_name ?? '—' }}</p>
+          </div>
 
-                <!-- Card -->
-                <div class="w-full bg-white rounded-2xl border border-slate-200 hover:border-[#3d4f7c]/40 hover:shadow-xl transition-all duration-200 overflow-hidden flex flex-col items-center text-center group"
-                  @click="openViewModal(user)"
-                  >
-                  <!-- Photo area -->
-                  <div class="w-full bg-slate-50 h-[160px] relative overflow-hidden">
-                    <div class="absolute inset-0 opacity-30" style="background-image: radial-gradient(circle at 1px 1px, #e2e8f0 1px, transparent 0); background-size: 20px 20px;"></div>
-                    <img
-                      v-if="user.information?.image_path"
-                      :src="`${baseUrl}/storage/${user.information.image_path}`"
-                      alt="Profile"
-                      class="absolute inset-0 w-full h-full object-cover z-10"
-                      @error="e => e.target.style.display = 'none'"
-                    />
-                    <img
-                      v-else
-                      src="@/assets/images/icons/profile.png"
-                      alt="Profile"
-                      class="absolute inset-0 w-full h-full object-contain z-10"
-                    />
-                    <!-- Status badge -->
-                    <div class="absolute top-2 right-2 z-20">
-                      <span
-                        class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-semibold"
-                        :class="user.status?.status ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-amber-50 text-amber-500 border border-amber-200'"
-                      >
-                        <span class="w-1 h-1 rounded-full" :class="user.status?.status ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'"></span>
-                        {{ user.status?.status ? 'Active' : 'Inactive' }}
-                      </span>
-                    </div>
-                  </div>
-
-                  <!-- Info -->
-                  <div class="w-full px-4 py-3 border-t border-slate-100">
-                    <p class="text-sm font-bold text-slate-800 leading-tight truncate w-full">{{ fullName(user) }}</p>
-                    <p class="text-xs font-semibold text-[#3d4f7c] mt-0.5 truncate">{{ user.role?.role_name ?? '—' }}</p>
-                  </div>
-
-                  <!-- Remove only -->
-                  <div class="w-full px-4 pb-4">
-                    <button
-                      class="w-full flex items-center justify-center gap-1.5 text-xs font-semibold py-2 rounded-xl bg-red-50 text-red-500 border border-red-100 hover:bg-red-500 hover:text-white hover:border-red-500 active:scale-95 transition-all duration-150 cursor-pointer"
-                      @click.stop="handleDelete(user)"
-                    >
-                      <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                      </svg>
-                      Remove
-                    </button>
-                  </div>
-
-                </div>
-              </div>
-            </div>
-
-          </template>
+          <!-- Remove button -->
+          <div class="px-3 pb-3">
+            <button
+              class="w-full flex items-center justify-center gap-1 text-[10px] font-semibold py-1.5 rounded-lg bg-red-50 text-red-500 border border-red-100 hover:bg-red-500 hover:text-white hover:border-red-500 active:scale-95 transition-all duration-150 cursor-pointer"
+              @click.stop="handleDelete(user)"
+            >
+              <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+              Remove
+            </button>
+          </div>
         </div>
-
       </div>
-    </div>
+
+            </div>
+          </div>
 
     <AddUserModal
       v-if="showAddModal"
@@ -236,11 +200,11 @@
       @saved="handleUserUpdated"
     />
 
-  <ViewUserModal
-    v-if="showViewModal && viewUser"
-    :user="viewUser"
-    @close="showViewModal = false"
-/>
+    <ViewUserModal
+      v-if="showViewModal && viewUser"
+      :user="viewUser"
+      @close="showViewModal = false"
+    />
   </div>
 </template>
 
@@ -252,9 +216,9 @@ import AddUserModal from "@/components/modals/admin/users/AddUserModal.vue";
 import ViewUserModal from "@/components/modals/admin/users/ViewUserModal.vue";
 import Swal from 'sweetalert2';
 
-const baseUrl = import.meta.env.VITE_API_URL
+const baseUrl = import.meta.env.VITE_API_URL;
 
-// ── Module-level cache (persists across route changes) ────────────
+// ── Module-level cache ────────────────────────────────────────────
 const _users  = ref([]);
 const _roles  = ref([]);
 const _loaded = ref(false);
@@ -267,38 +231,20 @@ const showEditModal = ref(false);
 const showAddModal  = ref(false);
 const selectedUser  = ref(null);
 const searchQuery   = ref('');
-const currentPage   = ref(1);
-const itemsPerPage  = 8;
 const roleFilter    = ref('');
 const statusFilter  = ref('');
 const sortBy        = ref('name_asc');
 const showViewModal = ref(false);
 const viewUser      = ref(null);
 
-function openViewModal(user) {
-  viewUser.value      = user;
-  showViewModal.value = true;
-}
-
-const ROLE_PRIORITY = [
-  'Punong Barangay',
-  'Barangay Kagawad',
-  'SK Chairman',
-  'Barangay Secretary',
-  'Barangay Treasurer',
-  'Barangay Staff',
-  'Barangay Health Worker',
-  'Lupon Member',
-  'Resident',
-];
 
 const activeFilterCount = computed(() => {
-  let count = 0;
-  if (searchQuery.value) count++;
-  if (roleFilter.value) count++;
-  if (statusFilter.value) count++;
-  if (sortBy.value !== 'name_asc') count++;
-  return count;
+  let c = 0;
+  if (searchQuery.value) c++;
+  if (roleFilter.value) c++;
+  if (statusFilter.value) c++;
+  if (sortBy.value !== 'name_asc') c++;
+  return c;
 });
 
 function clearFilters() {
@@ -310,17 +256,13 @@ function clearFilters() {
 
 function fullName(user) {
   const info = user.information;
-  if (!info) return "—";
-  return [info.first_name, info.middle_name, info.last_name].filter(Boolean).join(" ");
+  if (!info) return '—';
+  return [info.first_name, info.middle_name, info.last_name].filter(Boolean).join(' ');
 }
 
-const PALETTE = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#9333ea','#ea580c'];
-
-function avatarBg(name) {
-  if (!name || name === '—') return '#94a3b8';
-  let h = 0;
-  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
-  return PALETTE[Math.abs(h) % PALETTE.length];
+function openViewModal(user) {
+  viewUser.value      = user;
+  showViewModal.value = true;
 }
 
 const filteredUsers = computed(() => {
@@ -348,28 +290,15 @@ const filteredUsers = computed(() => {
 });
 
 const orgTiers = computed(() => {
-  const list = filteredUsers.value;
   const groups = {};
-  list.forEach(u => {
-    const roleName = u.role?.role_name ?? 'Other';
-    if (!groups[roleName]) groups[roleName] = [];
-    groups[roleName].push(u);
+  filteredUsers.value.forEach(u => {
+    const name = u.role?.role_name ?? 'Other';
+    if (!groups[name]) groups[name] = [];
+    groups[name].push(u);
   });
-  const sortedKeys = Object.keys(groups).sort((a, b) => {
-    const ai = ROLE_PRIORITY.indexOf(a);
-    const bi = ROLE_PRIORITY.indexOf(b);
-    if (ai === -1 && bi === -1) return a.localeCompare(b);
-    if (ai === -1) return 1;
-    if (bi === -1) return -1;
-    return ai - bi;
-  });
-  return sortedKeys.map(label => ({ label, users: groups[label] }));
-});
-
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredUsers.value.length / itemsPerPage)));
-const paginatedUsers = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage;
-  return filteredUsers.value.slice(start, start + itemsPerPage);
+  return Object.keys(groups)
+    .sort((a, b) => a.localeCompare(b))
+    .map(label => ({ label, users: groups[label] }));
 });
 
 async function fetchUsers() {
@@ -397,7 +326,6 @@ function openEditModal(user) {
 async function handleUserUpdated() {
   showEditModal.value = false;
   selectedUser.value  = null;
-  loading.value = true;
   await Swal.fire({ icon: 'success', title: 'Success!', text: 'User has been updated successfully.', timer: 1500, showConfirmButton: false });
   await fetchUsers();
 }
@@ -433,7 +361,7 @@ async function handleDelete(user) {
   }
 }
 
-watch([searchQuery, roleFilter, statusFilter, sortBy], () => { currentPage.value = 1; });
+watch([searchQuery, roleFilter, statusFilter, sortBy], () => {});
 onMounted(() => {
   if (!_loaded.value) {
     fetchUsers();

@@ -205,7 +205,6 @@ const showPassword = ref(false);
 const isLoading = ref(false);
 
 const handleLogin = async () => {
-  // 1. Validate empty fields
   if (!form.email || !form.password) {
     Swal.fire({
       icon: "warning",
@@ -219,7 +218,6 @@ const handleLogin = async () => {
 
   isLoading.value = true;
 
-  // 2. Loading spinner
   Swal.fire({
     title: "Signing in...",
     text: "Please wait",
@@ -233,7 +231,11 @@ const handleLogin = async () => {
     const data = await authService.login(form);
     const { first_name, last_name, role } = data.user;
 
-    // 3. Success
+
+    localStorage.setItem('auth_token', data.token || 'authenticated'); // Make sure to set auth_token!
+    localStorage.setItem('user_role', role.toLowerCase());
+    localStorage.setItem('user_name', `${first_name} ${last_name}`);
+
     Swal.fire({
       icon: "success",
       title: "Login Successful!",
@@ -245,22 +247,24 @@ const handleLogin = async () => {
         </span>
       `,
       showConfirmButton: false,
-      timer: 2000,
+      timer: 1000,
       timerProgressBar: true,
     });
 
-    // 🔴 REDIRECT TO ADMIN DASHBOARD
-    router.push('/admin');
+    if (role.toLowerCase() === 'resident') {
+      router.push({ name: 'resident.dashboard' });
+    } else {
+      router.push({ name: 'admin.dashboard' });
+    }
 
   } catch (err) {
-    // 4. Error
     Swal.fire({
       icon: "error",
       title: "Login Failed",
       text:
         err.response?.data?.message ?? "Invalid credentials. Please try again.",
       showConfirmButton: false,
-      timer: 2000,
+      timer: 1000,
     });
   } finally {
     isLoading.value = false;

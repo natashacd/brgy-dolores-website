@@ -61,7 +61,9 @@
             <option value="">All Status</option>
             <option value="pending">Pending</option>
             <option value="processing">Processing</option>
+            <option value="approved">Approved</option>
             <option value="completed">Completed</option>
+            <option value="rejected">Rejected</option>
             <option value="cancelled">Cancelled</option>
           </select>
           <select v-model="filters.type"
@@ -197,35 +199,6 @@
                       <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                     </svg>
                   </button>
-
-                  <!-- Reassign -->
-                  <button @click="openReassignModal(req)"
-                    class="w-8 h-8 flex items-center justify-center rounded-lg bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-500 hover:text-white hover:border-amber-500 hover:shadow-md active:scale-95 transition-all duration-150 cursor-pointer"
-                    title="Reassign">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                    </svg>
-                  </button>
-
-                  <!-- Approve (not completed/cancelled) -->
-                  <button v-if="req.status !== 'completed' && req.status !== 'cancelled'"
-                    @click="confirmApprove(req)"
-                    class="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 hover:shadow-md active:scale-95 transition-all duration-150 cursor-pointer"
-                    title="Approve / Complete">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                    </svg>
-                  </button>
-
-                  <!-- Cancel (not completed/cancelled) -->
-                  <button v-if="req.status !== 'completed' && req.status !== 'cancelled'"
-                    @click="confirmCancel(req)"
-                    class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500 border border-red-200 hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-md active:scale-95 transition-all duration-150 cursor-pointer"
-                    title="Cancel">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                  </button>
                 </div>
               </td>
             </tr>
@@ -292,69 +265,314 @@
       </div>
     </div>
 
-    <!-- ── View Details Modal ── -->
+    <!-- ── View Details Modal with Resident Info and Image ── -->
     <Transition name="modal">
       <div v-if="showViewModal" class="fixed inset-0 z-50 overflow-y-auto">
         <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="showViewModal = false"></div>
         <div class="flex min-h-full items-center justify-center p-4">
-          <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg">
-            <!-- Header -->
-            <div class="px-6 py-4 rounded-t-2xl bg-gradient-to-r from-[#3d4f7c] to-[#252b3b] flex items-center justify-between">
-              <h3 class="text-base font-semibold text-white">Request Details</h3>
-              <button @click="showViewModal = false" class="text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-lg p-1.5 transition-all cursor-pointer">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl">
+            <!-- Header - Plain -->
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-1.5 h-8 rounded-full bg-[#3d4f7c]"></div>
+                <h3 class="text-base font-semibold text-slate-800">Request Details</h3>
+                <span class="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded-full font-mono">#SR-{{ selectedRequest ? String(selectedRequest.id).padStart(4, '0') : '' }}</span>
+              </div>
+              <button @click="showViewModal = false" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
               </button>
             </div>
+            
             <!-- Body -->
-            <div v-if="selectedRequest" class="px-6 py-5 space-y-4">
-              <div class="flex items-center gap-3 pb-4 border-b border-slate-100">
-                <div class="w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold text-white shadow"
-                  :style="{ background: getAvatarColor(selectedRequest.resident_name) }">
-                  {{ getInitials(selectedRequest.resident_name) }}
-                </div>
-                <div>
-                  <p class="font-bold text-slate-800">{{ selectedRequest.resident_name }}</p>
-                  <p class="text-xs text-slate-400">{{ selectedRequest.resident_email }}</p>
-                </div>
+            <div v-if="selectedRequest" class="px-6 py-5 max-h-[70vh] overflow-y-auto scrollbar-thin">
+              
+              <!-- Status Banner -->
+              <div class="mb-5 flex items-center justify-between bg-slate-50 p-3 rounded-xl">
                 <span :class="statusBadge(selectedRequest.status)"
-                  class="ml-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold">
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold">
+                  <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                      :class="statusDot(selectedRequest.status)"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2"
+                      :class="statusDotSolid(selectedRequest.status)"></span>
+                  </span>
                   {{ formatStatus(selectedRequest.status) }}
                 </span>
+                <span class="text-xs text-slate-500">
+                  <span class="font-medium">Submitted:</span> {{ formatDate(selectedRequest.created_at) }}
+                </span>
               </div>
-              <div class="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold mb-1">Request ID</p>
-                  <p class="font-mono text-slate-700">#SR-{{ String(selectedRequest.id).padStart(4, '0') }}</p>
+
+              <!-- Three Column Layout - Wider with Image -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <!-- Left Column - Resident Image & Basic Info -->
+                <div class="space-y-4">
+                  <!-- Resident Image Card -->
+                  <div class="bg-gradient-to-br from-[#3d4f7c] to-[#252b3b] rounded-xl p-5 text-white text-center shadow-lg">
+                    <div class="flex justify-center mb-3">
+                      <div class="relative">
+                        <!-- Profile Image -->
+                        <div class="w-28 h-28 rounded-xl overflow-hidden border-4 border-white/30 shadow-xl mx-auto">
+                          <img 
+                            v-if="selectedRequest.resident_image"
+                            :src="`${baseUrl}/storage/${selectedRequest.resident_image}`" 
+                            :alt="selectedRequest.resident_name"
+                            class="w-full h-full object-cover"
+                            @error="e => e.target.style.display = 'none'"
+                          />
+                          <div v-else
+                            class="w-full h-full flex items-center justify-center text-3xl font-bold text-white"
+                            :style="{ background: getAvatarColor(selectedRequest.resident_name) }"
+                          >
+                            {{ getInitials(selectedRequest.resident_name) }}
+                          </div>
+                        </div>
+                        
+                        <!-- Status Indicator -->
+                        <div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white"
+                          :class="{
+                            'bg-emerald-500': selectedRequest.status === 'approved' || selectedRequest.status === 'completed',
+                            'bg-amber-500': selectedRequest.status === 'pending',
+                            'bg-blue-500': selectedRequest.status === 'processing',
+                            'bg-red-500': selectedRequest.status === 'rejected' || selectedRequest.status === 'cancelled',
+                            'bg-gray-500': !selectedRequest.status
+                          }">
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <h3 class="font-bold text-lg truncate">{{ selectedRequest.resident_name }}</h3>
+                    <p class="text-xs text-white/80 flex items-center justify-center gap-1 mt-1">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      {{ selectedRequest.resident_email }}
+                    </p>
+                  </div>
+
+                  <!-- Quick Info Card -->
+                  <div class="bg-slate-50 rounded-xl p-4 space-y-3">
+                    <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Quick Info
+                    </h4>
+                    
+                    <div class="space-y-2 text-sm">
+                      <div class="flex justify-between items-center">
+                        <span class="text-slate-400">Contact</span>
+                        <span class="font-medium text-slate-700">{{ selectedRequest.resident_contact || '—' }}</span>
+                      </div>
+                      <div class="flex justify-between items-center">
+                        <span class="text-slate-400">Sex</span>
+                        <span class="font-medium text-slate-700">{{ selectedRequest.resident_sex || '—' }}</span>
+                      </div>
+                      <div class="flex justify-between items-center">
+                        <span class="text-slate-400">Age</span>
+                        <span class="font-medium text-slate-700">{{ calculateAge(selectedRequest.resident_birth_date) || '—' }}</span>
+                      </div>
+                      <div class="flex justify-between items-center">
+                        <span class="text-slate-400">Civil Status</span>
+                        <span class="font-medium text-slate-700">{{ selectedRequest.resident_civil_status || '—' }}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold mb-1">Service Type</p>
-                  <p class="text-slate-700">{{ formatType(selectedRequest.type) }}</p>
+
+                <!-- Middle Column - Personal Information -->
+                <div class="space-y-4">
+                  <div class="bg-slate-50 rounded-xl p-4 space-y-3">
+                    <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      Personal Information
+                    </h4>
+                    
+                    <div class="space-y-3 text-sm">
+                      <div class="grid grid-cols-2 gap-2">
+                        <div>
+                          <p class="text-[10px] text-slate-400">Birth Date</p>
+                          <p class="font-medium text-slate-700">{{ formatDate(selectedRequest.resident_birth_date) || '—' }}</p>
+                        </div>
+                        <div>
+                          <p class="text-[10px] text-slate-400">Birth Place</p>
+                          <p class="font-medium text-slate-700">{{ selectedRequest.resident_birth_place || '—' }}</p>
+                        </div>
+                      </div>
+                      
+                      <div class="grid grid-cols-2 gap-2">
+                        <div>
+                          <p class="text-[10px] text-slate-400">Nationality</p>
+                          <p class="font-medium text-slate-700">{{ selectedRequest.resident_nationality || 'Filipino' }}</p>
+                        </div>
+                        <div>
+                          <p class="text-[10px] text-slate-400">Religion</p>
+                          <p class="font-medium text-slate-700">{{ selectedRequest.resident_religion || '—' }}</p>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <p class="text-[10px] text-slate-400">Occupation</p>
+                        <p class="font-medium text-slate-700">{{ selectedRequest.resident_occupation || '—' }}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="bg-slate-50 rounded-xl p-4 space-y-3">
+                    <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                      </svg>
+                      Address Information
+                    </h4>
+                    
+                    <div class="space-y-2 text-sm">
+                      <div class="flex justify-between">
+                        <span class="text-slate-400">House No.</span>
+                        <span class="font-medium text-slate-700">{{ selectedRequest.resident_house_no || '—' }}</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span class="text-slate-400">Purok</span>
+                        <span class="font-medium text-slate-700">{{ selectedRequest.resident_purok || '—' }}</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span class="text-slate-400">Sitio</span>
+                        <span class="font-medium text-slate-700">{{ selectedRequest.resident_sitio || '—' }}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold mb-1">Contact</p>
-                  <p class="text-slate-700">{{ selectedRequest.resident_contact || '—' }}</p>
-                </div>
-                <div>
-                  <p class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold mb-1">Assigned To</p>
-                  <p class="text-slate-700">{{ selectedRequest.staff_name || 'Unassigned' }}</p>
-                </div>
-                <div>
-                  <p class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold mb-1">Submitted</p>
-                  <p class="text-slate-700">{{ formatDate(selectedRequest.created_at) }}</p>
-                </div>
-                <div>
-                  <p class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold mb-1">Last Updated</p>
-                  <p class="text-slate-700">{{ formatDate(selectedRequest.updated_at) }}</p>
+
+                <!-- Right Column - Request Details -->
+                <div class="space-y-4">
+                  <div class="bg-slate-50 rounded-xl p-4 space-y-3">
+                    <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                      Request Information
+                    </h4>
+                    
+                    <div class="space-y-3">
+                      <div>
+                        <p class="text-[10px] text-slate-400">Service Type</p>
+                        <p class="font-medium text-slate-700">{{ formatType(selectedRequest.type) }}</p>
+                      </div>
+                      
+                      <div>
+                        <p class="text-[10px] text-slate-400">Preferred Date</p>
+                        <p class="font-medium text-slate-700">{{ formatDate(selectedRequest.preferred_date) }}</p>
+                      </div>
+                      
+                      <div v-if="selectedRequest.purpose">
+                        <p class="text-[10px] text-slate-400">Purpose</p>
+                        <p class="text-sm text-slate-700 bg-white p-3 rounded-lg border border-slate-100">{{ selectedRequest.purpose }}</p>
+                      </div>
+                      
+                      <div v-if="selectedRequest.notes">
+                        <p class="text-[10px] text-slate-400">Additional Notes</p>
+                        <p class="text-sm text-slate-700 bg-white p-3 rounded-lg border border-slate-100">{{ selectedRequest.notes }}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Supporting Document -->
+                  <div v-if="selectedRequest.document_url" class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                    <p class="text-xs font-semibold text-blue-700 mb-2 flex items-center gap-1.5">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      </svg>
+                      Supporting Document
+                    </p>
+                    <a :href="selectedRequest.document_url" target="_blank" class="text-sm text-blue-600 hover:underline flex items-center gap-2 bg-white p-2 rounded-lg">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13l-3 3m0 0l-3-3m3 3V8m0 13a9 9 0 110-18 9 9 0 010 18z" />
+                      </svg>
+                      View Document
+                    </a>
+                  </div>
+
+                  <!-- Official Remarks -->
+                  <div v-if="selectedRequest.remarks" class="bg-purple-50 border border-purple-200 rounded-xl p-4">
+                    <p class="text-xs font-semibold text-purple-700 mb-1 flex items-center gap-1.5">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                      </svg>
+                      Official Remarks
+                    </p>
+                    <p class="text-sm text-purple-800 bg-white p-3 rounded-lg">{{ selectedRequest.remarks }}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="px-6 py-4 border-t border-slate-100 flex justify-end">
-              <button @click="showViewModal = false"
-                class="px-4 py-2 text-sm font-semibold text-slate-600 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all cursor-pointer">
-                Close
-              </button>
+
+              <!-- Action Buttons - Only Approve and Disapprove -->
+              <div v-if="selectedRequest.status !== 'completed' && selectedRequest.status !== 'cancelled' && selectedRequest.status !== 'rejected'" class="border-t border-slate-100 pt-4 mt-6">
+                <p class="text-xs font-semibold text-slate-600 mb-3">Actions</p>
+                <div class="flex items-center gap-3">
+                  <!-- Approve Button -->
+                  <button 
+                    @click="confirmApprove(selectedRequest)"
+                    class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-all active:scale-95"
+                  >
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Approve Request
+                  </button>
+                  
+                  <!-- Disapprove/Reject Button -->
+                  <button 
+                    @click="showRejectInput = true"
+                    v-if="!showRejectInput"
+                    class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-500 text-white text-sm font-semibold rounded-xl hover:bg-red-600 transition-all active:scale-95"
+                  >
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    Disapprove
+                  </button>
+                </div>
+                
+                <!-- Rejection Remarks Input -->
+                <div v-if="showRejectInput" class="mt-3">
+                  <textarea 
+                    v-model="rejectionRemarks"
+                    rows="2"
+                    placeholder="Reason for disapproval (optional)..."
+                    class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#3d4f7c]/50 transition-all bg-slate-50 focus:bg-white resize-none"
+                  ></textarea>
+                  <div class="flex justify-end gap-2 mt-2">
+                    <button 
+                      @click="showRejectInput = false; rejectionRemarks = ''"
+                      class="px-3 py-1.5 text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50"
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      @click="confirmReject(selectedRequest)"
+                      class="px-3 py-1.5 text-xs font-semibold text-white bg-red-500 rounded-lg hover:bg-red-600"
+                    >
+                      Confirm Disapprove
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Completed/Cancelled/Rejected Status Message -->
+              <div v-else-if="selectedRequest.status === 'completed'" class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center mt-6">
+                <p class="text-sm font-semibold text-emerald-700">This request has been completed</p>
+              </div>
+              <div v-else-if="selectedRequest.status === 'cancelled'" class="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center mt-6">
+                <p class="text-sm font-semibold text-gray-700">This request has been cancelled</p>
+              </div>
+              <div v-else-if="selectedRequest.status === 'rejected'" class="bg-red-50 border border-red-200 rounded-xl p-4 text-center mt-6">
+                <p class="text-sm font-semibold text-red-700">This request has been disapproved</p>
+              </div>
             </div>
           </div>
         </div>
@@ -412,8 +630,11 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import ServiceRequestService from '@/services/Admin/ServiceRequestService'
 import Swal from 'sweetalert2'
+
+const router = useRouter()
 
 // ── State ────────────────────────────────────────────────────────
 const requests    = ref([])
@@ -425,10 +646,25 @@ const itemsPerPage = 6
 
 const showViewModal     = ref(false)
 const showReassignModal = ref(false)
+const showRejectInput   = ref(false)
+const rejectionRemarks  = ref('')
 const selectedRequest   = ref(null)
 const selectedStaffId   = ref('')
 
 const filters = reactive({ search: '', status: '', type: '' })
+const baseUrl = import.meta.env.VITE_API_URL || '';
+
+function calculateAge(birthDate) {
+  if (!birthDate) return null;
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
+}
 
 // ── Helpers ──────────────────────────────────────────────────────
 const AVATAR_COLORS = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#9333ea','#ea580c']
@@ -455,15 +691,31 @@ function statusBadge(status) {
   return {
     pending:    'bg-amber-50 text-amber-700 border border-amber-200',
     processing: 'bg-blue-50 text-blue-700 border border-blue-200',
-    completed:  'bg-emerald-50 text-emerald-700 border border-emerald-200',
+    approved:   'bg-emerald-50 text-emerald-700 border border-emerald-200',
+    completed:  'bg-green-50 text-green-700 border border-green-200',
+    rejected:   'bg-red-50 text-red-700 border border-red-200',
     cancelled:  'bg-slate-100 text-slate-600 border border-slate-200',
   }[status] || 'bg-slate-100 text-slate-600'
 }
 function statusDot(status) {
-  return { pending: 'bg-amber-400', processing: 'bg-blue-400', completed: 'bg-emerald-400', cancelled: 'bg-slate-400' }[status] || 'bg-slate-400'
+  return { 
+    pending: 'bg-amber-400', 
+    processing: 'bg-blue-400', 
+    approved: 'bg-emerald-400',
+    completed: 'bg-green-400', 
+    rejected: 'bg-red-400',
+    cancelled: 'bg-slate-400' 
+  }[status] || 'bg-slate-400'
 }
 function statusDotSolid(status) {
-  return { pending: 'bg-amber-500', processing: 'bg-blue-500', completed: 'bg-emerald-500', cancelled: 'bg-slate-500' }[status] || 'bg-slate-500'
+  return { 
+    pending: 'bg-amber-500', 
+    processing: 'bg-blue-500', 
+    approved: 'bg-emerald-500',
+    completed: 'bg-green-500', 
+    rejected: 'bg-red-500',
+    cancelled: 'bg-slate-500' 
+  }[status] || 'bg-slate-500'
 }
 
 // ── Computed ─────────────────────────────────────────────────────
@@ -522,6 +774,8 @@ async function fetchStaff() {
 
 function openViewModal(req) {
   selectedRequest.value = req
+  showRejectInput.value = false
+  rejectionRemarks.value = ''
   showViewModal.value   = true
 }
 
@@ -535,7 +789,7 @@ async function submitReassign() {
   if (!selectedStaffId.value) return
   saving.value = true
   try {
-    await serviceRequestService.reassign(selectedRequest.value.id, selectedStaffId.value)
+    await ServiceRequestService.reassign(selectedRequest.value.id, selectedStaffId.value)
     showSuccess('Request reassigned successfully')
     showReassignModal.value = false
     await fetchRequests()
@@ -545,20 +799,54 @@ async function submitReassign() {
 
 async function confirmApprove(req) {
   const result = await Swal.fire({
-    title: 'Complete Request?',
-    text: `Mark "${formatType(req.type)}" for ${req.resident_name} as completed?`,
+    title: 'Approve Request?',
+    text: `Mark "${formatType(req.type)}" for ${req.resident_name} as approved?`,
     icon: 'question',
     showCancelButton: true,
     confirmButtonColor: '#059669',
     cancelButtonColor: '#3d4f7c',
-    confirmButtonText: 'Yes, complete it',
+    confirmButtonText: 'Yes, approve it',
   })
   if (!result.isConfirmed) return
   try {
-    await serviceRequestService.approve(req.id)
-    showSuccess('Request marked as completed')
+    await ServiceRequestService.approve(req.id)
+    showSuccess('Request approved successfully')
+    showViewModal.value = false
+    
+    // Navigate to approved services page (Document.vue)
+    setTimeout(() => {
+      router.push('/admin/service-requests/approved')
+    }, 1500)
+    
     await fetchRequests()
   } catch { showError('Failed to approve request') }
+}
+
+async function confirmReject(req) {
+  const result = await Swal.fire({
+    title: 'Disapprove Request?',
+    text: `Reject "${formatType(req.type)}" for ${req.resident_name}?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#dc2626',
+    cancelButtonColor: '#3d4f7c',
+    confirmButtonText: 'Yes, disapprove',
+  })
+  if (!result.isConfirmed) return
+  try {
+    await ServiceRequestService.reject(req.id, { remarks: rejectionRemarks.value })
+    showSuccess('Request disapproved')
+    showViewModal.value = false
+    showRejectInput.value = false
+    rejectionRemarks.value = ''
+    
+    // Navigate to disapproved requests page
+    setTimeout(() => {
+      router.push('/admin/service-requests/disapproved')
+    }, 1500)
+    
+    await fetchRequests()
+  } catch { showError('Failed to disapprove request') }
 }
 
 async function confirmCancel(req) {
@@ -573,7 +861,7 @@ async function confirmCancel(req) {
   })
   if (!result.isConfirmed) return
   try {
-    await serviceRequestService.cancel(req.id)
+    await ServiceRequestService.cancel(req.id)
     showSuccess('Request cancelled')
     await fetchRequests()
   } catch { showError('Failed to cancel request') }
@@ -586,8 +874,33 @@ function resetFilters() {
   currentPage.value = 1
 }
 
-const showSuccess = (msg) => Swal.fire({ icon: 'success', title: 'Success', text: msg, timer: 3000, showConfirmButton: false, position: 'top-end', toast: true })
-const showError   = (msg) => Swal.fire({ icon: 'error',   title: 'Error',   text: msg, timer: 3000, showConfirmButton: false, position: 'top-end', toast: true })
+const goToApprovedServices = () => {
+  router.push('/admin/service-requests/approved')
+}
+
+const goToDisapprovedRequests = () => {
+  router.push('/admin/service-requests/disapproved')
+}
+
+const showSuccess = (msg) => Swal.fire({ 
+  icon: 'success', 
+  title: 'Success', 
+  text: msg, 
+  timer: 2000, 
+  showConfirmButton: false,
+  position: 'top-end', 
+  toast: true 
+})
+
+const showError = (msg) => Swal.fire({ 
+  icon: 'error',   
+  title: 'Error',   
+  text: msg, 
+  timer: 3000, 
+  showConfirmButton: false, 
+  position: 'top-end', 
+  toast: true 
+})
 
 watch(filters, () => { currentPage.value = 1 }, { deep: true })
 

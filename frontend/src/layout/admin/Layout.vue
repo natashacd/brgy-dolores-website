@@ -22,12 +22,11 @@
       
       <!-- Top Header with Mobile Menu Button -->
       <header class="bg-white shadow-sm h-16 flex-shrink-0 flex items-center px-4">
-        <!-- Mobile menu button - only visible on mobile -->
+        <!-- Mobile menu button -->
         <button
           v-if="!isDesktop"
           @click="toggleSidebar"
           class="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors mr-2"
-          aria-label="Toggle menu"
         >
           <svg 
             class="w-6 h-6 text-gray-600" 
@@ -51,11 +50,7 @@
             />
           </svg>
         </button>
-        
-        <!-- Empty space or title can go here -->
-        <div class="flex-1">
-          <h1 class="text-lg font-semibold text-gray-800 lg:hidden">Barangay Dolores</h1>
-        </div>
+      
       </header>
 
       <!-- Main Content -->
@@ -69,11 +64,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import Sidebar from '@/components/admin/Sidebar.vue'
 
-const isSidebarOpen = ref(false) // Start closed on mobile
+const isSidebarOpen = ref(false)
 const isDesktop = ref(window.innerWidth >= 1024)
+const userName = ref(localStorage.getItem('user_name') || 'Resident')
 
 const toggleSidebar = () => { 
   isSidebarOpen.value = !isSidebarOpen.value 
@@ -83,11 +79,8 @@ const closeSidebar = () => {
   isSidebarOpen.value = false 
 }
 
-// Handle window resize
 const handleResize = () => {
   isDesktop.value = window.innerWidth >= 1024
-  
-  // Auto-open sidebar on desktop, close on mobile
   if (isDesktop.value) {
     isSidebarOpen.value = true
   } else {
@@ -95,16 +88,8 @@ const handleResize = () => {
   }
 }
 
-// Close sidebar when route changes on mobile
-const handleRouteChange = () => {
-  if (!isDesktop.value) {
-    isSidebarOpen.value = false
-  }
-}
-
 onMounted(() => {
   window.addEventListener('resize', handleResize)
-  // Initial check
   handleResize()
 })
 

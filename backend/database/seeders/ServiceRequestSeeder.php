@@ -16,6 +16,12 @@ class ServiceRequestSeeder extends Seeder
                 'type' => 'barangay_clearance',
                 'status' => 'pending'
             ],
+                        [
+                'resident_id' => 4,
+                'staff_id' => 2,
+                'type' => 'barangay_clearance',
+                'status' => 'pending'
+            ],
         ];
 
         foreach ($requests as $request) {
