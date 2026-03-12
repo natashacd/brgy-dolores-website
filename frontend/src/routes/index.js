@@ -10,14 +10,22 @@ import AdminDashboard from "@/pages/admin/Dashboard.vue";
 import AdminUsers from "@/pages/admin/Users.vue";
 import Announcement from "@/pages/admin/Announcement.vue";
 import Complaints from "@/pages/admin/Complaints.vue";
-import Document from "@/pages/admin/Document.vue";
+import ApprovedRequests from "@/pages/admin/ApprovedRequests.vue";
 import Reports from "@/pages/admin/Reports.vue";
 import Resident from "@/pages/admin/Resident.vue";
-import ServiceRequest from "@/pages/admin/ServiceRequest.vue";
+import AdminServiceRequest from "@/pages/admin/ServiceRequest.vue";
+import DisapprovedRequests from "@/pages/admin/DisapprovedRequests.vue";
 import Settings from "@/pages/admin/Settings.vue";
 
+// Resident routes
+import ResidentDashboard from "@/pages/resident/Dashboard.vue";
+import ResidentServiceRequest from "@/pages/resident/ServiceRequest.vue";
+
+// Staff/Official roles that can access admin
+const ADMIN_ROLES = ['admin', 'punong barangay', 'secretary', 'treasurer', 'kagawad', 'sk chairman', 'health worker', 'lupon'];
+
 const routes = [
-  // Public routes — all wrapped in your layout
+  // Public routes
   {
     path: "/",
     component: () => import("@/layout/Layout.vue"),
@@ -26,29 +34,55 @@ const routes = [
         path: "",
         name: "home",
         component: Home,
+        meta: { title: "Home" }
       },
       {
         path: "about",
         name: "about",
         component: About,
+        meta: { title: "About Us" }
       },
       {
         path: "services",
         name: "services",
         component: Services,
+        meta: { title: "Services" }
       },
       {
         path: "news",
         name: "news",
         component: News,
+        meta: { title: "News" }
       },
     ],
   },
+  
+  // Resident routes
+  {
+    path: "/resident",
+    component: () => import("@/layout/resident/Layout.vue"),
+    meta: { requiresAuth: true, role: 'resident' },
+    children: [
+      {
+        path: "service-requests",
+        name: "resident.service-requests",
+        component: ResidentServiceRequest,
+        meta: { title: "Service Requests" },
+      },
+      {
+        path: "dashboard",
+        name: "resident.dashboard",
+        component: ResidentDashboard,
+        meta: { title: "Dashboard" },
+      }
+    ],
+  },
+
   // Admin routes
   {
     path: "/admin",
     component: () => import("@/layout/admin/Layout.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, role: 'admin' },
     children: [
       {
         path: "",
@@ -60,7 +94,7 @@ const routes = [
         path: "users",
         name: "admin.users",
         component: AdminUsers,
-        meta: { title: "Users" },
+        meta: { title: "Barangay Officials" },
       },
       {
         path: "announcements",
@@ -72,31 +106,37 @@ const routes = [
         path: "complaints",
         name: "admin.complaints",
         component: Complaints,
-        meta: { title: "Complaints" },
-      },
-      {
-        path: "documents",
-        name: "admin.documents",
-        component: Document,
-        meta: { title: "Documents" },
+        meta: { title: "Complaints & Disputes" },
       },
       {
         path: "residents",
         name: "admin.residents",
         component: Resident,
-        meta: { title: "Residents" },
+        meta: { title: "Resident Management" },
       },
       {
         path: "service-requests",
         name: "admin.service-requests",
-        component: ServiceRequest,
+        component: AdminServiceRequest,
         meta: { title: "Service Requests" },
+      },
+      {
+        path: "service-requests/approved",
+        name: "admin.service-requests.approved",
+        component: ApprovedRequests,
+        meta: { title: "Approved Requests" },
+      },
+      {
+        path: "service-requests/disapproved",
+        name: "admin.service-requests.disapproved",
+        component: DisapprovedRequests,
+        meta: { title: "Disapproved Requests" },
       },
       {
         path: "reports",
         name: "admin.reports",
         component: Reports,
-        meta: { title: "Reports" },
+        meta: { title: "Reports & Analytics" },
       },
       {
         path: "settings",
@@ -106,14 +146,34 @@ const routes = [
       }
     ],
   },
-    {
+  
+  {
     path: "/login",
     name: "login",
     component: Login,
     meta: { guest: true },
   },
+  
+  // 404 page
+  {
+    path: "/:pathMatch(.*)*",
+    name: "not-found",
+    redirect: (to) => {
+      const isAuthenticated = localStorage.getItem("auth_token");
+      const userRole = localStorage.getItem("user_role")?.toLowerCase();
+      
+      if (!isAuthenticated) {
+        return { name: "login" };
+      }
+      
+      if (userRole === "resident") {
+        return { name: "resident.dashboard" };
+      }
+      
+      return { name: "admin.dashboard" };
+    }
+  }
 ];
-
 
 const router = createRouter({
   history: createWebHistory(),
@@ -127,25 +187,59 @@ const router = createRouter({
   },
 });
 
-// Updated navigation guard - no more next() calls
+const hasAdminAccess = (role) => {
+  if (!role) return false;
+  return ADMIN_ROLES.includes(role.toLowerCase());
+};
+
 router.beforeEach((to, from) => {
-  const isAuthenticated =
-    localStorage.getItem("auth_token") || sessionStorage.getItem("auth_token");
+  const isAuthenticated = localStorage.getItem("auth_token") || sessionStorage.getItem("auth_token");
+  const userRole = localStorage.getItem("user_role")?.toLowerCase() || '';
+  const userRoleDisplay = localStorage.getItem("user_role") || '';
 
-  // If route requires auth and user is not authenticated
-  if (
-    to.matched.some((record) => record.meta.requiresAuth) &&
-    !isAuthenticated
-  ) {
-    return { name: "login", query: { redirect: to.fullPath } };
+  if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
+    return { 
+      name: "login", 
+      query: { redirect: to.fullPath } 
+    };
   }
 
-  // If route is for guests only (login) and user is already authenticated
-  if (to.matched.some((record) => record.meta.guest) && isAuthenticated) {
-    return { name: "admin.dashboard" };
+  if (isAuthenticated) {
+    if (to.path.startsWith('/admin')) {
+      if (userRole === 'resident') {
+        return { name: "resident.service-requests" };
+      }
+    
+      if (hasAdminAccess(userRole)) {
+        return true;
+      }
+      
+      return { name: "login" };
+    }
+    
+    if (to.path.startsWith('/resident')) {
+      if (userRole === 'resident') {
+        return true;
+      }
+      
+      if (hasAdminAccess(userRole)) {
+        return { name: "admin.dashboard" };
+      }
+      
+      return { name: "login" };
+    }
   }
 
-  // Allow access
+  if (to.matched.some(record => record.meta.guest) && isAuthenticated) {
+    if (userRole === 'resident') {
+      return { name: "resident.service-requests" };
+    }
+    if (hasAdminAccess(userRole)) {
+      return { name: "admin.dashboard" };
+    }
+    return { name: "login" };
+  }
+
   return true;
 });
 
