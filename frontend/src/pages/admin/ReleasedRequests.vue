@@ -11,12 +11,12 @@
         <div class="w-1.5 h-10 rounded-full bg-[#3d4f7c]"></div>
         <div class="w-11 h-11 rounded-xl flex items-center justify-center bg-[#3d4f7c]/10 text-[#3d4f7c]">
           <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
           </svg>
         </div>
         <div>
-          <h1 class="text-3xl font-semibold text-slate-800 tracking-tight">Disapproved Requests</h1>
-          <p class="text-sm text-slate-500 mt-1">View all rejected and disapproved service requests</p>
+          <h1 class="text-3xl font-semibold text-slate-800 tracking-tight">Released Requests</h1>
+          <p class="text-sm text-slate-500 mt-1">View all completed requests that have been released to residents</p>
         </div>
       </div>
     </div>
@@ -65,13 +65,12 @@
 
     <!-- Table Card -->
     <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
-
-      <!-- Gradient Header - Blue Theme -->
+      <!-- Table Header -->
       <div class="px-6 py-4 bg-gradient-to-r from-[#3d4f7c] to-[#252b3b]">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div class="w-1.5 h-8 rounded-full bg-white/20"></div>
-            <h2 class="text-lg font-semibold text-white tracking-tight">Disapproved Requests</h2>
+            <h2 class="text-lg font-semibold text-white tracking-tight">Released Requests List</h2>
           </div>
           <span class="text-xs text-white/50">
             {{ filteredRequests.length }} result{{ filteredRequests.length !== 1 ? 's' : '' }}
@@ -85,9 +84,10 @@
           <div class="absolute inset-0 border-[3px] border-slate-100 rounded-full"></div>
           <div class="absolute inset-0 border-[3px] border-[#3d4f7c] border-t-transparent rounded-full animate-spin"></div>
         </div>
-        <p class="text-sm text-slate-400 font-medium">Loading disapproved requests...</p>
+        <p class="text-sm text-slate-400 font-medium">Loading released requests...</p>
       </div>
 
+      <!-- Table -->
       <div v-else class="overflow-x-auto">
         <table class="w-full">
           <thead>
@@ -95,8 +95,10 @@
               <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Request ID</th>
               <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Resident</th>
               <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Service Type</th>
-              <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Disapproved Date</th>
-              <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Remarks</th>
+              <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Completed Date</th>
+              <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Released Date</th>
+              <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Released By</th>
+              <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Release Notes</th>
               <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest w-28">Actions</th>
             </tr>
           </thead>
@@ -106,7 +108,7 @@
 
               <!-- ID -->
               <td class="px-6 py-4">
-                <span class="text-xs font-mono text-slate-400">#SR-{{ String(req.id).padStart(4, '0') }}</span>
+                <span class="text-xs font-mono font-medium text-[#3d4f7c] bg-[#3d4f7c]/10 px-2 py-1 rounded-lg">#SR-{{ String(req.id).padStart(4, '0') }}</span>
               </td>
 
               <!-- Resident -->
@@ -128,25 +130,40 @@
                 <span class="text-sm text-slate-600">{{ formatType(req.type) }}</span>
               </td>
 
-              <!-- Disapproved Date -->
+              <!-- Completed Date -->
               <td class="px-6 py-4">
                 <div class="flex items-center gap-1.5 text-sm text-slate-500">
                   <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                   </svg>
-                  {{ formatDate(req.disapproved_at || req.updated_at) }}
+                  {{ formatDate(req.completed_at) }}
                 </div>
               </td>
 
-              <!-- Remarks -->
+              <!-- Released Date -->
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-1.5 text-sm text-slate-500">
+                  <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  {{ formatDate(req.released_at) }}
+                </div>
+              </td>
+
+              <!-- Released By -->
+              <td class="px-6 py-4">
+                <span class="text-sm text-slate-600">{{ req.released_by || 'Admin' }}</span>
+              </td>
+
+              <!-- Release Notes -->
               <td class="px-6 py-4 max-w-xs">
-                <div v-if="req.remarks" class="flex items-start gap-1.5">
+                <div v-if="req.release_remarks" class="flex items-start gap-1.5">
                   <svg class="w-3.5 h-3.5 text-slate-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                   </svg>
-                  <span class="text-sm text-slate-600 line-clamp-2">{{ req.remarks }}</span>
+                  <span class="text-sm text-slate-600 line-clamp-2">{{ req.release_remarks }}</span>
                 </div>
-                <span v-else class="text-sm text-slate-400 italic">No remarks provided</span>
+                <span v-else class="text-sm text-slate-400 italic">—</span>
               </td>
 
               <!-- Actions -->
@@ -167,22 +184,17 @@
 
             <!-- Empty State -->
             <tr v-if="!loading && filteredRequests.length === 0">
-              <td colspan="6" class="py-20 text-center">
+              <td colspan="8" class="py-20 text-center">
                 <div class="flex flex-col items-center gap-3">
                   <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center">
                     <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                     </svg>
                   </div>
                   <div>
-                    <p class="text-sm font-bold text-slate-600">No disapproved requests found</p>
-                    <p class="text-xs text-slate-400 mt-0.5">All service requests are currently approved</p>
+                    <p class="text-sm font-bold text-slate-600">No released requests found</p>
+                    <p class="text-xs text-slate-400 mt-0.5">Completed requests that are marked as released will appear here</p>
                   </div>
-                  <button v-if="hasActiveFilters" @click="resetFilters"
-                    class="text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer"
-                    style="color:#3d4f7c; background:#3d4f7c15; border: 1px solid #3d4f7c30">
-                    Clear Filters
-                  </button>
                 </div>
               </td>
             </tr>
@@ -239,10 +251,10 @@
             <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
               <div class="flex items-center gap-3">
                 <div class="w-1.5 h-8 rounded-full bg-[#3d4f7c]"></div>
-                <h3 class="text-base font-semibold text-slate-800">Disapproved Request Details</h3>
+                <h3 class="text-base font-semibold text-slate-800">Released Request Details</h3>
                 <span class="px-2 py-0.5 bg-[#3d4f7c]/10 text-[#3d4f7c] text-xs rounded-full font-mono">#SR-{{ selectedRequest ? String(selectedRequest.id).padStart(4, '0') : '' }}</span>
               </div>
-              <button @click="showViewModal = false" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all">
+              <button @click="showViewModal = false" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
@@ -250,100 +262,71 @@
             </div>
             
             <!-- Body -->
-            <div v-if="selectedRequest" class="px-6 py-5 max-h-[70vh] overflow-y-auto scrollbar-thin">
-              
-              <!-- Disapproved Banner -->
-              <div class="mb-5 bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                  <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            <div v-if="selectedRequest" class="px-6 py-5 space-y-4">
+              <!-- Release Banner -->
+              <div class="bg-[#3d4f7c]/5 border border-[#3d4f7c]/20 rounded-xl p-4 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-[#3d4f7c]/10 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 text-[#3d4f7c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                   </svg>
                 </div>
                 <div>
-                  <p class="text-sm font-semibold text-amber-700">Request Disapproved</p>
-                  <p class="text-xs text-amber-600">This request was disapproved on {{ formatDate(selectedRequest.disapproved_at || selectedRequest.updated_at) }}</p>
+                  <p class="text-sm font-semibold text-[#3d4f7c]">Request Released</p>
+                  <p class="text-xs text-[#3d4f7c]/70">This request was released on {{ formatDate(selectedRequest.released_at) }}</p>
                 </div>
               </div>
 
-              <!-- Two Column Layout -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                <!-- Resident Info -->
-                <div class="space-y-4">
-                  <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
-                    <div class="w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-md"
-                      :style="{ background: getAvatarColor(selectedRequest.resident_name) }">
-                      {{ getInitials(selectedRequest.resident_name) }}
-                    </div>
-                    <div>
-                      <p class="font-bold text-slate-800">{{ selectedRequest.resident_name }}</p>
-                      <p class="text-xs text-slate-400">{{ selectedRequest.resident_email }}</p>
-                    </div>
-                  </div>
-
-                  <div class="bg-slate-50 rounded-xl p-4 space-y-3">
-                    <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                      Resident Information
-                    </h4>
-                    
-                    <div class="space-y-2 text-sm">
-                      <div class="flex justify-between">
-                        <span class="text-slate-400">Contact</span>
-                        <span class="font-medium text-slate-700">{{ selectedRequest.resident_contact || '—' }}</span>
-                      </div>
-                      <div class="flex justify-between">
-                        <span class="text-slate-400">Address</span>
-                        <span class="font-medium text-slate-700 text-right">{{ formatAddress(selectedRequest) }}</span>
-                      </div>
-                    </div>
-                  </div>
+              <!-- Resident Info -->
+              <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-md"
+                  :style="{ background: getAvatarColor(selectedRequest.resident_name) }">
+                  {{ getInitials(selectedRequest.resident_name) }}
                 </div>
-
-                <!-- Request Details -->
-                <div class="space-y-4">
-                  <div class="bg-slate-50 rounded-xl p-4 space-y-3">
-                    <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                      </svg>
-                      Request Information
-                    </h4>
-                    
-                    <div class="space-y-2">
-                      <div>
-                        <p class="text-[10px] text-slate-400">Service Type</p>
-                        <p class="font-medium text-slate-700">{{ formatType(selectedRequest.type) }}</p>
-                      </div>
-                      <div>
-                        <p class="text-[10px] text-slate-400">Preferred Date</p>
-                        <p class="font-medium text-slate-700">{{ formatDate(selectedRequest.preferred_date) }}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Disapproval Remarks -->
-                  <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                    <p class="text-xs font-semibold text-amber-700 mb-2 flex items-center gap-1.5">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                      </svg>
-                      Disapproval Remarks
-                    </p>
-                    <p class="text-sm text-amber-800 bg-white p-3 rounded-lg">{{ selectedRequest.remarks || 'No remarks provided' }}</p>
-                  </div>
+                <div>
+                  <p class="font-bold text-slate-800">{{ selectedRequest.resident_name }}</p>
+                  <p class="text-xs text-slate-400">{{ selectedRequest.resident_email }}</p>
                 </div>
               </div>
 
-              <!-- Close Button Only -->
-              <div class="border-t border-slate-100 pt-4 mt-4 flex justify-end">
-                <button @click="showViewModal = false"
-                  class="px-4 py-2 text-sm font-semibold text-slate-600 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all">
-                  Close
-                </button>
+              <!-- Details Grid -->
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <p class="text-xs text-slate-400">Service Type</p>
+                  <p class="text-sm font-medium text-slate-700">{{ formatType(selectedRequest.type) }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-slate-400">Completed Date</p>
+                  <p class="text-sm text-slate-700">{{ formatDate(selectedRequest.completed_at) }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-slate-400">Released Date</p>
+                  <p class="text-sm text-slate-700">{{ formatDate(selectedRequest.released_at) }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-slate-400">Released By</p>
+                  <p class="text-sm text-slate-700">{{ selectedRequest.released_by || 'Admin' }}</p>
+                </div>
               </div>
+
+              <!-- Purpose -->
+              <div v-if="selectedRequest.purpose">
+                <p class="text-xs text-slate-400">Purpose</p>
+                <p class="text-sm text-slate-700 bg-slate-50 p-3 rounded-lg mt-1">{{ selectedRequest.purpose }}</p>
+              </div>
+
+              <!-- Release Notes -->
+              <div v-if="selectedRequest.release_remarks">
+                <p class="text-xs text-slate-400">Release Notes</p>
+                <p class="text-sm text-slate-700 bg-[#3d4f7c]/5 p-3 rounded-lg mt-1">{{ selectedRequest.release_remarks }}</p>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/60 flex justify-end">
+              <button @click="showViewModal = false"
+                class="px-4 py-2 text-sm font-semibold text-slate-600 border border-slate-200 rounded-xl hover:bg-slate-50">
+                Close
+              </button>
             </div>
           </div>
         </div>
@@ -354,79 +337,50 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
-import ServiceRequestService from '@/services/Admin/ServiceRequestService'
 import Swal from 'sweetalert2'
 
 // ── State ────────────────────────────────────────────────────────
-const requests    = ref([])
-const loading     = ref(false)
+const loading = ref(false)
 const currentPage = ref(1)
-const itemsPerPage = 6
-
-const showViewModal   = ref(false)
+const itemsPerPage = 8
+const showViewModal = ref(false)
 const selectedRequest = ref(null)
 
-const filters = reactive({ search: '', timeframe: '', type: '' })
+const filters = reactive({
+  search: '',
+  timeframe: '',
+  type: ''
+})
 
-// ── Sample Data (replace with actual API call) ──────────────────
-const sampleRequests = [
+// ── Sample Data ──────────────────────────────────────────────────
+const releasedRequests = ref([
   {
     id: 101,
     resident_name: 'Maria Santos',
     resident_email: 'maria.santos@email.com',
     resident_contact: '0912 345 6789',
     type: 'certificate_of_indigency',
-    preferred_date: '2024-03-20',
-    created_at: '2024-03-10',
-    updated_at: '2024-03-15',
-    disapproved_at: '2024-03-15',
-    remarks: 'Incomplete requirements. Please submit proof of income and valid ID.',
-    document_url: '#',
+    purpose: 'For financial assistance application',
+    completed_at: '2024-03-18',
+    released_at: '2024-03-20',
+    released_by: 'Admin',
+    release_remarks: 'Released to resident personally',
     address: { house_no: '123', purok: '3', sitio: 'Maligaya' }
   },
   {
     id: 102,
-    resident_name: 'Juan Dela Cruz',
-    resident_email: 'juan.dc@email.com',
-    resident_contact: '0923 456 7890',
-    type: 'barangay_clearance',
-    preferred_date: '2024-03-18',
-    created_at: '2024-03-08',
-    updated_at: '2024-03-14',
-    disapproved_at: '2024-03-14',
-    remarks: 'Invalid information provided. Please update your details.',
-    document_url: '#',
-    address: { house_no: '456', purok: '7', sitio: 'Masagana' }
-  },
-  {
-    id: 103,
-    resident_name: 'Ana Gonzales',
-    resident_email: 'ana.g@email.com',
-    resident_contact: '0934 567 8901',
-    type: 'business_permit',
-    preferred_date: '2024-03-22',
-    created_at: '2024-03-12',
-    updated_at: '2024-03-16',
-    disapproved_at: '2024-03-16',
-    remarks: 'Business permit requires DTI registration.',
-    document_url: '#',
-    address: { house_no: '789', purok: '2', sitio: 'Mabuhay' }
-  },
-  {
-    id: 104,
     resident_name: 'Pedro Reyes',
     resident_email: 'pedro.r@email.com',
     resident_contact: '0945 678 9012',
     type: 'certificate_of_residency',
-    preferred_date: '2024-03-19',
-    created_at: '2024-03-09',
-    updated_at: '2024-03-13',
-    disapproved_at: '2024-03-13',
-    remarks: 'Proof of residency required. Please submit utility bill.',
-    document_url: '#',
+    purpose: 'For bank requirement',
+    completed_at: '2024-03-15',
+    released_at: '2024-03-16',
+    released_by: 'Admin',
+    release_remarks: 'Certificate picked up by representative',
     address: { house_no: '101', purok: '5', sitio: 'Masunurin' }
   }
-]
+])
 
 // ── Helpers ──────────────────────────────────────────────────────
 const AVATAR_COLORS = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#9333ea','#ea580c']
@@ -451,6 +405,10 @@ function formatDate(date) {
   return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
+function getMonthName() {
+  return new Date().toLocaleDateString('en-US', { month: 'long' })
+}
+
 function formatAddress(req) {
   const addr = req.address
   if (!addr) return '—'
@@ -461,43 +419,30 @@ function formatAddress(req) {
   return parts.join(', ') || '—'
 }
 
-function getMonthName() {
-  return new Date().toLocaleDateString('en-US', { month: 'long' })
-}
-
-// ── Computed Stats ───────────────────────────────────────────────
-const stats = computed(() => {
-  const total = filteredRequests.value.length
-  const thisMonth = filteredRequests.value.filter(r => {
-    const date = new Date(r.disapproved_at || r.updated_at)
-    const now = new Date()
-    return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()
-  }).length
-  const withRemarks = filteredRequests.value.filter(r => r.remarks).length
-  return { total, thisMonth, withRemarks }
-})
-
-// ── Filtering ────────────────────────────────────────────────────
+// ── Computed ─────────────────────────────────────────────────────
 const hasActiveFilters = computed(() => filters.search || filters.timeframe || filters.type)
 
 const filteredRequests = computed(() => {
-  let r = [...sampleRequests] // Replace with actual data
+  let filtered = [...releasedRequests.value]
   
   if (filters.search) {
     const s = filters.search.toLowerCase()
-    r = r.filter(x => x.resident_name?.toLowerCase().includes(s) || x.type?.toLowerCase().includes(s))
+    filtered = filtered.filter(r => 
+      r.resident_name?.toLowerCase().includes(s) || 
+      r.type?.toLowerCase().includes(s)
+    )
   }
   
   if (filters.type) {
-    r = r.filter(x => x.type === filters.type)
+    filtered = filtered.filter(r => r.type === filters.type)
   }
   
   if (filters.timeframe) {
     const now = new Date()
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
     
-    r = r.filter(x => {
-      const date = new Date(x.disapproved_at || x.updated_at)
+    filtered = filtered.filter(r => {
+      const date = new Date(r.released_at)
       switch (filters.timeframe) {
         case 'today':
           return date >= today
@@ -515,13 +460,25 @@ const filteredRequests = computed(() => {
     })
   }
   
-  return r
+  return filtered
 })
 
 const totalPages = computed(() => Math.max(1, Math.ceil(filteredRequests.value.length / itemsPerPage)))
 const paginatedRequests = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage
   return filteredRequests.value.slice(start, start + itemsPerPage)
+})
+
+const stats = computed(() => {
+  const total = filteredRequests.value.length
+  const thisMonth = filteredRequests.value.filter(r => {
+    const date = new Date(r.released_at)
+    const now = new Date()
+    return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()
+  }).length
+  const withRemarks = filteredRequests.value.filter(r => r.release_remarks).length
+  
+  return { total, thisMonth, withRemarks }
 })
 
 // ── Methods ──────────────────────────────────────────────────────
@@ -537,25 +494,7 @@ function resetFilters() {
   currentPage.value = 1
 }
 
-// ── Fetch Data (replace with actual API call) ───────────────────
-async function fetchRequests() {
-  loading.value = true
-  try {
-    setTimeout(() => {
-      requests.value = sampleRequests
-      loading.value = false
-    }, 800)
-  } catch (e) {
-    console.error('Failed to load requests', e)
-    loading.value = false
-  }
-}
-
 watch(filters, () => { currentPage.value = 1 }, { deep: true })
-
-onMounted(() => {
-  fetchRequests()
-})
 </script>
 
 <style scoped>

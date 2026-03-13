@@ -11,6 +11,7 @@ import AdminUsers from "@/pages/admin/Users.vue";
 import Announcement from "@/pages/admin/Announcement.vue";
 import Complaints from "@/pages/admin/Complaints.vue";
 import ApprovedRequests from "@/pages/admin/ApprovedRequests.vue";
+import ReleasedRequests from "@/pages/admin/ReleasedRequests.vue";
 import Reports from "@/pages/admin/Reports.vue";
 import Resident from "@/pages/admin/Resident.vue";
 import AdminServiceRequest from "@/pages/admin/ServiceRequest.vue";
@@ -20,6 +21,7 @@ import Settings from "@/pages/admin/Settings.vue";
 // Resident routes
 import ResidentDashboard from "@/pages/resident/Dashboard.vue";
 import ResidentServiceRequest from "@/pages/resident/ServiceRequest.vue";
+import ResidentComplaints from "@/pages/resident/Complaints.vue";
 
 // Staff/Official roles that can access admin
 const ADMIN_ROLES = ['admin', 'punong barangay', 'secretary', 'treasurer', 'kagawad', 'sk chairman', 'health worker', 'lupon'];
@@ -74,6 +76,12 @@ const routes = [
         name: "resident.dashboard",
         component: ResidentDashboard,
         meta: { title: "Dashboard" },
+      },
+      {
+        path: "complaints",
+        name: "resident.complaints",
+        component: ResidentComplaints,
+        meta: { title: "Complaints" },
       }
     ],
   },
@@ -131,6 +139,12 @@ const routes = [
         name: "admin.service-requests.disapproved",
         component: DisapprovedRequests,
         meta: { title: "Disapproved Requests" },
+      },
+      {
+        path: "service-requests/released",
+        name: "admin.service-requests.released",
+        component: ReleasedRequests,
+        meta: { title: "Released Requests" },
       },
       {
         path: "reports",
