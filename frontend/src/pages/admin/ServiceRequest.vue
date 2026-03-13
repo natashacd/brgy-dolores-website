@@ -268,7 +268,7 @@
     <!-- ── View Details Modal with Resident Info and Image ── -->
     <Transition name="modal">
       <div v-if="showViewModal" class="fixed inset-0 z-50 overflow-y-auto">
-        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="showViewModal = false"></div>
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm"></div>
         <div class="flex min-h-full items-center justify-center p-4">
           <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl">
             <!-- Header - Plain -->

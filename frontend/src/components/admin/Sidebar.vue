@@ -219,6 +219,19 @@
                   </svg>
                   <span class="flex-1">Disapproved Requests</span>
                 </router-link>
+
+                <!-- Released Requests -->
+                <router-link
+                  to="/admin/service-requests/released"
+                  class="flex items-center gap-4 px-3 py-2.5 rounded-lg text-base transition-colors"
+                  :class="isActiveRoute('/admin/service-requests/released') ? 'bg-[#2a2f3f] text-white' : 'text-gray-400 hover:bg-[#252a3a] hover:text-white'"
+                  @click="closeMobileSidebar"
+                >
+                  <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                  </svg>
+                  <span class="flex-1">Released Requests</span>
+                </router-link>
               </div>
             </Transition>
           </li>
@@ -252,6 +265,22 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <span v-if="!isCollapsed" class="flex-1">Complaints & Disputes</span>
+            </router-link>
+          </li>
+
+           <!-- Complaints & Disputes -->
+          <li v-if="userRole === 'resident'">
+            <router-link
+              to="/resident/complaints"
+              class="flex items-center gap-4 px-3 py-3 rounded-lg text-base transition-colors"
+              :class="isActiveRoute('/resident/complaints') ? 'bg-[#2a2f3f] text-white' : 'text-gray-300 hover:bg-[#252a3a] hover:text-white'"
+              :title="isCollapsed ? 'Complaints & Disputes' : ''"
+              @click="closeMobileSidebar"
+            >
+              <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span v-if="!isCollapsed" class="flex-1">Complaints & Reports</span>
             </router-link>
           </li>
           
