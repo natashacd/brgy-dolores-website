@@ -252,6 +252,7 @@
 import { ref, computed, reactive, onMounted, onUnmounted } from 'vue'
 import UserService from '@/services/Admin/UserService'
 import Swal from 'sweetalert2'
+import { getResidents, hasResidentsData } from '@/utils/dataStore'
 
 const props = defineProps({
   roles: { type: Array, default: () => [] }
@@ -280,16 +281,32 @@ const errors = reactive({
 
 // ── Fetch residents on mount ──────────────────────────────────────
 onMounted(async () => {
-  loadingResidents.value = true
-  try {
-    allResidents.value = await UserService.getResidents()
-  } catch {
-    console.error('Failed to fetch residents')
-  } finally {
-    loadingResidents.value = false
+  // Check if residents are already cached
+  if (hasResidentsData()) {
+    console.log('✅ Using cached residents data in AddUserModal');
+    allResidents.value = getResidents();
+  } else {
+    // Fallback: fetch if not cached
+    console.log('⚠️ No cached residents data, fetching in AddUserModal...');
+    loadingResidents.value = true;
+    try {
+      allResidents.value = await UserService.getResidents();
+    } catch {
+      console.error('Failed to fetch residents');
+      Swal.fire({ 
+        icon: 'error', 
+        title: 'Error', 
+        text: 'Failed to load residents list.', 
+        confirmButtonColor: '#3d4f7c' 
+      });
+    } finally {
+      loadingResidents.value = false;
+    }
   }
-  document.addEventListener('mousedown', handleClickOutside)
+  
+  document.addEventListener('mousedown', handleClickOutside);
 })
+
 onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 
 // ── Helpers ───────────────────────────────────────────────────────
