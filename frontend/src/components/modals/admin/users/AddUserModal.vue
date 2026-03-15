@@ -259,6 +259,8 @@ const props = defineProps({
 })
 const emit = defineEmits(['close', 'saved'])
 
+const baseUrl = import.meta.env.VITE_API_URL 
+
 const allResidents     = ref([])
 const loadingResidents = ref(false)
 const residentSearch   = ref('')
@@ -279,15 +281,10 @@ const errors = reactive({
   role_id: '',
 })
 
-// ── Fetch residents on mount ──────────────────────────────────────
 onMounted(async () => {
-  // Check if residents are already cached
   if (hasResidentsData()) {
-    console.log('✅ Using cached residents data in AddUserModal');
     allResidents.value = getResidents();
   } else {
-    // Fallback: fetch if not cached
-    console.log('⚠️ No cached residents data, fetching in AddUserModal...');
     loadingResidents.value = true;
     try {
       allResidents.value = await UserService.getResidents();
@@ -318,7 +315,7 @@ function getFullName(r) {
 
 function getImageUrl(r) {
   return r.information?.image_path
-    ? `/storage/${r.information.image_path}`
+    ? `${baseUrl}/storage/${r.information.image_path}`
     : null
 }
 
