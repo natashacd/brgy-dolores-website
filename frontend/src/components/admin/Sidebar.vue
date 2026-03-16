@@ -185,7 +185,7 @@
                 <router-link
                   to="/admin/service-requests"
                   class="flex items-center gap-4 px-3 py-2.5 rounded-lg text-base transition-colors"
-                  :class="isActiveRoute('/admin/service-requests') && !isActiveRoute('/admin/service-requests/disapproved') && !isActiveRoute('/admin/service-requests/approved') ? 'bg-[#2a2f3f] text-white' : 'text-gray-400 hover:bg-[#252a3a] hover:text-white'"
+                  :class="isActiveRoute('/admin/service-requests') && !isActiveRoute('/admin/service-requests/disapproved') && !isActiveRoute('/admin/service-requests/approved') && !isActiveRoute('/admin/service-requests/released') ? 'bg-[#2a2f3f] text-white' : 'text-gray-400 hover:bg-[#252a3a] hover:text-white'"
                   @click="closeMobileSidebar"
                 >
                   <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -550,24 +550,4 @@ const handleLogout = async () => {
   transform: translateY(-10px);
 }
 
-[title] {
-  position: relative;
-}
-[title]:hover::after {
-  content: attr(title);
-  position: absolute;
-  left: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-  background: #1a1f2e;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  white-space: nowrap;
-  margin-left: 8px;
-  z-index: 60;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  border: 1px solid #2a2f3f;
-}
 </style>
