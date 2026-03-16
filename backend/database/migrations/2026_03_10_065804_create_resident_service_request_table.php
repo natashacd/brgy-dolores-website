@@ -14,6 +14,8 @@ return new class extends Migration
                 ->constrained('users')
                 ->cascadeOnDelete();
             $table->string('type');
+            $table->string('image_path');
+            $table->string('preferred_date');
             $table->text('notes');
             $table->string('status');
             $table->timestamps();
