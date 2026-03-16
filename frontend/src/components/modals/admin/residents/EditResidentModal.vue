@@ -214,6 +214,8 @@
             <div class="flex flex-col gap-1.5">
               <label class="text-xs font-semibold text-slate-600">Birth Date <span class="text-red-400">*</span></label>
               <input v-model="form.birth_date" type="date"
+                :max="maxDate"
+                @input="validateBirthDate"
                 class="border rounded-xl px-3 py-2 text-sm focus:outline-none transition-all bg-slate-50 focus:bg-white"
                 :class="errors.birth_date ? 'border-red-300' : 'border-slate-200 focus:border-[#3d4f7c]/50'"/>
               <span v-if="errors.birth_date" class="text-[10px] text-red-400">{{ errors.birth_date }}</span>
@@ -367,17 +369,18 @@
             </div>
             <h3 class="text-sm font-bold text-slate-700">Account Details</h3>
           </div>
-
+          
           <div class="grid grid-cols-2 gap-3">
             <div class="flex flex-col gap-1.5">
               <label class="text-xs font-semibold text-slate-600">Role <span class="text-red-400">*</span></label>
-              <select v-model="form.role_id"
-                class="border rounded-xl px-3 py-2 text-sm focus:outline-none transition-all bg-slate-50 focus:bg-white appearance-none cursor-pointer"
-                :class="errors.role_id ? 'border-red-300' : 'border-slate-200 focus:border-[#3d4f7c]/50'">
-                <option value="" disabled>Select a role</option>
-                <option v-for="role in roles" :key="role.id" :value="role.id">{{ role.role_name }}</option>
+              <select 
+                v-model="form.role_id"
+                disabled
+                class="border rounded-xl px-3 py-2 text-sm focus:outline-none transition-all bg-slate-100 cursor-not-allowed text-slate-500 border-slate-200"
+              >
+                <option :value="residentRoleId">Resident</option>
               </select>
-              <span v-if="errors.role_id" class="text-[10px] text-red-400">{{ errors.role_id }}</span>
+              <span class="text-[10px] text-slate-400">Role is automatically set to Resident</span>
             </div>
             <div class="flex flex-col gap-1.5">
               <label class="text-xs font-semibold text-slate-600">Password</label>
@@ -399,7 +402,7 @@
             </div>
           </div>
 
-          <!-- Status radio buttons -->
+          <!-- Status radio buttons (keep as is) -->
           <div class="flex flex-col gap-2">
             <label class="text-xs font-semibold text-slate-600">Status</label>
             <div class="flex gap-3">
@@ -422,7 +425,7 @@
             </div>
           </div>
 
-          <!-- Summary card with image preview -->
+          <!-- Summary card with image preview (keep as is) -->
           <div class="mt-4 p-4 bg-[#3d4f7c]/5 border border-[#3d4f7c]/15 rounded-xl">
             <p class="text-xs font-bold text-[#3d4f7c] mb-3 flex items-center gap-1.5">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -469,7 +472,7 @@
               </div>
               <div class="flex justify-between">
                 <span class="text-slate-400">Role</span>
-                <span class="font-semibold text-slate-700">{{ getRoleName(form.role_id) || '—' }}</span>
+                <span class="font-semibold text-slate-700">Resident</span>
               </div>
             </div>
           </div>
@@ -599,20 +602,32 @@ const form = ref({
   role_id: "", status: 1,
 });
 
-// Helper to get role name by ID
-function getRoleName(roleId) {
-  if (!roleId || !props.roles.length) return '';
-  const role = props.roles.find(r => r.id === roleId);
-  return role?.role_name || '';
+const maxDate = computed(() => {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+});
+
+function validateBirthDate(event) {
+  const selectedDate = new Date(event.target.value);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  if (selectedDate > today) {
+    form.value.birth_date = '';
+  } else {
+    errors.value.birth_date = '';
+  }
 }
 
-// Step validation
 function isStepValid(step) {
   const f = form.value;
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email);
   
-  if (step === 1) return true; // Image is optional in edit
-  if (step === 2) return !!(f.first_name && f.last_name && f.email && emailValid && f.contact_number && f.sex && f.birth_place && f.birth_date && f.civil_status && f.nationality);
+  if (step === 1) return true; 
+  if (step === 2) return !!(f.first_name && f.last_name && f.email && emailValid && f.contact_number && f.sex && f.birth_place && f.birth_date && f.civil_status && f.nationality && f.occupation && f.educational_attainment);
   if (step === 3) return !!(f.emergency_contact_person && f.emergency_contact_number && f.emergency_contact_relationship);
   if (step === 4) return !!(f.house_no && f.sitio && f.latitude && f.longitude);
   return true;
@@ -624,7 +639,6 @@ function nextStep() {
   }
 }
 
-// Image upload functions
 function triggerFileInput() {
   fileInput.value?.click();
 }
@@ -690,12 +704,27 @@ function isValidPhoneNumber(phone) {
   return cleaned.length === 11 && cleaned.startsWith('0');
 }
 
+// Add this computed property to get the Resident role ID
+const residentRoleId = computed(() => {
+  if (!props.roles || props.roles.length === 0) {
+    return '';
+  }
+  const residentRole = props.roles.find(role => {
+    const roleName = (role.role_name || role.name || '').toLowerCase();
+    return roleName === 'resident' || 
+           roleName.includes('resident') || 
+           roleName === 'residents';
+  });
+  
+  return residentRole?.id || '';
+});
+
+// Update the watch to use residentRoleId
 watch(() => props.resident, (resident) => {
   if (resident) {
     const info = resident.information || {};
     const addr = resident.address || {};
     
-    // Set current image
     if (info.image_path) {
       const baseUrl = import.meta.env.VITE_API_URL || '';
       currentImage.value = `${baseUrl}/storage/${info.image_path}`;
@@ -725,9 +754,15 @@ watch(() => props.resident, (resident) => {
       sitio: addr.sitio ?? "", 
       latitude: addr.latitude ?? "",
       longitude: addr.longitude ?? "", 
-      role_id: resident.role_id || "",
+      role_id: residentRoleId.value, // Always set to Resident role ID
       status: resident.status?.status ? 1 : 0,
     };
+  }
+}, { immediate: true });
+
+watch(() => props.roles, (newRoles) => {
+  if (newRoles && newRoles.length > 0 && props.resident) {
+    form.value.role_id = residentRoleId.value;
   }
 }, { immediate: true });
 
@@ -746,7 +781,19 @@ function validate() {
   
   if (!form.value.sex) newErrors.sex = "Sex is required.";
   if (!form.value.birth_place) newErrors.birth_place = "Birth place is required.";
-  if (!form.value.birth_date) newErrors.birth_date = "Birth date is required.";
+  
+  if (!form.value.birth_date) {
+    newErrors.birth_date = "Birth date is required.";
+  } else {
+    const selectedDate = new Date(form.value.birth_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (selectedDate > today) {
+      newErrors.birth_date = "Birth date cannot be in the future.";
+    }
+  }
+  
   if (!form.value.civil_status) newErrors.civil_status = "Civil status is required.";
   if (!form.value.nationality) newErrors.nationality = "Nationality is required.";
   
@@ -763,12 +810,13 @@ function validate() {
   if (!form.value.sitio) newErrors.sitio = "Sitio is required.";
   if (!form.value.latitude) newErrors.latitude = "Latitude is required.";
   if (!form.value.longitude) newErrors.longitude = "Longitude is required.";
-  if (!form.value.role_id) newErrors.role_id = "Role is required.";
+  
   
   errors.value = newErrors;
   
   return Object.keys(newErrors).length === 0;
 }
+
 
 async function submit() {
   if (!validate()) {

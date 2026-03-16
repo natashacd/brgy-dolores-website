@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-full bg-[#f5f6fa] p-6 lg:p-8">
+  <div class="min-h-full bg-[#f5f6fa] p-4 sm:p-6 lg:p-8">
     <component :is="'style'">
       @import
       url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
@@ -7,19 +7,21 @@
 
     <!-- Page Header with Dark Blue Theme -->
     <div
-      class="bg-white rounded-xl shadow-sm border border-slate-100 px-6 py-4 mb-8"
+      class="bg-white rounded-xl shadow-sm border border-slate-100 px-4 sm:px-6 py-4 mb-4 sm:mb-8"
     >
       <div
         class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
-        <div class="flex items-center gap-4">
-          <div class="w-1.5 h-10 rounded-full bg-[#3d4f7c]"></div>
+        <div class="flex items-center gap-3 sm:gap-4">
+          <div class="w-1.5 h-8 sm:h-10 rounded-full bg-[#3d4f7c]"></div>
           <div
-            class="w-11 h-11 rounded-xl flex items-center justify-center bg-[#3d4f7c] bg-opacity-10 text-[#3d4f7c]"
+            class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center bg-[#3d4f7c] bg-opacity-10 text-[#3d4f7c] flex-shrink-0"
           >
             <svg
-              width="22"
-              height="22"
+              width="20"
+              height="20"
+              sm:width="22"
+              sm:height="22"
               fill="none"
               stroke="currentColor"
               stroke-width="1.8"
@@ -32,18 +34,18 @@
               />
             </svg>
           </div>
-          <div>
-            <h1 class="text-3xl font-semibold text-slate-800 tracking-tight">
+          <div class="min-w-0 flex-1">
+            <h1 class="text-2xl sm:text-3xl font-semibold text-slate-800 tracking-tight truncate">
               Resident Management
             </h1>
-            <p class="text-sm text-slate-500 mt-1">
+            <p class="text-xs sm:text-sm text-slate-500 mt-1 truncate">
               Manage all residents and their information.
             </p>
           </div>
         </div>
 
         <button
-          class="inline-flex items-center gap-2.5 text-white text-base font-medium px-5 py-3 rounded-lg shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-95 transition-all duration-150 border-0 cursor-pointer"
+          class="inline-flex items-center justify-center gap-2 text-white text-sm sm:text-base font-medium px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-95 transition-all duration-150 border-0 cursor-pointer whitespace-nowrap"
           style="background-color: #3d4f7c"
           @mouseenter="
             (e) => (e.currentTarget.style.backgroundColor = '#252b3b')
@@ -54,12 +56,15 @@
           @click="showAddModal = true"
         >
           <svg
-            width="18"
-            height="18"
+            width="16"
+            height="16"
+            sm:width="18"
+            sm:height="18"
             fill="none"
             stroke="currentColor"
             stroke-width="2"
             viewBox="0 0 24 24"
+            class="flex-shrink-0"
           >
             <path
               stroke-linecap="round"
@@ -67,17 +72,17 @@
               d="M12 4v16m8-8H4"
             />
           </svg>
-          Add New Resident
+          <span class="truncate">Add Resident</span>
         </button>
       </div>
     </div>
 
     <!-- Search & Filter Bar -->
-    <div class="bg-white rounded-xl border border-slate-100 p-4 mb-6 shadow-sm">
+    <div class="bg-white rounded-xl border border-slate-100 p-3 sm:p-4 mb-4 sm:mb-6 shadow-sm">
       <div class="flex flex-col lg:flex-row lg:items-center gap-3">
-        <div class="relative flex-1">
+        <div class="relative flex-1 min-w-0">
           <svg
-            class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
+            class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
             fill="none"
             stroke="currentColor"
             stroke-width="2"
@@ -92,12 +97,12 @@
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Search residents by name, email or contact number..."
-            class="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3d4f7c] focus:ring-opacity-20 focus:border-[#3d4f7c] hover:border-slate-300 transition-all bg-slate-50 focus:bg-white"
+            placeholder="Search residents..."
+            class="w-full pl-10 pr-16 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3d4f7c] focus:ring-opacity-20 focus:border-[#3d4f7c] hover:border-slate-300 transition-all bg-slate-50 focus:bg-white truncate"
           />
           <span
             v-if="searchQuery"
-            class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md whitespace-nowrap"
           >
             {{ filteredResidents.length }} found
           </span>
@@ -107,7 +112,7 @@
           <button
             v-if="hasActiveFilters"
             @click="resetFilters"
-            class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-red-600 bg-slate-50 hover:bg-red-50 border border-slate-200 hover:border-red-200 px-3 py-2.5 rounded-xl transition-all cursor-pointer"
+            class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-red-600 bg-slate-50 hover:bg-red-50 border border-slate-200 hover:border-red-200 px-3 py-2.5 rounded-xl transition-all cursor-pointer whitespace-nowrap"
           >
             <svg
               width="11"
@@ -123,6 +128,7 @@
                 d="M6 18L18 6M6 6l12 12"
               />
             </svg>
+            <span class="hidden sm:inline">Clear</span>
           </button>
         </div>
       </div>
@@ -134,47 +140,45 @@
     >
       <!-- Table Header with Dark Blue Gradient -->
       <div
-        class="px-6 py-4 bg-gradient-to-r from-[#3d4f7c] to-[#252b3b] border-b border-slate-100"
+        class="px-4 sm:px-6 py-4 bg-gradient-to-r from-[#3d4f7c] to-[#252b3b] border-b border-slate-100"
       >
         <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-1.5 h-8 rounded-full bg-white bg-opacity-20"></div>
-            <h2 class="text-lg font-semibold text-white tracking-tight">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-1.5 h-8 rounded-full bg-white bg-opacity-20 flex-shrink-0"></div>
+            <h2 class="text-base sm:text-lg font-semibold text-white tracking-tight truncate">
               Residents List
             </h2>
           </div>
         </div>
       </div>
 
-      <!-- Loading State -->
-
-      <!-- Table -->
+      <!-- Table with horizontal scroll for mobile -->
       <div class="overflow-x-auto">
-        <table class="w-full">
+        <table class="w-full min-w-[800px] sm:min-w-full table-auto">
           <thead>
             <tr class="border-b border-slate-100 bg-slate-50/60">
               <th
-                class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                class="text-left px-4 sm:px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest"
               >
                 Resident
               </th>
               <th
-                class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                class="text-left px-4 sm:px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest"
               >
                 Email
               </th>
               <th
-                class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                class="text-left px-4 sm:px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest hidden sm:table-cell"
               >
                 Contact
               </th>
               <th
-                class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                class="text-left px-4 sm:px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest hidden md:table-cell"
               >
                 Address
               </th>
               <th
-                class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest w-28"
+                class="text-left px-4 sm:px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest w-24 sm:w-28"
               >
                 Actions
               </th>
@@ -202,39 +206,40 @@
               class="border-b border-slate-50 hover:bg-[#1a1f2e] hover:bg-opacity-5 transition-colors duration-100 group"
             >
               <!-- Resident with Avatar -->
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-3">
+              <td class="px-4 sm:px-6 py-4">
+                <div class="flex items-center gap-2 sm:gap-3 min-w-0">
                   <div
-                    class="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold text-white shadow-sm group-hover:scale-105 transition-transform duration-150 flex-shrink-0"
+                    class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center text-xs font-bold text-white shadow-sm group-hover:scale-105 transition-transform duration-150 flex-shrink-0"
                     :style="{ background: avatarBg(fullName(resident)) }"
                   >
                     {{ initials(fullName(resident)) }}
                   </div>
-                  <div>
-                    <p class="text-sm font-semibold text-slate-800">
-                      {{ fullName(resident) }}
+                  <div class="min-w-0 flex-1">
+                    <p class="text-sm font-semibold text-slate-800 truncate" :title="fullName(resident)">
+                      {{ truncateText(fullName(resident), 20) }}
                     </p>
                     <p
                       v-if="resident.information?.suffix"
-                      class="text-xs text-slate-400"
+                      class="text-xs text-slate-400 truncate"
+                      :title="resident.information.suffix"
                     >
-                      {{ resident.information.suffix }}
+                      {{ truncateText(resident.information.suffix, 15) }}
                     </p>
                   </div>
                 </div>
               </td>
 
               <!-- Email with copy button -->
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-2">
-                  <span v-if="resident.email" class="text-sm text-slate-600">{{
-                    resident.email
-                  }}</span>
+              <td class="px-4 sm:px-6 py-4">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span v-if="resident.email" class="text-sm text-slate-600 truncate" :title="resident.email">
+                    {{ truncateText(resident.email, 20) }}
+                  </span>
                   <span v-else class="text-slate-300 text-sm">—</span>
                   <button
                     v-if="resident.email"
                     @click="copyToClipboard(resident.email)"
-                    class="opacity-0 group-hover:opacity-100 transition-all text-slate-400 hover:text-[#1a1f2e] cursor-pointer"
+                    class="opacity-0 group-hover:opacity-100 transition-all text-slate-400 hover:text-[#1a1f2e] cursor-pointer flex-shrink-0"
                     title="Copy email"
                   >
                     <svg
@@ -255,11 +260,12 @@
                 </div>
               </td>
 
-              <!-- Contact -->
-              <td class="px-6 py-4">
+              <!-- Contact - Hidden on mobile -->
+              <td class="px-4 sm:px-6 py-4 hidden sm:table-cell">
                 <span
                   v-if="resident.information?.contact_number"
                   class="text-sm text-slate-600 inline-flex items-center gap-1.5"
+                  :title="resident.information.contact_number"
                 >
                   <svg
                     class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"
@@ -274,16 +280,17 @@
                       d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
                     />
                   </svg>
-                  {{ formatPhoneNumber(resident.information.contact_number) }}
+                  <span class="truncate">{{ formatPhoneNumber(resident.information.contact_number) }}</span>
                 </span>
                 <span v-else class="text-slate-300 text-sm">—</span>
               </td>
 
-              <!-- Address -->
-              <td class="px-6 py-4">
+              <!-- Address - Hidden on tablet and mobile -->
+              <td class="px-4 sm:px-6 py-4 hidden md:table-cell">
                 <div
                   v-if="resident.address"
-                  class="text-sm text-slate-600 flex items-start gap-1.5"
+                  class="text-sm text-slate-600 flex items-start gap-1.5 min-w-0"
+                  :title="fullAddress(resident)"
                 >
                   <svg
                     class="w-3.5 h-3.5 text-slate-400 mt-0.5 flex-shrink-0"
@@ -304,23 +311,25 @@
                       d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                     />
                   </svg>
-                  <span>{{ fullAddress(resident) }}</span>
+                  <span class="truncate">{{ truncateText(fullAddress(resident), 30) }}</span>
                 </div>
                 <span v-else class="text-slate-300 text-sm">—</span>
               </td>
 
               <!-- Actions -->
-              <td class="px-6 py-4">
+              <td class="px-4 sm:px-6 py-4">
                 <div class="flex items-center gap-1">
-                  <!-- Edit - Dark Blue Theme -->
+                  <!-- Edit -->
                   <button
-                    class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#1a1f2e] bg-opacity-10 text-[#3d4f7c ] border border-[#3d4f7c ] border-opacity-20 hover:bg-[#1a1f2e] hover:text-white hover:border-[#1a1f2e] hover:shadow-md hover:shadow-[#1a1f2e]/20 active:scale-95 transition-all duration-150 cursor-pointer group/btn"
+                    class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg bg-[#1a1f2e] bg-opacity-10 text-[#3d4f7c] border border-[#3d4f7c] border-opacity-20 hover:bg-[#1a1f2e] hover:text-white hover:border-[#1a1f2e] hover:shadow-md hover:shadow-[#1a1f2e]/20 active:scale-95 transition-all duration-150 cursor-pointer group/btn"
                     @click="openEditModal(resident)"
                     title="Edit resident"
                   >
                     <svg
-                      width="15"
-                      height="15"
+                      width="13"
+                      height="13"
+                      sm:width="15"
+                      sm:height="15"
                       fill="none"
                       stroke="currentColor"
                       stroke-width="2"
@@ -334,15 +343,17 @@
                       />
                     </svg>
                   </button>
-                  <!-- Delete - Red Theme -->
+                  <!-- Delete -->
                   <button
-                    class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500 border border-red-200 hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-md hover:shadow-red-200 active:scale-95 transition-all duration-150 cursor-pointer group/btn"
+                    class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500 border border-red-200 hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-md hover:shadow-red-200 active:scale-95 transition-all duration-150 cursor-pointer group/btn"
                     @click="handleDelete(resident)"
                     title="Delete resident"
                   >
                     <svg
-                      width="15"
-                      height="15"
+                      width="13"
+                      height="13"
+                      sm:width="15"
+                      sm:height="15"
                       fill="none"
                       stroke="currentColor"
                       stroke-width="2"
@@ -363,9 +374,9 @@
             <!-- Empty State -->
             <tr v-if="!loading && filteredResidents.length === 0">
               <td colspan="5" class="py-20 text-center">
-                <div class="flex flex-col items-center gap-3">
+                <div class="flex flex-col items-center gap-3 px-4">
                   <div
-                    class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center"
+                    class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center flex-shrink-0"
                   >
                     <svg
                       class="w-8 h-8 text-slate-400"
@@ -381,18 +392,18 @@
                       />
                     </svg>
                   </div>
-                  <div>
-                    <p class="text-sm font-bold text-slate-600">
+                  <div class="min-w-0">
+                    <p class="text-sm font-bold text-slate-600 truncate">
                       No residents found
                     </p>
                     <p class="text-xs text-slate-400 mt-0.5">
-                      Try adjusting your search or filter criteria
+                      Try adjusting your search
                     </p>
                   </div>
                   <button
                     v-if="hasActiveFilters"
                     @click="resetFilters"
-                    class="text-xs font-semibold text-[#1a1f2e] bg-[#1a1f2e] bg-opacity-10 hover:bg-opacity-20 border border-[#1a1f2e] border-opacity-20 px-4 py-2 rounded-xl transition-all cursor-pointer"
+                    class="text-xs font-semibold text-[#1a1f2e] bg-[#1a1f2e] bg-opacity-10 hover:bg-opacity-20 border border-[#1a1f2e] border-opacity-20 px-4 py-2 rounded-xl transition-all cursor-pointer whitespace-nowrap"
                   >
                     Clear Filters
                   </button>
@@ -406,7 +417,7 @@
       <!-- Pagination Footer -->
       <div
         v-if="!loading && filteredResidents.length > itemsPerPage"
-        class="px-6 py-3.5 border-t border-slate-100 bg-slate-50/60 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+        class="px-4 sm:px-6 py-3.5 border-t border-slate-100 bg-slate-50/60 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
       >
         <p class="text-xs text-slate-400 font-mono">
           {{ (currentPage - 1) * itemsPerPage + 1 }}–{{
@@ -415,15 +426,17 @@
           <span class="text-slate-300 mx-1">/</span>
           {{ filteredResidents.length }} results
         </p>
-        <div class="flex items-center gap-1.5">
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
           <button
             :disabled="currentPage === 1"
             @click="currentPage--"
-            class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed hover:border-[#1a1f2e] hover:text-[#1a1f2e] hover:bg-[#1a1f2e] hover:bg-opacity-5 transition-all cursor-pointer"
+            class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed hover:border-[#1a1f2e] hover:text-[#1a1f2e] hover:bg-[#1a1f2e] hover:bg-opacity-5 transition-all cursor-pointer flex-shrink-0"
           >
             <svg
-              width="13"
-              height="13"
+              width="11"
+              height="11"
+              sm:width="13"
+              sm:height="13"
               fill="none"
               stroke="currentColor"
               stroke-width="2.5"
@@ -445,7 +458,7 @@
                 Math.abs(page - currentPage) <= 1
               "
               @click="currentPage = page"
-              class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all cursor-pointer"
+              class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all cursor-pointer flex-shrink-0"
               :class="
                 page === currentPage
                   ? 'bg-[#1a1f2e] text-white shadow-md shadow-[#1a1f2e]/20'
@@ -456,7 +469,7 @@
             </button>
             <span
               v-else-if="Math.abs(page - currentPage) === 2"
-              class="w-8 h-8 flex items-end justify-center text-slate-300 text-xs pb-1.5"
+              class="w-7 h-7 sm:w-8 sm:h-8 flex items-end justify-center text-slate-300 text-xs pb-1.5 flex-shrink-0"
               >…</span
             >
           </template>
@@ -464,11 +477,13 @@
           <button
             :disabled="currentPage === totalPages"
             @click="currentPage++"
-            class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed hover:border-[#1a1f2e] hover:text-[#1a1f2e] hover:bg-[#1a1f2e] hover:bg-opacity-5 transition-all cursor-pointer"
+            class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed hover:border-[#1a1f2e] hover:text-[#1a1f2e] hover:bg-[#1a1f2e] hover:bg-opacity-5 transition-all cursor-pointer flex-shrink-0"
           >
             <svg
-              width="13"
-              height="13"
+              width="11"
+              height="11"
+              sm:width="13"
+              sm:height="13"
               fill="none"
               stroke="currentColor"
               stroke-width="2.5"
@@ -487,7 +502,7 @@
       <!-- Simple count -->
       <div
         v-else-if="!loading && filteredResidents.length > 0"
-        class="px-6 py-3.5 border-t border-slate-100 bg-slate-50/60"
+        class="px-4 sm:px-6 py-3.5 border-t border-slate-100 bg-slate-50/60"
       >
         <p class="text-xs text-slate-400 font-mono text-center sm:text-left">
           Showing
@@ -530,6 +545,12 @@ import {
   setResidents,
   setRoles,
 } from "@/utils/dataStore";
+
+// Helper function to truncate long text
+function truncateText(text, maxLength = 30) {
+  if (!text) return text;
+  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+}
 
 const residents = ref([]);
 const roles = ref([]);
@@ -691,7 +712,7 @@ function resetFilters() {
 async function handleDelete(resident) {
   const result = await Swal.fire({
     title: "Delete Resident?",
-    html: `Are you sure you want to delete <strong>${fullName(resident)}</strong>?<br><br><span class="text-xs text-slate-500">This action cannot be undone.</span>`,
+    html: `Are you sure you want to delete <strong>${truncateText(fullName(resident), 30)}</strong>?<br><br><span class="text-xs text-slate-500">This action cannot be undone.</span>`,
     icon: "warning",
     showCancelButton: true,
     confirmButtonColor: "#d33",
