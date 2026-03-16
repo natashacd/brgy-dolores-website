@@ -34,10 +34,11 @@
           <select v-model="filters.type"
             class="w-full sm:w-auto appearance-none bg-slate-50 border border-slate-200 text-slate-600 text-xs font-semibold rounded-xl px-3 py-2.5 cursor-pointer hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#3d4f7c]/20 focus:border-[#3d4f7c] transition-all">
             <option value="">All Types</option>
-            <option value="barangay_clearance">Barangay Clearance</option>
-            <option value="certificate_of_indigency">Certificate of Indigency</option>
-            <option value="certificate_of_residency">Certificate of Residency</option>
-            <option value="business_permit">Business Permit</option>
+            <option value="Brgy ID">Brgy ID</option>
+            <option value="Brgy Business Clearance">Brgy Business Clearance</option>
+            <option value="Brgy Certificate of Indigency">Brgy Certificate of Indigency</option>
+            <option value="Brgy Certificate of Residency">Brgy Certificate of Residency</option>
+            <option value="Brgy Certification">Brgy Certification</option>
           </select>
           <button v-if="hasActiveFilters" @click="resetFilters"
             class="w-9 h-9 flex items-center justify-center text-slate-500 hover:text-red-600 bg-slate-50 hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded-xl transition-all cursor-pointer flex-shrink-0">
@@ -74,7 +75,7 @@
 
       <div v-else>
 
-        <!-- ── DESKTOP TABLE ── -->
+        <!-- Desktop Table -->
         <div class="hidden md:block overflow-x-auto">
           <table class="w-full">
             <thead>
@@ -101,13 +102,13 @@
                     </div>
                   </div>
                 </td>
-                <td class="px-6 py-4"><span class="text-sm text-slate-600">{{ formatType(req.type) }}</span></td>
+                <td class="px-6 py-4"><span class="text-sm text-slate-600">{{ req.type }}</span></td>
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-1.5 text-sm text-slate-500">
                     <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
-                    {{ formatDate(req.disapproved_at || req.updated_at) }}
+                    {{ formatDate(req.updated_at) }}
                   </div>
                 </td>
                 <td class="px-6 py-4 max-w-xs">
@@ -125,7 +126,6 @@
                 </td>
               </tr>
 
-              <!-- Empty -->
               <tr v-if="filteredRequests.length === 0">
                 <td colspan="6" class="py-16 text-center">
                   <div class="flex flex-col items-center gap-3">
@@ -143,10 +143,8 @@
           </table>
         </div>
 
-        <!-- ── MOBILE CARD LIST ── -->
+        <!-- Mobile Cards -->
         <div class="md:hidden">
-
-          <!-- Empty -->
           <div v-if="filteredRequests.length === 0" class="flex flex-col items-center gap-3 py-16 text-center px-4">
             <div class="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center">
               <svg class="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -157,18 +155,16 @@
             <p class="text-xs text-slate-400">All service requests are currently approved</p>
           </div>
 
-          <!-- Cards -->
           <div class="p-3 space-y-3">
             <div v-for="req in paginatedRequests" :key="req.id"
                  class="bg-white rounded-2xl border border-slate-100 overflow-hidden cursor-pointer active:scale-[0.99] transition-all"
                  style="box-shadow: 0 2px 8px rgba(0,0,0,0.06);"
                  @click="openViewModal(req)">
 
-              <!-- Card top: service type + disapproved badge -->
               <div class="px-4 pt-4 pb-3 flex items-start justify-between gap-3">
                 <div class="min-w-0">
                   <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Service Type</p>
-                  <p class="text-base font-bold text-slate-800 leading-tight">{{ formatType(req.type) }}</p>
+                  <p class="text-base font-bold text-slate-800 leading-tight">{{ req.type }}</p>
                 </div>
                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap flex-shrink-0 mt-0.5 bg-red-50 text-red-600 border border-red-200">
                   <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
@@ -176,13 +172,9 @@
                 </span>
               </div>
 
-              <!-- Divider -->
               <div class="mx-4 h-px bg-slate-100"></div>
 
-              <!-- Detail grid 2×2 -->
               <div class="grid grid-cols-2 gap-0 p-3">
-
-                <!-- Resident -->
                 <div class="flex items-start gap-2 p-2 rounded-xl">
                   <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style="background:#3d4f7c12">
                     <svg width="11" height="11" fill="none" stroke="#3d4f7c" stroke-width="2" viewBox="0 0 24 24">
@@ -194,8 +186,6 @@
                     <p class="text-xs font-semibold text-slate-700 mt-0.5 truncate">{{ req.resident_name }}</p>
                   </div>
                 </div>
-
-                <!-- Request ID -->
                 <div class="flex items-start gap-2 p-2 rounded-xl">
                   <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style="background:#05966912">
                     <svg width="11" height="11" fill="none" stroke="#059669" stroke-width="2" viewBox="0 0 24 24">
@@ -207,8 +197,6 @@
                     <p class="text-xs font-semibold text-slate-700 mt-0.5 font-mono">#SR-{{ String(req.id).padStart(4, '0') }}</p>
                   </div>
                 </div>
-
-                <!-- Disapproved Date -->
                 <div class="flex items-start gap-2 p-2 rounded-xl">
                   <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style="background:#dc262612">
                     <svg width="11" height="11" fill="none" stroke="#dc2626" stroke-width="2" viewBox="0 0 24 24">
@@ -217,11 +205,9 @@
                   </div>
                   <div class="min-w-0">
                     <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Disapproved</p>
-                    <p class="text-xs font-semibold text-slate-700 mt-0.5">{{ formatDate(req.disapproved_at || req.updated_at) }}</p>
+                    <p class="text-xs font-semibold text-slate-700 mt-0.5">{{ formatDate(req.updated_at) }}</p>
                   </div>
                 </div>
-
-                <!-- Contact -->
                 <div class="flex items-start gap-2 p-2 rounded-xl">
                   <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style="background:#7c3aed12">
                     <svg width="11" height="11" fill="none" stroke="#7c3aed" stroke-width="2" viewBox="0 0 24 24">
@@ -233,16 +219,13 @@
                     <p class="text-xs font-semibold text-slate-700 mt-0.5 truncate">{{ req.resident_contact || '—' }}</p>
                   </div>
                 </div>
-
               </div>
 
-              <!-- Remarks strip -->
               <div v-if="req.remarks" class="mx-3 mb-3 px-3 py-2.5 bg-amber-50 rounded-xl border border-amber-100">
                 <p class="text-[9px] font-bold text-amber-600 uppercase tracking-wider mb-0.5">Disapproval Reason</p>
                 <p class="text-xs text-amber-800 line-clamp-2">{{ req.remarks }}</p>
               </div>
 
-              <!-- View details -->
               <div v-else class="mx-3 mb-3 px-3 py-2 bg-[#3d4f7c]/5 rounded-xl flex items-center justify-between border border-[#3d4f7c]/10">
                 <span class="text-[11px] font-semibold text-[#3d4f7c]">View Full Details</span>
                 <svg width="13" height="13" fill="none" stroke="#3d4f7c" stroke-width="2.5" viewBox="0 0 24 24">
@@ -321,11 +304,11 @@
               </div>
               <div>
                 <p class="text-sm font-semibold text-red-700">Request Disapproved</p>
-                <p class="text-xs text-red-500">Disapproved on {{ formatDate(selectedRequest.disapproved_at || selectedRequest.updated_at) }}</p>
+                <p class="text-xs text-red-500">Disapproved on {{ formatDate(selectedRequest.updated_at) }}</p>
               </div>
             </div>
 
-            <!-- Resident Card — compact -->
+            <!-- Resident Card -->
             <div class="bg-[#3d4f7c] rounded-xl p-3.5 text-white flex items-center gap-3">
               <div class="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-bold border-2 border-white/30 flex-shrink-0"
                 :style="{ background: getAvatarColor(selectedRequest.resident_name) }">
@@ -338,7 +321,7 @@
               </div>
             </div>
 
-            <!-- Info Grid — 1 col mobile, 2 col sm+ -->
+            <!-- Info Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <div class="bg-slate-50 rounded-xl p-3 space-y-2">
                 <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Resident Info</p>
@@ -358,15 +341,15 @@
                 <div class="space-y-1.5 text-xs">
                   <div class="flex justify-between items-baseline gap-2">
                     <span class="text-slate-400 flex-shrink-0">Type</span>
-                    <span class="font-medium text-slate-700 text-right">{{ formatType(selectedRequest.type) }}</span>
+                    <span class="font-medium text-slate-700 text-right">{{ selectedRequest.type }}</span>
                   </div>
                   <div class="flex justify-between items-baseline gap-2">
                     <span class="text-slate-400 flex-shrink-0">Preferred Date</span>
-                    <span class="font-medium text-slate-700 text-right">{{ formatDate(selectedRequest.preferred_date) }}</span>
+                    <span class="font-medium text-slate-700 text-right">{{ selectedRequest.preferred_date }}</span>
                   </div>
                   <div class="flex justify-between items-baseline gap-2">
                     <span class="text-slate-400 flex-shrink-0">Disapproved</span>
-                    <span class="font-medium text-slate-700 text-right">{{ formatDate(selectedRequest.disapproved_at || selectedRequest.updated_at) }}</span>
+                    <span class="font-medium text-slate-700 text-right">{{ formatDate(selectedRequest.updated_at) }}</span>
                   </div>
                 </div>
               </div>
@@ -380,7 +363,9 @@
                 </svg>
                 Disapproval Remarks
               </p>
-              <p class="text-xs text-amber-800 bg-white p-2.5 rounded-lg border border-amber-100 leading-relaxed">{{ selectedRequest.remarks || 'No remarks provided' }}</p>
+              <p class="text-xs text-amber-800 bg-white p-2.5 rounded-lg border border-amber-100 leading-relaxed">
+                {{ selectedRequest.remarks || 'No remarks provided' }}
+              </p>
             </div>
 
             <div class="flex justify-end">
@@ -403,60 +388,57 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 import ServiceRequestService from '@/services/Admin/ServiceRequestService'
 import Swal from 'sweetalert2'
 
-const requests    = ref([])
-const loading     = ref(false)
-const currentPage = ref(1)
+const requests     = ref([])
+const loading      = ref(false)
+const currentPage  = ref(1)
 const itemsPerPage = 6
 const showViewModal   = ref(false)
 const selectedRequest = ref(null)
 
-const filters = reactive({ search: '', timeframe: '', type: '' })
-
-const sampleRequests = [
-  { id: 101, resident_name: 'Maria Santos', resident_email: 'maria.santos@email.com', resident_contact: '0912 345 6789', type: 'certificate_of_indigency', preferred_date: '2024-03-20', created_at: '2024-03-10', updated_at: '2024-03-15', disapproved_at: '2024-03-15', remarks: 'Incomplete requirements. Please submit proof of income and valid ID.', address: { house_no: '123', purok: '3', sitio: 'Maligaya' } },
-  { id: 102, resident_name: 'Juan Dela Cruz', resident_email: 'juan.dc@email.com', resident_contact: '0923 456 7890', type: 'barangay_clearance', preferred_date: '2024-03-18', created_at: '2024-03-08', updated_at: '2024-03-14', disapproved_at: '2024-03-14', remarks: 'Invalid information provided. Please update your details.', address: { house_no: '456', purok: '7', sitio: 'Masagana' } },
-  { id: 103, resident_name: 'Ana Gonzales', resident_email: 'ana.g@email.com', resident_contact: '0934 567 8901', type: 'business_permit', preferred_date: '2024-03-22', created_at: '2024-03-12', updated_at: '2024-03-16', disapproved_at: '2024-03-16', remarks: 'Business permit requires DTI registration.', address: { house_no: '789', purok: '2', sitio: 'Mabuhay' } },
-  { id: 104, resident_name: 'Pedro Reyes', resident_email: 'pedro.r@email.com', resident_contact: '0945 678 9012', type: 'certificate_of_residency', preferred_date: '2024-03-19', created_at: '2024-03-09', updated_at: '2024-03-13', disapproved_at: '2024-03-13', remarks: 'Proof of residency required. Please submit utility bill.', address: { house_no: '101', purok: '5', sitio: 'Masunurin' } }
-]
+const filters = reactive({ search: '', type: '' })
 
 const AVATAR_COLORS = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#9333ea','#ea580c']
 function getAvatarColor(name = '') { let h = 0; for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h); return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length] }
 function getInitials(name = '') { const p = name.trim().split(' '); return p.length === 1 ? p[0][0]?.toUpperCase() || '?' : (p[0][0] + p[p.length - 1][0]).toUpperCase() }
-function formatType(type = '') { return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) }
 function formatDate(date) { if (!date) return '—'; return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) }
-function formatAddress(req) { const addr = req.address; if (!addr) return '—'; return [addr.house_no ? `#${addr.house_no}` : '', addr.purok ? `Purok ${addr.purok}` : '', addr.sitio].filter(Boolean).join(', ') || '—' }
+function formatAddress(req) {
+  const parts = []
+  if (req.resident_house_no) parts.push(`#${req.resident_house_no}`)
+  if (req.resident_purok)    parts.push(`Purok ${req.resident_purok}`)
+  if (req.resident_sitio)    parts.push(req.resident_sitio)
+  return parts.join(', ') || '—'
+}
 
-const hasActiveFilters = computed(() => filters.search || filters.timeframe || filters.type)
-const filteredRequests = computed(() => {
-  let r = [...sampleRequests]
-  if (filters.search) { const s = filters.search.toLowerCase(); r = r.filter(x => x.resident_name?.toLowerCase().includes(s) || x.type?.toLowerCase().includes(s)) }
-  if (filters.type) r = r.filter(x => x.type === filters.type)
-  if (filters.timeframe) {
-    const now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    r = r.filter(x => {
-      const date = new Date(x.disapproved_at || x.updated_at)
-      if (filters.timeframe === 'today') return date >= today
-      if (filters.timeframe === 'week') { const w = new Date(today); w.setDate(w.getDate() - 7); return date >= w }
-      if (filters.timeframe === 'month') return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()
-      if (filters.timeframe === 'year') return date.getFullYear() === now.getFullYear()
-      return true
-    })
+const hasActiveFilters  = computed(() => filters.search || filters.type)
+const filteredRequests  = computed(() => {
+  let r = requests.value
+  if (filters.search) {
+    const s = filters.search.toLowerCase()
+    r = r.filter(x => x.resident_name?.toLowerCase().includes(s) || x.type?.toLowerCase().includes(s))
   }
+  if (filters.type) r = r.filter(x => x.type === filters.type)
   return r
 })
 const totalPages        = computed(() => Math.max(1, Math.ceil(filteredRequests.value.length / itemsPerPage)))
 const paginatedRequests = computed(() => { const s = (currentPage.value - 1) * itemsPerPage; return filteredRequests.value.slice(s, s + itemsPerPage) })
 
-function openViewModal(req) { selectedRequest.value = req; showViewModal.value = true }
-function resetFilters() { filters.search = ''; filters.timeframe = ''; filters.type = ''; currentPage.value = 1 }
-
 async function fetchRequests() {
   loading.value = true
-  setTimeout(() => { requests.value = sampleRequests; loading.value = false }, 800)
+  try {
+    const data = await ServiceRequestService.getDisapproved()
+    requests.value = Array.isArray(data) ? data : (data.data ?? [])
+  } catch {
+    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load disapproved requests.', timer: 3000, showConfirmButton: false, position: 'top-end', toast: true })
+  } finally {
+    loading.value = false
+  }
 }
 
+function openViewModal(req) { selectedRequest.value = req; showViewModal.value = true }
+function resetFilters() { filters.search = ''; filters.type = ''; currentPage.value = 1 }
+
 watch(filters, () => { currentPage.value = 1 }, { deep: true })
-onMounted(() => { fetchRequests() })
+onMounted(() => fetchRequests())
 </script>
 
 <style scoped>

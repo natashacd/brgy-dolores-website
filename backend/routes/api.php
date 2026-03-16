@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\ResidentController;
 use App\Http\Controllers\Admin\ServiceRequestController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Resident\ServiceRequestController as ResidentServiceRequestController;
 
 Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth:sanctum');
@@ -41,12 +42,10 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::prefix('admin/service-requests')->group(function () {
-        Route::get('/staff', [ServiceRequestController::class, 'getStaff']);
         Route::get('/', [ServiceRequestController::class, 'index']);
-        Route::get('/{id}', [ServiceRequestController::class, 'show']);
-        Route::put('/{id}/reassign', [ServiceRequestController::class, 'reassign']);
         Route::put('/{id}/approve', [ServiceRequestController::class, 'approve']);
-        Route::put('/{id}/cancel', [ServiceRequestController::class, 'cancel']);
+        Route::put('/{id}/reject', [ServiceRequestController::class, 'reject']);
+        Route::put('/{id}/release', [ServiceRequestController::class, 'release']);
     });
 
     // Admin API routes
@@ -73,5 +72,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/announcements/{id}/duplicate', [AnnouncementController::class, 'duplicate']);
         Route::post('/announcements/bulk-delete', [AnnouncementController::class, 'bulkDelete']);
         Route::post('/announcements/bulk-update-status', [AnnouncementController::class, 'bulkUpdateStatus']);
+    });
+
+    Route::prefix('resident')->group(function () {
+        Route::get('/service-requests', [ResidentServiceRequestController::class, 'index']);
+        Route::post('/service-requests', [ResidentServiceRequestController::class, 'store']);
+        Route::post('/service-requests/{id}/resubmit', [ResidentServiceRequestController::class, 'resubmit']);
+        Route::delete('/service-requests/{id}/cancel', [ResidentServiceRequestController::class, 'cancel']);
     });
 });

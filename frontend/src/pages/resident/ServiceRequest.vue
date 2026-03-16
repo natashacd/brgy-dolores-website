@@ -30,17 +30,18 @@
         Available Services
       </h2>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-5 auto-rows-fr">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 auto-rows-fr">
+
         <!-- BRGY ID Request -->
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-200 hover:border-[#3d4f7c]/30 flex flex-col h-full max-w-full">
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-200 hover:border-[#3d4f7c]/30 flex flex-col h-full">
           <div class="h-2 bg-gradient-to-r from-[#3d4f7c] to-[#252b3b]"></div>
           <div class="p-5 flex flex-col flex-1">
             <div class="flex items-center justify-between mb-3">
               <span class="text-xs font-bold text-white bg-[#3d4f7c] px-2 py-1 rounded-full">ID</span>
             </div>
-            <h3 class="text-lg font-bold text-slate-800 mb-2 line-clamp-1">BRGY ID Request</h3>
-            <p class="text-sm text-slate-500 mb-4 flex-1 line-clamp-3">Apply for your Barangay ID or community identification card.</p>
-            <button 
+            <h3 class="text-lg font-bold text-slate-800 mb-2">BRGY ID Request</h3>
+            <p class="text-sm text-slate-500 mb-4 flex-1">Apply for your Barangay ID or community identification card.</p>
+            <button
               @click="openRequestModal('BRGY ID Request')"
               class="w-full inline-flex items-center justify-center gap-2 text-sm font-semibold py-2.5 px-4 rounded-xl bg-[#3d4f7c] text-white hover:bg-[#252b3b] transition-all active:scale-95 mt-auto"
             >
@@ -53,15 +54,15 @@
         </div>
 
         <!-- BRGY Business Clearance / Permit -->
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-200 hover:border-[#3d4f7c]/30 flex flex-col h-full max-w-full">
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-200 hover:border-emerald-300 flex flex-col h-full">
           <div class="h-2 bg-gradient-to-r from-emerald-600 to-emerald-700"></div>
           <div class="p-5 flex flex-col flex-1">
             <div class="flex items-center justify-between mb-3">
               <span class="text-xs font-bold text-white bg-emerald-600 px-2 py-1 rounded-full">PERMIT</span>
             </div>
-            <h3 class="text-lg font-bold text-slate-800 mb-2 line-clamp-1">BRGY Business Clearance / Permit</h3>
-            <p class="text-sm text-slate-500 mb-4 flex-1 line-clamp-3">Apply or renew business clearance and permits in your barangay.</p>
-            <button 
+            <h3 class="text-lg font-bold text-slate-800 mb-2">BRGY Business Clearance / Permit</h3>
+            <p class="text-sm text-slate-500 mb-4 flex-1">Apply or renew business clearance and permits in your barangay.</p>
+            <button
               @click="openRequestModal('BRGY Business Clearance / Permit')"
               class="w-full inline-flex items-center justify-center gap-2 text-sm font-semibold py-2.5 px-4 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition-all active:scale-95 mt-auto"
             >
@@ -74,15 +75,15 @@
         </div>
 
         <!-- BRGY Certificate of Indigency -->
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-200 hover:border-[#3d4f7c]/30 flex flex-col h-full max-w-full">
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-200 hover:border-amber-300 flex flex-col h-full">
           <div class="h-2 bg-gradient-to-r from-amber-600 to-amber-700"></div>
           <div class="p-5 flex flex-col flex-1">
             <div class="flex items-center justify-between mb-3">
               <span class="text-xs font-bold text-white bg-amber-600 px-2 py-1 rounded-full">CERTIFICATE</span>
             </div>
-            <h3 class="text-lg font-bold text-slate-800 mb-2 line-clamp-1">BRGY Certificate of Indigency</h3>
-            <p class="text-sm text-slate-500 mb-4 flex-1 line-clamp-3">Request a Barangay Certificate of Indigency for official purposes.</p>
-            <button 
+            <h3 class="text-lg font-bold text-slate-800 mb-2">BRGY Certificate of Indigency</h3>
+            <p class="text-sm text-slate-500 mb-4 flex-1">Request a Barangay Certificate of Indigency for official purposes.</p>
+            <button
               @click="openRequestModal('BRGY Certificate of Indigency')"
               class="w-full inline-flex items-center justify-center gap-2 text-sm font-semibold py-2.5 px-4 rounded-xl bg-amber-600 text-white hover:bg-amber-700 transition-all active:scale-95 mt-auto"
             >
@@ -95,15 +96,15 @@
         </div>
 
         <!-- BRGY Certificate of Residency -->
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-200 hover:border-[#3d4f7c]/30 flex flex-col h-full max-w-full">
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-200 hover:border-blue-300 flex flex-col h-full">
           <div class="h-2 bg-gradient-to-r from-blue-600 to-blue-700"></div>
           <div class="p-5 flex flex-col flex-1">
             <div class="flex items-center justify-between mb-3">
               <span class="text-xs font-bold text-white bg-blue-600 px-2 py-1 rounded-full">CERTIFICATE</span>
             </div>
-            <h3 class="text-lg font-bold text-slate-800 mb-2 line-clamp-1">BRGY Certificate of Residency</h3>
-            <p class="text-sm text-slate-500 mb-4 flex-1 line-clamp-3">Obtain your Certificate of Residency for official requirements.</p>
-            <button 
+            <h3 class="text-lg font-bold text-slate-800 mb-2">BRGY Certificate of Residency</h3>
+            <p class="text-sm text-slate-500 mb-4 flex-1">Obtain your Certificate of Residency for official requirements.</p>
+            <button
               @click="openRequestModal('BRGY Certificate of Residency')"
               class="w-full inline-flex items-center justify-center gap-2 text-sm font-semibold py-2.5 px-4 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-all active:scale-95 mt-auto"
             >
@@ -116,15 +117,15 @@
         </div>
 
         <!-- Certifications for Specific Purposes -->
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-200 hover:border-[#3d4f7c]/30 flex flex-col h-full max-w-full md:col-span-2 lg:col-span-1">
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-200 hover:border-purple-300 flex flex-col h-full md:col-span-2 lg:col-span-1">
           <div class="h-2 bg-gradient-to-r from-purple-600 to-purple-700"></div>
           <div class="p-5 flex flex-col flex-1">
             <div class="flex items-center justify-between mb-3">
               <span class="text-xs font-bold text-white bg-purple-600 px-2 py-1 rounded-full">MULTIPLE</span>
             </div>
-            <h3 class="text-lg font-bold text-slate-800 mb-2 line-clamp-1">Certifications for Specific Purposes</h3>
-            <p class="text-sm text-slate-500 mb-4 flex-1 line-clamp-3">Request Barangay certifications for school, employment, or other purposes.</p>
-            <button 
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Certifications for Specific Purposes</h3>
+            <p class="text-sm text-slate-500 mb-4 flex-1">Request Barangay certifications for school, employment, or other purposes.</p>
+            <button
               @click="openRequestModal('Certifications for Specific Purposes')"
               class="w-full inline-flex items-center justify-center gap-2 text-sm font-semibold py-2.5 px-4 rounded-xl bg-purple-600 text-white hover:bg-purple-700 transition-all active:scale-95 mt-auto"
             >
@@ -135,10 +136,11 @@
             </button>
           </div>
         </div>
+
       </div>
     </div>
 
-    <!-- Request Modal - Using Separated Component -->
+    <!-- Service Request Modal -->
     <ServiceRequestModal
       v-if="showModal"
       :service-type="selectedService"
@@ -147,131 +149,52 @@
       @submit="handleModalSubmit"
     />
 
-    <!-- View Request Modal - Using Separated Component -->
-    <ViewServiceRequestModal
-      v-if="showViewModal && selectedRequest"
-      :request="selectedRequest"
-      @close="closeViewModal"
-    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import Swal from 'sweetalert2';
-import ResidentService from "@/services/Resident/ResidentService";
+import { ref } from "vue";
+import Swal from "sweetalert2";
+import ServiceRequestService from "@/services/Resident/ServiceRequest.js";
 import ServiceRequestModal from "@/components/modals/admin/residents/ServiceRequestModal.vue";
-import ViewServiceRequestModal from "@/components/modals/resident/ViewServiceRequestModal.vue";
 
-const loading = ref(false);
-const submitting = ref(false);
-const showModal = ref(false);
-const showViewModal = ref(false);
-const selectedService = ref('');
-const selectedRequest = ref(null);
-const myRequests = ref([]);
-
-const formatDate = (dateString) => {
-  if (!dateString) return '—';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'short', 
-    day: 'numeric' 
-  });
-};
+const submitting   = ref(false);
+const showModal    = ref(false);
+const selectedService = ref("");
 
 const openRequestModal = (service) => {
   selectedService.value = service;
   showModal.value = true;
 };
 
+const closeModal = () => {
+  showModal.value = false;
+  selectedService.value = "";
+};
+
 const handleModalSubmit = async (formData) => {
   submitting.value = true;
-  
   try {
-    await ResidentService.createRequest(formData);
-    
+    await ServiceRequestService.createRequest(formData);
     await Swal.fire({
-      icon: 'success',
-      title: 'Request Submitted!',
-      text: 'Your service request has been submitted successfully.',
+      icon: "success",
+      title: "Request Submitted!",
+      text: "Your service request has been submitted successfully.",
       timer: 2000,
-      showConfirmButton: false
+      showConfirmButton: false,
     });
-    
     showModal.value = false;
-    await fetchMyRequests();
-    
   } catch (error) {
     Swal.fire({
-      icon: 'error',
-      title: 'Submission Failed',
-      text: error.response?.data?.message || 'Failed to submit request. Please try again.'
+      icon: "error",
+      title: "Submission Failed",
+      text: error.response?.data?.message || "Failed to submit request. Please try again.",
+      confirmButtonColor: "#3d4f7c",
     });
   } finally {
     submitting.value = false;
   }
 };
-
-const closeModal = () => {
-  showModal.value = false;
-};
-
-const fetchMyRequests = async () => {
-  try {
-    myRequests.value = await ResidentService.getMyRequests();
-  } catch (error) {
-    console.error('Failed to fetch requests:', error);
-  }
-};
-
-const viewRequest = (request) => {
-  selectedRequest.value = request;
-  showViewModal.value = true;
-};
-
-const closeViewModal = () => {
-  showViewModal.value = false;
-  selectedRequest.value = null;
-};
-
-const cancelRequest = async (id) => {
-  const result = await Swal.fire({
-    title: 'Cancel Request?',
-    text: 'Are you sure you want to cancel this request?',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#3d4f7c',
-    confirmButtonText: 'Yes, cancel',
-    cancelButtonText: 'No, keep it'
-  });
-  
-  if (result.isConfirmed) {
-    try {
-      await ResidentService.cancelRequest(id);
-      await fetchMyRequests();
-      Swal.fire({
-        icon: 'success',
-        title: 'Cancelled',
-        text: 'Your request has been cancelled.',
-        timer: 1500,
-        showConfirmButton: false
-      });
-    } catch (error) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Failed to cancel request.'
-      });
-    }
-  }
-};
-
-onMounted(() => {
-  fetchMyRequests();
-});
 </script>
 
 <style scoped>
@@ -280,20 +203,4 @@ onMounted(() => {
 .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
 .scrollbar-thin::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 20px; }
 .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
-
-.line-clamp-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  line-clamp: 1;
-}
-
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  line-clamp: 2;
-}
 </style>
