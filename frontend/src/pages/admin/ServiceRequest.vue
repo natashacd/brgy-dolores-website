@@ -118,7 +118,6 @@
               <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Resident</th>
               <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Service Type</th>
               <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Status</th>
-              <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Assigned To</th>
               <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Submitted</th>
               <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest w-36">Actions</th>
             </tr>
@@ -163,18 +162,6 @@
                   </span>
                   {{ formatStatus(req.status) }}
                 </span>
-              </td>
-
-              <!-- Assigned To -->
-              <td class="px-6 py-4">
-                <div v-if="req.staff_name" class="flex items-center gap-2">
-                  <div class="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
-                    :style="{ background: getAvatarColor(req.staff_name) }">
-                    {{ getInitials(req.staff_name) }}
-                  </div>
-                  <span class="text-sm text-slate-600">{{ req.staff_name }}</span>
-                </div>
-                <span v-else class="text-sm text-slate-400 italic">Unassigned</span>
               </td>
 
               <!-- Date -->
