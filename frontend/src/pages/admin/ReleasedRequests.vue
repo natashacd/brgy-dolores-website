@@ -22,25 +22,17 @@
 
     <!-- Filters -->
     <div class="bg-white rounded-xl border border-slate-100 p-3 sm:p-4 mb-5 shadow-sm">
-      <div class="flex flex-col gap-2.5">
-        <div class="relative">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-2.5">
+        <div class="relative flex-1">
           <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
-          <input v-model="filters.search" type="text" placeholder="Search by resident name or service type…"
+          <input v-model="filters.search" type="text" placeholder="Search requests…"
             class="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3d4f7c]/20 focus:border-[#3d4f7c] hover:border-slate-300 transition-all bg-slate-50 focus:bg-white"/>
         </div>
         <div class="flex items-center gap-2">
-          <select v-model="filters.timeframe"
-            class="flex-1 appearance-none bg-slate-50 border border-slate-200 text-slate-600 text-xs font-semibold rounded-xl px-3 py-2.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#3d4f7c]/20 transition-all">
-            <option value="">All Time</option>
-            <option value="today">Today</option>
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-            <option value="year">This Year</option>
-          </select>
           <select v-model="filters.type"
-            class="flex-1 appearance-none bg-slate-50 border border-slate-200 text-slate-600 text-xs font-semibold rounded-xl px-3 py-2.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#3d4f7c]/20 transition-all">
+            class="w-full sm:w-auto appearance-none bg-slate-50 border border-slate-200 text-slate-600 text-xs font-semibold rounded-xl px-3 py-2.5 cursor-pointer hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#3d4f7c]/20 focus:border-[#3d4f7c] transition-all">
             <option value="">All Types</option>
             <option value="barangay_clearance">Barangay Clearance</option>
             <option value="certificate_of_indigency">Certificate of Indigency</option>
