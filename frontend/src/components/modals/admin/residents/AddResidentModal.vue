@@ -203,6 +203,8 @@
             <div class="flex flex-col gap-1.5">
               <label class="text-xs font-semibold text-slate-600">Birth Date <span class="text-red-400">*</span></label>
               <input v-model="form.birth_date" type="date"
+                :max="maxDate"
+                @input="validateBirthDate"
                 class="border rounded-xl px-3 py-2 text-sm focus:outline-none transition-all bg-slate-50 focus:bg-white"
                 :class="errors.birth_date ? 'border-red-300' : 'border-slate-200 focus:border-[#3d4f7c]/50'"/>
               <span v-if="errors.birth_date" class="text-[10px] text-red-400">{{ errors.birth_date }}</span>
@@ -360,13 +362,13 @@
           <div class="grid grid-cols-2 gap-3">
             <div class="flex flex-col gap-1.5">
               <label class="text-xs font-semibold text-slate-600">Role <span class="text-red-400">*</span></label>
-              <select v-model="form.role_id"
-                class="border rounded-xl px-3 py-2 text-sm focus:outline-none transition-all bg-slate-50 focus:bg-white appearance-none cursor-pointer"
-                :class="errors.role_id ? 'border-red-300' : 'border-slate-200 focus:border-[#3d4f7c]/50'">
-                <option value="" disabled>Select a role</option>
-                <option v-for="role in roles" :key="role.id" :value="role.id">{{ role.role_name }}</option>
+              <select 
+                v-model="form.role_id"
+                disabled
+                class="border rounded-xl px-3 py-2 text-sm focus:outline-none transition-all bg-slate-100 cursor-not-allowed text-slate-500 border-slate-200"
+              >
+                <option :value="getResidentRoleId()">Resident</option>
               </select>
-              <span v-if="errors.role_id" class="text-[10px] text-red-400">{{ errors.role_id }}</span>
             </div>
             <div class="flex flex-col gap-1.5">
               <label class="text-xs font-semibold text-slate-600">Password</label>
@@ -462,7 +464,7 @@
             v-else
             class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white rounded-xl transition-all cursor-pointer active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed border-0"
             style="background:#3d4f7c"
-            :disabled="loading || !form.role_id"
+            :disabled="loading"  
             @click="submit"
             @mouseenter="e => { if(!e.currentTarget.disabled) e.currentTarget.style.background='#252b3b' }"
             @mouseleave="e => e.currentTarget.style.background='#3d4f7c'"
@@ -484,7 +486,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, computed  } from "vue"; 
 import ResidentService from "@/services/Admin/ResidentService";
 import Swal from 'sweetalert2';
 
@@ -535,6 +537,45 @@ const form = ref({
   role_id: '',
 });
 
+const maxDate = computed(() => {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+});
+
+function validateBirthDate(event) {
+  const selectedDate = new Date(event.target.value);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  if (selectedDate > today) {
+  
+    form.value.birth_date = '';
+  } else {
+    errors.value.birth_date = '';
+  }
+}
+
+onMounted(() => {
+  setTimeout(() => {
+    const residentRoleId = getResidentRoleId();
+    if (residentRoleId) {
+      form.value.role_id = residentRoleId;
+    }
+  }, 100);
+});
+
+// Helper function to get Resident role ID
+function getResidentRoleId() {
+  const residentRole = props.roles.find(role => 
+    role.role_name?.toLowerCase() === 'resident' || 
+    role.name?.toLowerCase() === 'resident'
+  );
+  return residentRole?.id || '';
+}
+
 // Image upload functions
 function triggerFileInput() {
   fileInput.value?.click();
@@ -583,7 +624,7 @@ function isStepValid(step) {
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email);
   
   if (step === 1) return !!imageFile.value; // Profile Image is required
-  if (step === 2) return !!(f.first_name && f.last_name && f.email && emailValid && f.contact_number && f.sex && f.birth_place && f.birth_date && f.civil_status && f.nationality);
+  if (step === 2) return !!(f.first_name && f.last_name && f.email && emailValid && f.contact_number && f.sex && f.birth_place && f.birth_date && f.civil_status && f.nationality && f.occupation && f.educational_attainment);
   if (step === 3) return !!(f.emergency_contact_person && f.emergency_contact_number && f.emergency_contact_relationship);
   if (step === 4) return !!(f.house_no && f.sitio && f.latitude && f.longitude);
   return true;
@@ -614,7 +655,6 @@ async function submit() {
 
   // Validate image
   if (!imageFile.value) newErrors.image = 'Profile image is required.';
-
   if (!f.first_name)   newErrors.first_name   = 'First name is required.';
   if (!f.last_name)    newErrors.last_name    = 'Last name is required.';
   if (!f.email)        newErrors.email        = 'Email is required.';
@@ -622,7 +662,20 @@ async function submit() {
   else if (!isValidPhoneNumber(f.contact_number)) newErrors.contact_number = 'Must be 11 digits starting with 0.';
   if (!f.sex)          newErrors.sex          = 'Required.';
   if (!f.birth_place)  newErrors.birth_place  = 'Required.';
-  if (!f.birth_date)   newErrors.birth_date   = 'Required.';
+  
+  // Validate birth date
+  if (!f.birth_date) {
+    newErrors.birth_date = 'Birth date is required.';
+  } else {
+    const selectedDate = new Date(f.birth_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (selectedDate > today) {
+      newErrors.birth_date = 'Birth date cannot be in the future.';
+    }
+  }
+  
   if (!f.civil_status) newErrors.civil_status = 'Required.';
   if (!f.nationality)  newErrors.nationality  = 'Required.';
   if (!f.emergency_contact_person)         newErrors.emergency_contact_person = 'Required.';
@@ -633,7 +686,6 @@ async function submit() {
   if (!f.sitio)     newErrors.sitio     = 'Required.';
   if (!f.latitude)  newErrors.latitude  = 'Required.';
   if (!f.longitude) newErrors.longitude = 'Required.';
-  if (!f.role_id)   newErrors.role_id   = 'Role is required.';
 
   errors.value = newErrors;
   if (Object.keys(newErrors).length > 0) {
@@ -670,15 +722,6 @@ async function submit() {
     console.error('❌ No image file found!');
   }
 
-  // Debug: Log all FormData entries
-  console.log('📋 FormData contents:');
-  for (let [key, value] of formData.entries()) {
-    if (value instanceof File) {
-      console.log(`  ${key}:`, `File(${value.name}, ${value.size} bytes)`);
-    } else {
-      console.log(`  ${key}:`, value);
-    }
-  }
 
   try {
     await ResidentService.createResident(formData);
