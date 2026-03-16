@@ -42,12 +42,10 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::prefix('admin/service-requests')->group(function () {
-        Route::get('/staff', [ServiceRequestController::class, 'getStaff']);
         Route::get('/', [ServiceRequestController::class, 'index']);
-        Route::get('/{id}', [ServiceRequestController::class, 'show']);
-        Route::put('/{id}/reassign', [ServiceRequestController::class, 'reassign']);
         Route::put('/{id}/approve', [ServiceRequestController::class, 'approve']);
-        Route::put('/{id}/cancel', [ServiceRequestController::class, 'cancel']);
+        Route::put('/{id}/reject', [ServiceRequestController::class, 'reject']);
+        Route::put('/{id}/release', [ServiceRequestController::class, 'release']);
     });
 
     // Admin API routes
@@ -77,8 +75,8 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::prefix('resident')->group(function () {
-        Route::get('/service-requests',              [ResidentServiceRequestController::class, 'index']);
-        Route::post('/service-requests',             [ResidentServiceRequestController::class, 'store']);
+        Route::get('/service-requests', [ResidentServiceRequestController::class, 'index']);
+        Route::post('/service-requests', [ResidentServiceRequestController::class, 'store']);
         Route::post('/service-requests/{id}/resubmit', [ResidentServiceRequestController::class, 'resubmit']);
         Route::delete('/service-requests/{id}/cancel', [ResidentServiceRequestController::class, 'cancel']);
     });

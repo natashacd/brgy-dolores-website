@@ -1,24 +1,31 @@
 import api from "@/api/api";
 
 const ServiceRequestService = {
-  async getRequests(params = {}) {
-    const { data } = await api.get("/api/admin/service-requests", { params });
+
+  async getPending() {
+    const { data } = await api.get("/api/admin/service-requests", {
+      params: { status: "pending" },
+    });
     return data;
   },
 
-  async getRequest(id) {
-    const { data } = await api.get(`/api/admin/service-requests/${id}`);
+  async getApproved() {
+    const { data } = await api.get("/api/admin/service-requests", {
+      params: { status: "approved" },
+    });
     return data;
   },
 
-  async getStaff() {
-    const { data } = await api.get("/api/admin/service-requests/staff");
+  async getDisapproved() {
+    const { data } = await api.get("/api/admin/service-requests", {
+      params: { status: "disapproved" },
+    });
     return data;
   },
 
-  async reassign(id, staffId) {
-    const { data } = await api.put(`/api/admin/service-requests/${id}/reassign`, {
-      staff_id: staffId,
+  async getReleased() {
+    const { data } = await api.get("/api/admin/service-requests", {
+      params: { status: "released" },
     });
     return data;
   },
@@ -28,8 +35,13 @@ const ServiceRequestService = {
     return data;
   },
 
-  async cancel(id) {
-    const { data } = await api.put(`/api/admin/service-requests/${id}/cancel`);
+  async reject(id, payload) {
+    const { data } = await api.put(`/api/admin/service-requests/${id}/reject`, payload);
+    return data;
+  },
+
+  async release(id) {
+    const { data } = await api.put(`/api/admin/service-requests/${id}/release`);
     return data;
   },
 };

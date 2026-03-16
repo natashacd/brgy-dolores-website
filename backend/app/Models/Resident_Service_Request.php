@@ -15,6 +15,7 @@ class Resident_Service_Request extends Model
         'preferred_date',
         'notes',
         'status',
+        'remarks',
     ];
 
     public function resident()
