@@ -196,7 +196,9 @@ import { ref, reactive } from "vue";
 import { useRouter } from 'vue-router'
 import Swal from "sweetalert2";
 import authService from "@/services/authService";
-
+import UserService from "@/services/Admin/UserService";
+import ResidentService from "@/services/Admin/ResidentService";
+import { setUsers, setRoles, setResidents } from "@/utils/dataStore";
 
 const router = useRouter()
 
@@ -231,8 +233,7 @@ const handleLogin = async () => {
     const data = await authService.login(form);
     const { first_name, last_name, role } = data.user;
 
-
-    localStorage.setItem('auth_token', data.token || 'authenticated'); // Make sure to set auth_token!
+    localStorage.setItem('auth_token', data.token || 'authenticated');
     localStorage.setItem('user_role', role.toLowerCase());
     localStorage.setItem('user_name', `${first_name} ${last_name}`);
 
@@ -257,6 +258,21 @@ const handleLogin = async () => {
       router.push({ name: 'admin.dashboard' });
     }
 
+    if (role.toLowerCase() !== 'resident') {
+      Promise.all([
+        UserService.getUsers(),
+        UserService.getRoles(),
+        ResidentService.getResidents()
+      ]).then(([users, roles, residents]) => {
+        setUsers(users);
+        setRoles(roles);
+        setResidents(residents);
+        console.log('✅ Users, roles, and residents data prefetched in background');
+      }).catch(error => {
+        console.error('Failed to prefetch data:', error);
+      });
+    }
+
   } catch (err) {
     Swal.fire({
       icon: "error",
@@ -272,6 +288,7 @@ const handleLogin = async () => {
   }
 };
 </script>
+
 <style scoped>
 @keyframes glowPulse {
   0%,

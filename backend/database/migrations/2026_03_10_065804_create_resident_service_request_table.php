@@ -13,11 +13,10 @@ return new class extends Migration
             $table->foreignId('resident_id')
                 ->constrained('users')
                 ->cascadeOnDelete();
-            $table->foreignId('staff_id')
-                ->nullable()
-                ->constrained('users')
-                ->cascadeOnDelete();
             $table->string('type');
+            $table->string('image_path');
+            $table->string('preferred_date');
+            $table->text('notes');
             $table->string('status');
             $table->timestamps();
         });

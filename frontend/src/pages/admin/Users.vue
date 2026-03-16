@@ -109,11 +109,18 @@
           </span>
         </div>
       </div>
+
       <!-- Grid Body -->
       <div class="p-6">
 
+        <!-- Loading State -->
+        <div v-if="loading" class="flex flex-col items-center justify-center py-20 gap-3">
+          <div class="w-12 h-12 border-4 border-slate-200 border-t-[#3d4f7c] rounded-full animate-spin"></div>
+          <p class="text-sm font-medium text-slate-600">Loading officials...</p>
+        </div>
+
         <!-- Empty State -->
-        <div v-if="filteredUsers.length === 0" class="flex flex-col items-center justify-center py-20 gap-3">
+        <div v-else-if="filteredUsers.length === 0" class="flex flex-col items-center justify-center py-20 gap-3">
           <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center">
             <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -126,65 +133,65 @@
           </button>
         </div>
 
-      <!-- Cards Grid -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-        <div
-          v-for="user in filteredUsers"
-          :key="user.id"
-          class="bg-white rounded-2xl border border-slate-200 hover:border-[#3d4f7c]/40 hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col cursor-pointer group"
-          @click="openViewModal(user)"
-        >
-          <!-- Photo -->
-          <div class="w-full bg-slate-50 relative overflow-hidden" style="padding-top: 60%;">
-            <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 1px 1px, #e2e8f0 1px, transparent 0); background-size: 16px 16px;"></div>
-            <img
-              v-if="user.information?.image_path"
-              :src="`${baseUrl}/storage/${user.information.image_path}`"
-              alt="Profile"
-              class="absolute inset-0 w-full h-full object-cover object-top z-10 group-hover:scale-105 transition-transform duration-300"
-              @error="e => e.target.style.display = 'none'"
-            />
-            <img
-              v-else
-              src="@/assets/images/icons/profile.png"
-              alt="Profile"
-              class="absolute inset-0 w-full h-full object-contain z-10 p-4"
-            />
-            <div class="absolute top-2 right-2 z-20">
-              <span
-                class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-semibold"
-                :class="user.status?.status ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-amber-50 text-amber-500 border border-amber-200'"
-              >
-                <span class="w-1 h-1 rounded-full" :class="user.status?.status ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'"></span>
-                {{ user.status?.status ? 'Active' : 'Inactive' }}
+        <!-- Cards Grid -->
+        <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          <div
+            v-for="user in filteredUsers"
+            :key="user.id"
+            class="bg-white rounded-2xl border border-slate-200 hover:border-[#3d4f7c]/40 hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col cursor-pointer group"
+            @click="openViewModal(user)"
+          >
+            <!-- Photo -->
+            <div class="w-full bg-slate-50 relative overflow-hidden" style="padding-top: 60%;">
+              <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 1px 1px, #e2e8f0 1px, transparent 0); background-size: 16px 16px;"></div>
+              <img
+                v-if="user.information?.image_path"
+                :src="`${baseUrl}/storage/${user.information.image_path}`"
+                alt="Profile"
+                class="absolute inset-0 w-full h-full object-cover object-top z-10 group-hover:scale-105 transition-transform duration-300"
+                @error="e => e.target.style.display = 'none'"
+              />
+              <img
+                v-else
+                src="@/assets/images/icons/profile.png"
+                alt="Profile"
+                class="absolute inset-0 w-full h-full object-contain z-10 p-4"
+              />
+              <div class="absolute top-2 right-2 z-20">
+                <span
+                  class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-semibold"
+                  :class="user.status?.status ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-amber-50 text-amber-500 border border-amber-200'"
+                >
+                  <span class="w-1 h-1 rounded-full" :class="user.status?.status ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'"></span>
+                  {{ user.status?.status ? 'Active' : 'Inactive' }}
+                </span>
+              </div>
+            </div>
+            <!-- Info -->
+            <div class="px-3 py-3 border-t border-slate-100 flex-1 flex flex-col items-center text-center">
+              <p class="text-m font-bold text-slate-800 leading-tight line-clamp-2">{{ fullName(user) }}</p>
+              <span class="mt-1.5 inline-block text-[9px] font-semibold px-2 py-0.5 rounded-full" style="background:#3d4f7c12; color:#3d4f7c;">
+                {{ user.role?.role_name ?? '—' }}
               </span>
             </div>
-          </div>
-          <!-- Info -->
-          <div class="px-3 py-3 border-t border-slate-100 flex-1 flex flex-col items-center text-center">
-            <p class="text-m font-bold text-slate-800 leading-tight line-clamp-2">{{ fullName(user) }}</p>
-            <span class="mt-1.5 inline-block text-[9px] font-semibold px-2 py-0.5 rounded-full" style="background:#3d4f7c12; color:#3d4f7c;">
-              {{ user.role?.role_name ?? '—' }}
-            </span>
-          </div>
 
-          <!-- Remove button -->
-          <div class="px-3 pb-3">
-            <button
-              class="w-full flex items-center justify-center gap-1 text-[10px] font-semibold py-1.5 rounded-lg bg-red-50 text-red-500 border border-red-100 hover:bg-red-500 hover:text-white hover:border-red-500 active:scale-95 transition-all duration-150 cursor-pointer"
-              @click.stop="handleDelete(user)"
-            >
-              <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-              </svg>
-              Remove
-            </button>
-          </div>
-        </div>
-      </div>
-
+            <!-- Remove button -->
+            <div class="px-3 pb-3">
+              <button
+                class="w-full flex items-center justify-center gap-1 text-[10px] font-semibold py-1.5 rounded-lg bg-red-50 text-red-500 border border-red-100 hover:bg-red-500 hover:text-white hover:border-red-500 active:scale-95 transition-all duration-150 cursor-pointer"
+                @click.stop="handleDelete(user)"
+              >
+                <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                Remove
+              </button>
             </div>
           </div>
+        </div>
+
+      </div>
+    </div>
 
     <AddUserModal
       v-if="showAddModal"
@@ -210,34 +217,29 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted } from "vue";
 import UserService from "@/services/Admin/UserService";
 import EditUserModal from "@/components/modals/admin/users/EditUserModal.vue";
 import AddUserModal from "@/components/modals/admin/users/AddUserModal.vue";
 import ViewUserModal from "@/components/modals/admin/users/ViewUserModal.vue";
 import Swal from 'sweetalert2';
+import { getUsers, getRoles, hasData, setUsers, setRoles } from "@/utils/dataStore";
 
 const baseUrl = import.meta.env.VITE_API_URL;
 
-// ── Module-level cache ────────────────────────────────────────────
-const _users  = ref([]);
-const _roles  = ref([]);
-const _loaded = ref(false);
+const users = ref([]);
+const roles = ref([]);
+const loading = ref(false);
 
-const users = _users;
-const roles = _roles;
-
-const loading       = ref(false);
 const showEditModal = ref(false);
-const showAddModal  = ref(false);
-const selectedUser  = ref(null);
-const searchQuery   = ref('');
-const roleFilter    = ref('');
-const statusFilter  = ref('');
-const sortBy        = ref('name_asc');
+const showAddModal = ref(false);
+const selectedUser = ref(null);
+const searchQuery = ref('');
+const roleFilter = ref('');
+const statusFilter = ref('');
+const sortBy = ref('name_asc');
 const showViewModal = ref(false);
-const viewUser      = ref(null);
-
+const viewUser = ref(null);
 
 const activeFilterCount = computed(() => {
   let c = 0;
@@ -249,10 +251,10 @@ const activeFilterCount = computed(() => {
 });
 
 function clearFilters() {
-  searchQuery.value  = '';
-  roleFilter.value   = '';
+  searchQuery.value = '';
+  roleFilter.value = '';
   statusFilter.value = '';
-  sortBy.value       = 'name_asc';
+  sortBy.value = 'name_asc';
 }
 
 function fullName(user) {
@@ -262,7 +264,7 @@ function fullName(user) {
 }
 
 function openViewModal(user) {
-  viewUser.value      = user;
+  viewUser.value = user;
   showViewModal.value = true;
 }
 
@@ -279,7 +281,7 @@ const filteredUsers = computed(() => {
   if (roleFilter.value) {
     list = list.filter(u =>
       String(u.role?.id) === String(roleFilter.value) ||
-      String(u.role_id)  === String(roleFilter.value)
+      String(u.role_id) === String(roleFilter.value)
     );
   }
   if (statusFilter.value) {
@@ -290,51 +292,60 @@ const filteredUsers = computed(() => {
   return list;
 });
 
-const orgTiers = computed(() => {
-  const groups = {};
-  filteredUsers.value.forEach(u => {
-    const name = u.role?.role_name ?? 'Other';
-    if (!groups[name]) groups[name] = [];
-    groups[name].push(u);
-  });
-  return Object.keys(groups)
-    .sort((a, b) => a.localeCompare(b))
-    .map(label => ({ label, users: groups[label] }));
-});
-
-async function fetchUsers() {
-  loading.value = true;
+async function fetchUsers(showLoading = true) {
+  if (showLoading) {
+    loading.value = true;
+  }
+  
   try {
-    users.value = await UserService.getUsers();
-    _loaded.value = true;
+    const data = await UserService.getUsers();
+    users.value = data;
+    setUsers(data);
   } catch {
-    _loaded.value = false;
-    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load users.', confirmButtonColor: '#3d4f7c' });
+    Swal.fire({ 
+      icon: 'error', 
+      title: 'Error', 
+      text: 'Failed to load users.', 
+      confirmButtonColor: '#3d4f7c' 
+    });
   } finally {
-    loading.value = false;
+    if (showLoading) {
+      loading.value = false;
+    }
   }
 }
 
 async function fetchRoles() {
-  try { roles.value = await UserService.getRoles(); } catch {}
-}
-
-function openEditModal(user) {
-  selectedUser.value  = user;
-  showEditModal.value = true;
+  try { 
+    const data = await UserService.getRoles();
+    roles.value = data;
+    setRoles(data);
+  } catch {}
 }
 
 async function handleUserUpdated() {
   showEditModal.value = false;
-  selectedUser.value  = null;
-  await Swal.fire({ icon: 'success', title: 'Success!', text: 'User has been updated successfully.', timer: 1500, showConfirmButton: false });
-  await fetchUsers();
+  selectedUser.value = null;
+  await Swal.fire({ 
+    icon: 'success', 
+    title: 'Success!', 
+    text: 'User has been updated successfully.', 
+    timer: 1500, 
+    showConfirmButton: false 
+  });
+  await fetchUsers(false);
 }
 
 async function handleUserAdded() {
   showAddModal.value = false;
-  await Swal.fire({ icon: 'success', title: 'Success!', text: 'Official has been added successfully.', timer: 1500, showConfirmButton: false });
-  await fetchUsers();
+  await Swal.fire({ 
+    icon: 'success', 
+    title: 'Success!', 
+    text: 'Official has been added successfully.', 
+    timer: 1500, 
+    showConfirmButton: false 
+  });
+  await fetchUsers(false);
 }
 
 async function handleDelete(user) {
@@ -350,23 +361,33 @@ async function handleDelete(user) {
     cancelButtonText: 'Cancel'
   });
   if (!result.isConfirmed) return;
-  loading.value = true;
+  
   try {
     await UserService.deleteUser(user.id);
-    await Swal.fire({ icon: 'success', title: 'Success!', text: 'User role has been changed to Resident.', timer: 2000, showConfirmButton: false });
-    await fetchUsers();
+    await Swal.fire({ 
+      icon: 'success', 
+      title: 'Success!', 
+      text: 'User role has been changed to Resident.', 
+      timer: 2000, 
+      showConfirmButton: false 
+    });
+    await fetchUsers(false);
   } catch {
-    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to change user role. Please try again.', confirmButtonColor: '#3d4f7c' });
-  } finally {
-    loading.value = false;
+    Swal.fire({ 
+      icon: 'error', 
+      title: 'Error', 
+      text: 'Failed to change user role. Please try again.', 
+      confirmButtonColor: '#3d4f7c' 
+    });
   }
 }
 
-watch([searchQuery, roleFilter, statusFilter, sortBy], () => {});
-onMounted(() => {
-  if (!_loaded.value) {
-    fetchUsers();
-    fetchRoles();
+onMounted(async () => {
+  if (hasData()) {
+    users.value = getUsers();
+    roles.value = getRoles();
+  } else {
+    await Promise.all([fetchUsers(true), fetchRoles()]);
   }
 });
 </script>

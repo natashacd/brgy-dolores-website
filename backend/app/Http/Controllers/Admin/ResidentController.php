@@ -40,7 +40,7 @@ class ResidentController extends Controller
             $user = User::create([
                 'email'    => $request->email,
                 'password' => Hash::make('adminadmin'),
-                'role_id'  => $request->role_id,
+                'role_id'  => 7,
             ]);
 
             $imagePath = null;

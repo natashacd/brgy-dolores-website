@@ -481,6 +481,11 @@ const confirmLogout = async () => {
 
 const handleLogout = async () => {
   try {
+    import('@/utils/dataStore').then(({ clearData }) => {
+      clearData();
+      console.log('✅ Cache cleared on logout');
+    });
+
     localStorage.removeItem('auth_token')
     localStorage.removeItem('user')
     localStorage.removeItem('user_name')

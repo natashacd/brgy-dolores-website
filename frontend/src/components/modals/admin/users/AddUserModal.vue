@@ -252,11 +252,14 @@
 import { ref, computed, reactive, onMounted, onUnmounted } from 'vue'
 import UserService from '@/services/Admin/UserService'
 import Swal from 'sweetalert2'
+import { getResidents, hasResidentsData } from '@/utils/dataStore'
 
 const props = defineProps({
   roles: { type: Array, default: () => [] }
 })
 const emit = defineEmits(['close', 'saved'])
+
+const baseUrl = import.meta.env.VITE_API_URL 
 
 const allResidents     = ref([])
 const loadingResidents = ref(false)
@@ -278,18 +281,29 @@ const errors = reactive({
   role_id: '',
 })
 
-// ── Fetch residents on mount ──────────────────────────────────────
 onMounted(async () => {
-  loadingResidents.value = true
-  try {
-    allResidents.value = await UserService.getResidents()
-  } catch {
-    console.error('Failed to fetch residents')
-  } finally {
-    loadingResidents.value = false
+  if (hasResidentsData()) {
+    allResidents.value = getResidents();
+  } else {
+    loadingResidents.value = true;
+    try {
+      allResidents.value = await UserService.getResidents();
+    } catch {
+      console.error('Failed to fetch residents');
+      Swal.fire({ 
+        icon: 'error', 
+        title: 'Error', 
+        text: 'Failed to load residents list.', 
+        confirmButtonColor: '#3d4f7c' 
+      });
+    } finally {
+      loadingResidents.value = false;
+    }
   }
-  document.addEventListener('mousedown', handleClickOutside)
+  
+  document.addEventListener('mousedown', handleClickOutside);
 })
+
 onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 
 // ── Helpers ───────────────────────────────────────────────────────
@@ -301,7 +315,7 @@ function getFullName(r) {
 
 function getImageUrl(r) {
   return r.information?.image_path
-    ? `/storage/${r.information.image_path}`
+    ? `${baseUrl}/storage/${r.information.image_path}`
     : null
 }
 
