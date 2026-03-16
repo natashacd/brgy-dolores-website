@@ -94,12 +94,12 @@
                   <span
                     class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
                     :class="{
-                      'bg-amber-50 text-amber-600 border border-amber-200':   request.status === 'pending',
-                      'bg-blue-50 text-blue-600 border border-blue-200':      request.status === 'processing',
+                      'bg-amber-50 text-amber-600 border border-amber-200':       request.status === 'pending',
+                      'bg-blue-50 text-blue-600 border border-blue-200':          request.status === 'processing',
                       'bg-emerald-50 text-emerald-600 border border-emerald-200': request.status === 'approved',
-                      'bg-red-50 text-red-600 border border-red-200':         request.status === 'disapproved',
-                      'bg-green-50 text-green-600 border border-green-200':   request.status === 'completed',
-                      'bg-slate-50 text-slate-500 border border-slate-200':   request.status === 'cancelled',
+                      'bg-red-50 text-red-600 border border-red-200':             request.status === 'disapproved',
+                      'bg-green-50 text-green-600 border border-green-200':       request.status === 'completed',
+                      'bg-slate-50 text-slate-500 border border-slate-200':       request.status === 'cancelled',
                     }"
                   >
                     <span
@@ -177,11 +177,10 @@
     </div>
 
     <!-- Modals -->
-    <ViewRequestModal
+    <ViewServiceRequestModal
       v-if="showViewModal"
       :request="selectedRequest"
       @close="closeViewModal"
-      @resubmit="openResubmitFromModal"
     />
 
     <ResubmitModal
@@ -199,7 +198,7 @@
 import { ref, computed, onMounted } from "vue";
 import Swal from "sweetalert2";
 import ServiceRequestService from "@/services/Resident/ServiceRequest";
-import ViewRequestModal from "@/components/modals/resident/ViewRequestModal.vue";
+import ViewServiceRequestModal from "@/components/modals/resident/ViewServiceRequestModal.vue";
 import ResubmitModal from "@/components/modals/resident/ResubmitModal.vue";
 
 const loading             = ref(false);
@@ -262,21 +261,15 @@ const openResubmitModal = (request) => {
   showResubmitModal.value   = true;
 };
 
-const openResubmitFromModal = (request) => {
-  closeViewModal();
-  resubmitRequestData.value = request;
-  showResubmitModal.value   = true;
-};
-
 const closeResubmitModal = () => {
   showResubmitModal.value   = false;
   resubmitRequestData.value = null;
 };
 
-const handleResubmit = async (formData) => {
+const handleResubmit = async (id, formData) => {
   resubmitting.value = true;
   try {
-    await ServiceRequestService.createRequest(formData);
+    await ServiceRequestService.resubmitRequest(id, formData);
     await Swal.fire({
       icon: "success",
       title: "Resubmitted!",
@@ -302,7 +295,7 @@ const handleResubmit = async (formData) => {
 const cancelRequest = async (id) => {
   const result = await Swal.fire({
     title: "Cancel Request?",
-    text: "Are you sure you want to cancel this request?",
+    text: "Are you sure you want to cancel this request? This cannot be undone.",
     icon: "warning",
     showCancelButton: true,
     confirmButtonColor: "#d33",

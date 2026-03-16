@@ -77,7 +77,9 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::prefix('resident')->group(function () {
-        Route::get('/service-requests',  [ResidentServiceRequestController::class, 'index']);
-        Route::post('/service-requests', [ResidentServiceRequestController::class, 'store']);
+        Route::get('/service-requests',              [ResidentServiceRequestController::class, 'index']);
+        Route::post('/service-requests',             [ResidentServiceRequestController::class, 'store']);
+        Route::post('/service-requests/{id}/resubmit', [ResidentServiceRequestController::class, 'resubmit']);
+        Route::delete('/service-requests/{id}/cancel', [ResidentServiceRequestController::class, 'cancel']);
     });
 });

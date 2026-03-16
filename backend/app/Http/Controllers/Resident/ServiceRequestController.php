@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Resident_Service_Request;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 class ServiceRequestController extends Controller
@@ -58,5 +59,66 @@ class ServiceRequestController extends Controller
             'message' => 'Service request submitted successfully.',
             'request' => $serviceRequest,
         ], 201);
+    }
+
+    public function resubmit(Request $request, $id)
+    {
+        $serviceRequest = Resident_Service_Request::where('id', $id)
+            ->where('resident_id', Auth::id())
+            ->firstOrFail();
+
+        if ($serviceRequest->status !== 'disapproved') {
+            return response()->json(['message' => 'Only disapproved requests can be resubmitted.'], 422);
+        }
+
+        $request->validate([
+            'preferred_date' => 'required|date|after_or_equal:today',
+            'document'       => 'nullable|file|mimes:jpeg,jpg,png,gif,pdf|max:4096',
+            'notes'          => 'nullable|string',
+        ]);
+
+        $imagePath = $serviceRequest->image_path;
+
+        if ($request->hasFile('document')) {
+            if ($imagePath && Storage::disk('public')->exists($imagePath)) {
+                Storage::disk('public')->delete($imagePath);
+            }
+
+            $file      = $request->file('document');
+            $extension = $file->getClientOriginalExtension();
+            $fileName  = Auth::id() . '.' . $extension;
+            $imagePath = $file->storeAs('request_images', $fileName, 'public');
+        }
+
+        $serviceRequest->update([
+            'image_path'     => $imagePath,
+            'preferred_date' => Carbon::parse($request->preferred_date)->format('F j, Y'),
+            'notes'          => $request->notes ?: 'N/A',
+            'status'         => 'pending',
+        ]);
+
+        return response()->json([
+            'message' => 'Request resubmitted successfully.',
+            'request' => $serviceRequest->fresh(),
+        ]);
+    }
+
+    public function cancel($id)
+    {
+        $serviceRequest = Resident_Service_Request::where('id', $id)
+            ->where('resident_id', Auth::id())
+            ->firstOrFail();
+
+        if ($serviceRequest->status !== 'pending') {
+            return response()->json(['message' => 'Only pending requests can be cancelled.'], 422);
+        }
+
+        if ($serviceRequest->image_path && Storage::disk('public')->exists($serviceRequest->image_path)) {
+            Storage::disk('public')->delete($serviceRequest->image_path);
+        }
+
+        $serviceRequest->delete();
+
+        return response()->json(['message' => 'Request cancelled and deleted successfully.']);
     }
 }
