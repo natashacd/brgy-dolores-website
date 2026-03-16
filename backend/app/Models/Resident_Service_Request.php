@@ -10,18 +10,15 @@ class Resident_Service_Request extends Model
 
     protected $fillable = [
         'resident_id',
-        'staff_id',
         'type',
+        'image_path',
+        'preferred_date',
+        'notes',
         'status',
     ];
 
     public function resident()
     {
         return $this->belongsTo(User::class, 'resident_id');
-    }
-
-    public function staff()
-    {
-        return $this->belongsTo(User::class, 'staff_id');
     }
 }

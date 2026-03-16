@@ -20,7 +20,6 @@
             <p class="text-sm text-slate-500 mt-1">Track and manage your service requests</p>
           </div>
         </div>
-
       </div>
     </div>
 
@@ -34,17 +33,22 @@
             </svg>
           </div>
           <div>
-            <p class="text-sm font-semibold text-amber-800">You have {{ disapprovedCount }} disapproved request{{ disapprovedCount > 1 ? 's' : '' }}</p>
+            <p class="text-sm font-semibold text-amber-800">
+              You have {{ disapprovedCount }} disapproved request{{ disapprovedCount > 1 ? 's' : '' }}
+            </p>
             <p class="text-xs text-amber-600">Please review the remarks and resubmit with corrections.</p>
           </div>
         </div>
-        <button @click="scrollToDisapproved" class="text-sm font-semibold text-amber-700 bg-amber-100 hover:bg-amber-200 px-4 py-2 rounded-lg transition-colors">
+        <button
+          @click="scrollToDisapproved"
+          class="text-sm font-semibold text-amber-700 bg-amber-100 hover:bg-amber-200 px-4 py-2 rounded-lg transition-colors cursor-pointer"
+        >
           View Disapproved
         </button>
       </div>
     </div>
 
-    <!-- My Recent Requests -->
+    <!-- My Requests Table -->
     <div>
       <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
         <span class="w-1 h-6 bg-[#3d4f7c] rounded-full"></span>
@@ -64,35 +68,58 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
-              <tr v-for="request in myRequests" :key="request.id" class="hover:bg-slate-50 transition-colors">
-                <td class="px-6 py-4 text-sm font-medium text-slate-700">{{ request.service_type }}</td>
+
+              <!-- Loading State -->
+              <tr v-if="loading">
+                <td colspan="5" class="px-6 py-16 text-center">
+                  <div class="flex flex-col items-center gap-3">
+                    <div class="w-10 h-10 border-4 border-slate-200 border-t-[#3d4f7c] rounded-full animate-spin"></div>
+                    <p class="text-sm text-slate-500">Loading your requests...</p>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Rows -->
+              <tr
+                v-else
+                v-for="request in myRequests"
+                :key="request.id"
+                class="hover:bg-slate-50 transition-colors"
+                :id="request.status === 'disapproved' ? 'disapproved-section' : undefined"
+              >
+                <td class="px-6 py-4 text-sm font-medium text-slate-700">{{ request.type }}</td>
                 <td class="px-6 py-4 text-sm text-slate-600">{{ formatDate(request.created_at) }}</td>
-                <td class="px-6 py-4 text-sm text-slate-600">{{ formatDate(request.preferred_date) }}</td>
+                <td class="px-6 py-4 text-sm text-slate-600">{{ request.preferred_date }}</td>
                 <td class="px-6 py-4">
-                  <span 
+                  <span
                     class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
                     :class="{
-                      'bg-amber-50 text-amber-600 border border-amber-200': request.status === 'pending',
-                      'bg-blue-50 text-blue-600 border border-blue-200': request.status === 'processing',
+                      'bg-amber-50 text-amber-600 border border-amber-200':   request.status === 'pending',
+                      'bg-blue-50 text-blue-600 border border-blue-200':      request.status === 'processing',
                       'bg-emerald-50 text-emerald-600 border border-emerald-200': request.status === 'approved',
-                      'bg-red-50 text-red-600 border border-red-200': request.status === 'disapproved',
-                      'bg-green-50 text-green-600 border border-green-200': request.status === 'completed'
+                      'bg-red-50 text-red-600 border border-red-200':         request.status === 'disapproved',
+                      'bg-green-50 text-green-600 border border-green-200':   request.status === 'completed',
+                      'bg-slate-50 text-slate-500 border border-slate-200':   request.status === 'cancelled',
                     }"
                   >
-                    <span class="w-1.5 h-1.5 rounded-full" :class="{
-                      'bg-amber-500': request.status === 'pending',
-                      'bg-blue-500': request.status === 'processing',
-                      'bg-emerald-500': request.status === 'approved',
-                      'bg-red-500': request.status === 'disapproved',
-                      'bg-green-500': request.status === 'completed'
-                    }"></span>
+                    <span
+                      class="w-1.5 h-1.5 rounded-full"
+                      :class="{
+                        'bg-amber-500':   request.status === 'pending',
+                        'bg-blue-500':    request.status === 'processing',
+                        'bg-emerald-500': request.status === 'approved',
+                        'bg-red-500':     request.status === 'disapproved',
+                        'bg-green-500':   request.status === 'completed',
+                        'bg-slate-400':   request.status === 'cancelled',
+                      }"
+                    ></span>
                     {{ request.status.charAt(0).toUpperCase() + request.status.slice(1) }}
                   </span>
                 </td>
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-2">
-                    <!-- View Button - Icon -->
-                    <button 
+                    <!-- View -->
+                    <button
                       @click="viewRequest(request)"
                       class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#3d4f7c]/10 text-[#3d4f7c] border border-[#3d4f7c]/20 hover:bg-[#3d4f7c] hover:text-white hover:border-[#3d4f7c] hover:shadow-md active:scale-95 transition-all duration-150 cursor-pointer group"
                       title="View Details"
@@ -102,21 +129,21 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                       </svg>
                     </button>
-                    
-                    <!-- Resubmit Button - Icon (only for rejected/disapproved) -->
-                    <button 
+
+                    <!-- Resubmit (disapproved only) -->
+                    <button
                       v-if="request.status === 'disapproved'"
                       @click="openResubmitModal(request)"
                       class="w-8 h-8 flex items-center justify-center rounded-lg bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-600 hover:text-white hover:border-amber-600 hover:shadow-md active:scale-95 transition-all duration-150 cursor-pointer group"
                       title="Resubmit Request"
                     >
                       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="group-hover:scale-110 transition-transform">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                       </svg>
                     </button>
-                    
-                    <!-- Cancel Button - Icon (only for pending) -->
-                    <button 
+
+                    <!-- Cancel (pending only) -->
+                    <button
                       v-if="request.status === 'pending'"
                       @click="cancelRequest(request.id)"
                       class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500 border border-red-200 hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-md active:scale-95 transition-all duration-150 cursor-pointer group"
@@ -129,17 +156,20 @@
                   </div>
                 </td>
               </tr>
-              <tr v-if="myRequests.length === 0">
-                <td colspan="5" class="px-6 py-12 text-center">
+
+              <!-- Empty State -->
+              <tr v-if="!loading && myRequests.length === 0">
+                <td colspan="5" class="px-6 py-16 text-center">
                   <div class="flex flex-col items-center gap-2">
                     <svg class="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                     </svg>
                     <p class="text-sm text-slate-500">No service requests yet</p>
                     <p class="text-xs text-slate-400">Go to Service Requests to submit a request</p>
                   </div>
                 </td>
               </tr>
+
             </tbody>
           </table>
         </div>
@@ -161,213 +191,149 @@
       @close="closeResubmitModal"
       @submit="handleResubmit"
     />
+
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
+import ServiceRequestService from "@/services/Resident/ServiceRequest";
 import ViewRequestModal from "@/components/modals/resident/ViewRequestModal.vue";
 import ResubmitModal from "@/components/modals/resident/ResubmitModal.vue";
 
-// Sample static data
-const sampleRequests = [
-  {
-    id: 101,
-    service_type: 'BRGY ID Request',
-    purpose: 'For identification purposes',
-    notes: 'Need for school enrollment',
-    preferred_date: '2024-03-20',
-    created_at: '2024-03-10',
-    updated_at: '2024-03-15',
-    status: 'approved',
-    remarks: 'Approved by Barangay Secretary',
-    document_url: '#'
-  },
-  {
-    id: 102,
-    service_type: 'BRGY Business Clearance',
-    purpose: 'New business registration',
-    notes: 'Sari-sari store',
-    preferred_date: '2024-03-18',
-    created_at: '2024-03-08',
-    updated_at: '2024-03-14',
-    status: 'processing',
-    remarks: 'Under review',
-    document_url: '#'
-  },
-  {
-    id: 103,
-    service_type: 'BRGY Certificate of Indigency',
-    purpose: 'For medical assistance',
-    notes: 'For hospital bill discount',
-    preferred_date: '2024-03-22',
-    created_at: '2024-03-12',
-    updated_at: '2024-03-16',
-    status: 'disapproved',
-    remarks: 'Incomplete requirements. Please submit proof of income and valid ID.',
-    document_url: '#'
-  },
-  {
-    id: 104,
-    service_type: 'BRGY Clearance',
-    purpose: 'For employment',
-    notes: 'Required by company',
-    preferred_date: '2024-03-25',
-    created_at: '2024-03-14',
-    updated_at: '2024-03-17',
-    status: 'completed',
-    remarks: 'Certificate issued',
-    document_url: '#'
-  }
-];
-
-const showViewModal = ref(false);
-const showResubmitModal = ref(false);
-const selectedRequest = ref(null);
+const loading             = ref(false);
+const myRequests          = ref([]);
+const showViewModal       = ref(false);
+const showResubmitModal   = ref(false);
+const selectedRequest     = ref(null);
 const resubmitRequestData = ref(null);
-const myRequests = ref([]);
-const resubmitting = ref(false);
+const resubmitting        = ref(false);
 
-// Computed properties
-const pendingCount = computed(() => {
-  return myRequests.value.filter(r => r.status === 'pending').length;
-});
+const disapprovedCount = computed(() =>
+  myRequests.value.filter((r) => r.status === "disapproved").length
+);
 
-const disapprovedCount = computed(() => {
-  return myRequests.value.filter(r => r.status === 'disapproved').length;
-});
-
-// Format date
 const formatDate = (dateString) => {
-  if (!dateString) return '—';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'short', 
-    day: 'numeric' 
+  if (!dateString) return "—";
+  return new Date(dateString).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
   });
 };
 
-// Scroll to disapproved section
 const scrollToDisapproved = () => {
-  Swal.fire({
-    icon: 'info',
-    title: 'Disapproved Requests',
-    text: 'Please review the remarks and resubmit your request.',
-    timer: 2000,
-    showConfirmButton: false
-  });
+  const el = document.getElementById("disapproved-section");
+  if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
 };
 
-// Load sample data
-const loadSampleData = () => {
-  myRequests.value = [...sampleRequests];
+// ── Fetch ─────────────────────────────────────────────────────────
+const fetchMyRequests = async (showLoading = true) => {
+  if (showLoading) loading.value = true;
+  try {
+    myRequests.value = await ServiceRequestService.getMyRequests();
+  } catch {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "Failed to load your requests.",
+      confirmButtonColor: "#3d4f7c",
+    });
+  } finally {
+    if (showLoading) loading.value = false;
+  }
 };
 
-// View request
+// ── View ──────────────────────────────────────────────────────────
 const viewRequest = (request) => {
   selectedRequest.value = request;
-  showViewModal.value = true;
+  showViewModal.value   = true;
 };
 
-// Close view modal
 const closeViewModal = () => {
-  showViewModal.value = false;
+  showViewModal.value   = false;
   selectedRequest.value = null;
 };
 
-// Open resubmit modal from table
+// ── Resubmit ──────────────────────────────────────────────────────
 const openResubmitModal = (request) => {
   resubmitRequestData.value = request;
-  showResubmitModal.value = true;
+  showResubmitModal.value   = true;
 };
 
-// Open resubmit from view modal
 const openResubmitFromModal = (request) => {
-  resubmitRequestData.value = request;
-  showResubmitModal.value = true;
   closeViewModal();
+  resubmitRequestData.value = request;
+  showResubmitModal.value   = true;
 };
 
-// Close resubmit modal
 const closeResubmitModal = () => {
-  showResubmitModal.value = false;
+  showResubmitModal.value   = false;
   resubmitRequestData.value = null;
 };
 
-// Handle resubmit
 const handleResubmit = async (formData) => {
   resubmitting.value = true;
-  
-  // Simulate API call
-  setTimeout(() => {
-    // Create a new request based on the resubmitted one
-    const newRequest = {
-      id: Date.now(),
-      service_type: resubmitRequestData.value.service_type,
-      purpose: resubmitRequestData.value.purpose,
-      notes: formData.get('notes') || resubmitRequestData.value.notes,
-      preferred_date: formData.get('preferred_date'),
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      status: 'pending',
-      remarks: '',
-      document_url: '#'
-    };
-    
-    // Add to myRequests
-    myRequests.value.unshift(newRequest);
-    
-    // Remove the old rejected request
-    myRequests.value = myRequests.value.filter(r => r.id !== resubmitRequestData.value.id);
-    
-    Swal.fire({
-      icon: 'success',
-      title: 'Resubmitted!',
-      text: 'Your request has been resubmitted successfully.',
+  try {
+    await ServiceRequestService.createRequest(formData);
+    await Swal.fire({
+      icon: "success",
+      title: "Resubmitted!",
+      text: "Your request has been resubmitted successfully.",
       timer: 2000,
-      showConfirmButton: false
+      showConfirmButton: false,
     });
-    
     closeResubmitModal();
+    await fetchMyRequests(false);
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: error.response?.data?.message || "Failed to resubmit request.",
+      confirmButtonColor: "#3d4f7c",
+    });
+  } finally {
     resubmitting.value = false;
-  }, 1000);
-};
-
-// Cancel request
-const cancelRequest = async (id) => {
-  const result = await Swal.fire({
-    title: 'Cancel Request?',
-    text: 'Are you sure you want to cancel this request?',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#3d4f7c',
-    confirmButtonText: 'Yes, cancel',
-    cancelButtonText: 'No, keep it'
-  });
-  
-  if (result.isConfirmed) {
-    // Simulate API call
-    setTimeout(() => {
-      myRequests.value = myRequests.value.filter(r => r.id !== id);
-      
-      Swal.fire({
-        icon: 'success',
-        title: 'Cancelled',
-        text: 'Your request has been cancelled.',
-        timer: 1500,
-        showConfirmButton: false
-      });
-    }, 500);
   }
 };
 
-// Load sample data on mount
-onMounted(() => {
-  loadSampleData();
-});
+// ── Cancel ────────────────────────────────────────────────────────
+const cancelRequest = async (id) => {
+  const result = await Swal.fire({
+    title: "Cancel Request?",
+    text: "Are you sure you want to cancel this request?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3d4f7c",
+    confirmButtonText: "Yes, cancel",
+    cancelButtonText: "No, keep it",
+  });
+
+  if (result.isConfirmed) {
+    try {
+      await ServiceRequestService.cancelRequest(id);
+      await fetchMyRequests(false);
+      Swal.fire({
+        icon: "success",
+        title: "Cancelled",
+        text: "Your request has been cancelled.",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to cancel request.",
+        confirmButtonColor: "#3d4f7c",
+      });
+    }
+  }
+};
+
+onMounted(() => fetchMyRequests());
 </script>
 
 <style scoped>
