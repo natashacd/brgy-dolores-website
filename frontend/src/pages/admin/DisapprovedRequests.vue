@@ -273,108 +273,138 @@
     <!-- View Details Modal -->
     <Transition name="modal">
       <div v-if="showViewModal" class="fixed inset-0 z-50 flex flex-col sm:items-center sm:justify-center sm:p-4">
-        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="showViewModal = false"></div>
-        <div class="relative bg-white w-full h-full sm:h-auto sm:rounded-2xl sm:shadow-2xl sm:max-w-2xl sm:max-h-[90vh] flex flex-col">
+        <div class="fixed inset-0 bg-black/55 backdrop-blur-md" @click="showViewModal = false"></div>
+
+        <div class="relative bg-white w-full h-full sm:h-auto sm:rounded-3xl sm:max-w-2xl sm:max-h-[90vh] flex flex-col overflow-hidden"
+          style="box-shadow: 0 40px 80px -12px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.04);">
 
           <!-- Modal Header -->
-          <div class="px-4 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
+          <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
             <div class="flex items-center gap-3">
-              <div class="w-1.5 h-8 rounded-full bg-[#3d4f7c]"></div>
+              <div class="w-1 h-8 rounded-full bg-red-400"></div>
               <div>
-                <h3 class="text-sm sm:text-base font-semibold text-slate-800">Disapproved Request Details</h3>
-                <span class="text-xs text-slate-400 font-mono">#SR-{{ selectedRequest ? String(selectedRequest.id).padStart(4, '0') : '' }}</span>
+                <h3 class="text-sm font-bold text-slate-800 tracking-tight">Disapproved Request Details</h3>
+                <p class="text-[11px] text-slate-400 font-mono mt-0.5 tracking-wide">#SR-{{ selectedRequest ? String(selectedRequest.id).padStart(4, '0') : '' }}</p>
               </div>
             </div>
-            <button @click="showViewModal = false" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all cursor-pointer">
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <button @click="showViewModal = false"
+              class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all cursor-pointer">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
               </svg>
             </button>
           </div>
 
           <!-- Modal Body -->
-          <div v-if="selectedRequest" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3">
+          <div v-if="selectedRequest" class="flex-1 overflow-y-auto">
 
-            <!-- Disapproved Banner -->
-            <div class="bg-red-50 border border-red-200 rounded-xl px-3.5 py-3 flex items-center gap-3">
-              <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-              </div>
-              <div>
-                <p class="text-sm font-semibold text-red-700">Request Disapproved</p>
-                <p class="text-xs text-red-500">Disapproved on {{ formatDate(selectedRequest.updated_at) }}</p>
-              </div>
-            </div>
-
-            <!-- Resident Card -->
-            <div class="bg-[#3d4f7c] rounded-xl p-3.5 text-white flex items-center gap-3">
-              <div class="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-bold border-2 border-white/30 flex-shrink-0"
-                :style="{ background: getAvatarColor(selectedRequest.resident_name) }">
-                {{ getInitials(selectedRequest.resident_name) }}
-              </div>
-              <div class="min-w-0">
-                <p class="font-bold text-sm truncate">{{ selectedRequest.resident_name }}</p>
-                <p class="text-[11px] text-white/65 truncate">{{ selectedRequest.resident_email }}</p>
-                <p class="text-[10px] text-white/45 mt-0.5">{{ selectedRequest.resident_contact || '' }}</p>
-              </div>
-            </div>
-
-            <!-- Info Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <div class="bg-slate-50 rounded-xl p-3 space-y-2">
-                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Resident Info</p>
-                <div class="space-y-1.5 text-xs">
-                  <div class="flex justify-between items-baseline gap-2">
-                    <span class="text-slate-400 flex-shrink-0">Contact</span>
-                    <span class="font-medium text-slate-700 text-right truncate">{{ selectedRequest.resident_contact || '—' }}</span>
-                  </div>
-                  <div class="flex justify-between items-baseline gap-2">
-                    <span class="text-slate-400 flex-shrink-0">Address</span>
-                    <span class="font-medium text-slate-700 text-right">{{ formatAddress(selectedRequest) }}</span>
-                  </div>
+            <!-- Resident Hero Strip -->
+            <div class="px-6 py-5 border-b border-slate-100 flex items-center gap-4">
+              <div class="relative flex-shrink-0">
+                <div class="w-16 h-16 rounded-2xl overflow-hidden border-2 border-slate-100 shadow-md flex items-center justify-center text-lg font-bold text-white"
+                  :style="{ background: getAvatarColor(selectedRequest.resident_name) }">
+                  {{ getInitials(selectedRequest.resident_name) }}
+                </div>
+                <!-- Red dot -->
+                <div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-white flex items-center justify-center">
+                  <div class="w-2.5 h-2.5 rounded-full bg-red-500"></div>
                 </div>
               </div>
-              <div class="bg-slate-50 rounded-xl p-3 space-y-2">
-                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Request</p>
-                <div class="space-y-1.5 text-xs">
-                  <div class="flex justify-between items-baseline gap-2">
-                    <span class="text-slate-400 flex-shrink-0">Type</span>
-                    <span class="font-medium text-slate-700 text-right">{{ selectedRequest.type }}</span>
-                  </div>
-                  <div class="flex justify-between items-baseline gap-2">
-                    <span class="text-slate-400 flex-shrink-0">Preferred Date</span>
-                    <span class="font-medium text-slate-700 text-right">{{ selectedRequest.preferred_date }}</span>
-                  </div>
-                  <div class="flex justify-between items-baseline gap-2">
-                    <span class="text-slate-400 flex-shrink-0">Disapproved</span>
-                    <span class="font-medium text-slate-700 text-right">{{ formatDate(selectedRequest.updated_at) }}</span>
-                  </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-base font-bold text-slate-900 truncate">{{ selectedRequest.resident_name }}</p>
+                <p class="text-xs text-slate-400 truncate mt-0.5">{{ selectedRequest.resident_email }}</p>
+                <div class="flex items-center gap-2 mt-2">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-red-50 text-red-600 border border-red-200">
+                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    Disapproved
+                  </span>
+                  <span class="text-[10px] text-slate-400 font-medium">{{ formatDate(selectedRequest.updated_at) }}</span>
                 </div>
               </div>
             </div>
 
-            <!-- Remarks -->
-            <div class="bg-amber-50 border border-amber-200 rounded-xl p-3">
-              <p class="text-[9px] font-bold text-amber-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-                </svg>
-                Disapproval Remarks
-              </p>
-              <p class="text-xs text-amber-800 bg-white p-2.5 rounded-lg border border-amber-100 leading-relaxed">
-                {{ selectedRequest.remarks || 'No remarks provided' }}
-              </p>
-            </div>
+            <!-- Content -->
+            <div class="px-6 py-5 space-y-4">
 
-            <div class="flex justify-end">
-              <button @click="showViewModal = false"
-                class="px-4 py-2 text-sm font-semibold text-slate-600 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all cursor-pointer">
-                Close
-              </button>
-            </div>
+              <!-- Two-col: Resident Info + Request Info -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
+                <!-- Resident Info -->
+                <div class="rounded-2xl border border-slate-200/70 overflow-hidden">
+                  <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
+                    <div class="w-5 h-5 rounded-md bg-[#3d4f7c]/10 flex items-center justify-center">
+                      <svg class="w-3 h-3 text-[#3d4f7c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                      </svg>
+                    </div>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Resident Info</p>
+                  </div>
+                  <div class="divide-y divide-slate-100/80">
+                    <div class="px-4 py-2.5 flex justify-between items-center">
+                      <span class="text-[11px] text-slate-400">Contact</span>
+                      <span class="text-[11px] font-semibold text-slate-700">{{ selectedRequest.resident_contact || '—' }}</span>
+                    </div>
+                    <div class="px-4 py-2.5 flex justify-between items-center">
+                      <span class="text-[11px] text-slate-400">Address</span>
+                      <span class="text-[11px] font-semibold text-slate-700 text-right max-w-[160px]">{{ formatAddress(selectedRequest) }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Request Info -->
+                <div class="rounded-2xl border border-slate-200/70 overflow-hidden">
+                  <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
+                    <div class="w-5 h-5 rounded-md bg-[#3d4f7c]/10 flex items-center justify-center">
+                      <svg class="w-3 h-3 text-[#3d4f7c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                      </svg>
+                    </div>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Request Info</p>
+                  </div>
+                  <div class="divide-y divide-slate-100/80">
+                    <div class="px-4 py-2.5 flex justify-between items-center">
+                      <span class="text-[11px] text-slate-400">Type</span>
+                      <span class="text-[11px] font-semibold text-slate-700 text-right max-w-[140px] truncate">{{ selectedRequest.type }}</span>
+                    </div>
+                    <div class="px-4 py-2.5 flex justify-between items-center">
+                      <span class="text-[11px] text-slate-400">Preferred Date</span>
+                      <span class="text-[11px] font-semibold text-slate-700">{{ selectedRequest.preferred_date }}</span>
+                    </div>
+                    <div class="px-4 py-2.5 flex justify-between items-center">
+                      <span class="text-[11px] text-slate-400">Disapproved On</span>
+                      <span class="text-[11px] font-semibold text-slate-700">{{ formatDate(selectedRequest.updated_at) }}</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Disapproval Remarks -->
+              <div class="rounded-2xl border border-red-200/60 overflow-hidden">
+                <div class="px-4 py-2.5 bg-red-50/60 border-b border-red-100/80 flex items-center gap-2">
+                  <div class="w-5 h-5 rounded-md bg-red-100 flex items-center justify-center">
+                    <svg class="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                    </svg>
+                  </div>
+                  <p class="text-[10px] font-bold text-red-500 uppercase tracking-widest">Disapproval Remarks</p>
+                </div>
+                <div class="px-4 py-3.5 bg-red-50/20">
+                  <p class="text-xs text-slate-600 leading-relaxed">{{ selectedRequest.remarks || 'No remarks provided.' }}</p>
+                </div>
+              </div>
+
+              <!-- Close Button -->
+              <div class="flex justify-end pt-1">
+                <button @click="showViewModal = false"
+                  class="flex items-center gap-1.5 px-4 py-2 text-[11px] font-semibold text-slate-500 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all cursor-pointer">
+                  Close
+                </button>
+              </div>
+
+            </div>
           </div>
         </div>
       </div>
