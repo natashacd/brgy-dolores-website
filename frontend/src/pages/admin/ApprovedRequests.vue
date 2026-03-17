@@ -268,101 +268,224 @@
       </div>
     </div>
 
-    <!-- View Details Modal -->
+    <!-- ── View Details Modal ── -->
     <Transition name="modal">
       <div v-if="showViewModal" class="fixed inset-0 z-50 flex flex-col sm:items-center sm:justify-center sm:p-4">
-        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="showViewModal = false"></div>
-        <div class="relative bg-white w-full h-full sm:h-auto sm:rounded-2xl sm:shadow-2xl sm:max-w-4xl sm:max-h-[90vh] flex flex-col">
+        <div class="fixed inset-0 bg-black/55 backdrop-blur-md" @click="showViewModal = false"></div>
+
+        <div class="relative bg-white w-full h-full sm:h-auto sm:rounded-3xl sm:max-w-3xl sm:max-h-[92vh] flex flex-col overflow-hidden"
+          style="box-shadow: 0 40px 80px -12px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.04);">
 
           <!-- Modal Header -->
-          <div class="px-4 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
+          <div class="px-6 py-4 flex items-center justify-between flex-shrink-0 border-b border-slate-100">
             <div class="flex items-center gap-3">
-              <div class="w-1.5 h-8 rounded-full bg-[#3d4f7c]"></div>
+              <div class="w-1 h-8 rounded-full bg-[#3d4f7c]"></div>
               <div>
-                <h3 class="text-sm sm:text-base font-semibold text-slate-800">Approved Request Details</h3>
-                <span class="text-xs text-slate-400 font-mono">#SR-{{ selectedRequest ? String(selectedRequest.id).padStart(4, '0') : '' }}</span>
+                <h3 class="text-sm font-bold text-slate-800 tracking-tight">Approved Request Details</h3>
+                <p class="text-[11px] text-slate-400 font-mono mt-0.5 tracking-wide">#SR-{{ selectedRequest ? String(selectedRequest.id).padStart(4, '0') : '' }}</p>
               </div>
             </div>
-            <button @click="showViewModal = false" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all cursor-pointer">
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-            </button>
+            <div class="flex items-center gap-2">
+              <button @click="printRequest(selectedRequest)"
+                class="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-slate-500 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 hover:text-slate-700 transition-all cursor-pointer">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6v-8z"/>
+                </svg>
+                Print
+              </button>
+              <button @click="showViewModal = false"
+                class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all cursor-pointer">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
           </div>
 
           <!-- Modal Body -->
-          <div v-if="selectedRequest" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+          <div v-if="selectedRequest" class="flex-1 overflow-y-auto">
 
-            <!-- Status Banner -->
-            <div class="flex items-center justify-between bg-slate-50 px-3 py-2.5 rounded-xl flex-wrap gap-2">
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                <span class="relative flex h-1.5 w-1.5">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-emerald-400"></span>
-                  <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-                </span>
-                Approved
-              </span>
-              <span class="text-xs text-slate-500">{{ formatDate(selectedRequest.updated_at) }}</span>
-            </div>
-
-            <!-- Resident Card -->
-            <div class="bg-[#3d4f7c] rounded-xl p-3.5 text-white flex items-center gap-3">
-              <div class="w-11 h-11 rounded-xl overflow-hidden border-2 border-white/30 flex-shrink-0">
-                <img v-if="selectedRequest.resident_image"
-                  :src="`${baseUrl}/storage/${selectedRequest.resident_image}`"
-                  class="w-full h-full object-cover"
-                  @error="e => e.target.style.display = 'none'"/>
-                <div v-else class="w-full h-full flex items-center justify-center text-base font-bold"
-                  :style="{ background: getAvatarColor(selectedRequest.resident_name) }">
-                  {{ getInitials(selectedRequest.resident_name) }}
+            <!-- Resident Hero Strip -->
+            <div class="px-6 py-5 border-b border-slate-100 flex items-center gap-4">
+              <div class="relative flex-shrink-0">
+                <div class="w-16 h-16 rounded-2xl overflow-hidden border-2 border-slate-100 shadow-md">
+                  <img v-if="selectedRequest.resident_image"
+                    :src="`${baseUrl}/storage/${selectedRequest.resident_image}`"
+                    class="w-full h-full object-cover"
+                    @error="e => e.target.style.display = 'none'"/>
+                  <div v-else class="w-full h-full flex items-center justify-center text-lg font-bold text-white"
+                    :style="{ background: getAvatarColor(selectedRequest.resident_name) }">
+                    {{ getInitials(selectedRequest.resident_name) }}
+                  </div>
+                </div>
+                <!-- Online dot -->
+                <div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-white flex items-center justify-center">
+                  <div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
                 </div>
               </div>
-              <div class="min-w-0 flex-1">
-                <p class="font-bold text-sm truncate">{{ selectedRequest.resident_name }}</p>
-                <p class="text-[11px] text-white/65 truncate">{{ selectedRequest.resident_email }}</p>
-              </div>
-            </div>
-
-            <!-- Info Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div class="bg-slate-50 rounded-xl p-3.5 space-y-2.5">
-                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Personal Info</p>
-                <div class="space-y-1.5 text-xs">
-                  <div class="flex justify-between"><span class="text-slate-400">Contact</span><span class="font-medium text-slate-700">{{ selectedRequest.resident_contact || '—' }}</span></div>
-                  <div class="flex justify-between"><span class="text-slate-400">Birth Date</span><span class="font-medium text-slate-700">{{ formatDate(selectedRequest.resident_birth_date) || '—' }}</span></div>
-                  <div class="flex justify-between"><span class="text-slate-400">Sex</span><span class="font-medium text-slate-700">{{ selectedRequest.resident_sex || '—' }}</span></div>
-                  <div class="flex justify-between"><span class="text-slate-400">Civil Status</span><span class="font-medium text-slate-700">{{ selectedRequest.resident_civil_status || '—' }}</span></div>
-                  <div class="flex justify-between"><span class="text-slate-400">Nationality</span><span class="font-medium text-slate-700">{{ selectedRequest.resident_nationality || 'Filipino' }}</span></div>
-                  <div class="flex justify-between"><span class="text-slate-400">Occupation</span><span class="font-medium text-slate-700">{{ selectedRequest.resident_occupation || '—' }}</span></div>
-                </div>
-              </div>
-              <div class="bg-slate-50 rounded-xl p-3.5 space-y-2.5">
-                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Address</p>
-                <div class="space-y-1.5 text-xs">
-                  <div class="flex justify-between"><span class="text-slate-400">House No.</span><span class="font-medium text-slate-700">{{ selectedRequest.resident_house_no || '—' }}</span></div>
-                  <div class="flex justify-between"><span class="text-slate-400">Purok</span><span class="font-medium text-slate-700">{{ selectedRequest.resident_purok || '—' }}</span></div>
-                  <div class="flex justify-between"><span class="text-slate-400">Sitio</span><span class="font-medium text-slate-700">{{ selectedRequest.resident_sitio || '—' }}</span></div>
-                </div>
-              </div>
-              <div class="bg-slate-50 rounded-xl p-3.5 space-y-2.5">
-                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Request</p>
-                <div class="space-y-1.5 text-xs">
-                  <div class="flex justify-between"><span class="text-slate-400">Type</span><span class="font-medium text-slate-700 text-right max-w-[120px]">{{ selectedRequest.type }}</span></div>
-                  <div class="flex justify-between"><span class="text-slate-400">Preferred</span><span class="font-medium text-slate-700">{{ selectedRequest.preferred_date }}</span></div>
-                  <div class="flex justify-between"><span class="text-slate-400">Approved</span><span class="font-medium text-slate-700">{{ formatDate(selectedRequest.updated_at) }}</span></div>
-                </div>
-                <div v-if="selectedRequest.notes && selectedRequest.notes !== 'N/A'" class="pt-1 border-t border-slate-200">
-                  <p class="text-[10px] text-slate-400 mb-1">Notes</p>
-                  <p class="text-xs text-slate-700">{{ selectedRequest.notes }}</p>
+              <div class="flex-1 min-w-0">
+                <p class="text-base font-bold text-slate-900 truncate">{{ selectedRequest.resident_name }}</p>
+                <p class="text-xs text-slate-400 truncate mt-0.5">{{ selectedRequest.resident_email }}</p>
+                <div class="flex items-center gap-2 mt-2">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span class="relative flex h-1.5 w-1.5">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60 bg-emerald-400"></span>
+                      <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                    </span>
+                    Approved
+                  </span>
+                  <span class="text-[10px] text-slate-400 font-medium">{{ formatDate(selectedRequest.updated_at) }}</span>
                 </div>
               </div>
             </div>
 
-            <div v-if="selectedRequest.remarks" class="bg-blue-50 border border-blue-100 rounded-xl p-3.5">
-              <p class="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-1.5">Official Remarks</p>
-              <p class="text-sm text-blue-800">{{ selectedRequest.remarks }}</p>
-            </div>
+            <!-- Content Sections -->
+            <div class="px-6 py-5 space-y-4">
 
+              <!-- Two-col: Personal + Address -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                <!-- Personal Info -->
+                <div class="rounded-2xl border border-slate-200/70 overflow-hidden">
+                  <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
+                    <div class="w-5 h-5 rounded-md bg-[#3d4f7c]/10 flex items-center justify-center">
+                      <svg class="w-3 h-3 text-[#3d4f7c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                      </svg>
+                    </div>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Personal Info</p>
+                  </div>
+                  <div class="divide-y divide-slate-100/80">
+                    <div class="px-4 py-2.5 flex justify-between items-center">
+                      <span class="text-[11px] text-slate-400">Contact</span>
+                      <span class="text-[11px] font-semibold text-slate-700">{{ selectedRequest.resident_contact || '—' }}</span>
+                    </div>
+                    <div class="px-4 py-2.5 flex justify-between items-center">
+                      <span class="text-[11px] text-slate-400">Birth Date</span>
+                      <span class="text-[11px] font-semibold text-slate-700">{{ formatDate(selectedRequest.resident_birth_date) || '—' }}</span>
+                    </div>
+                    <div class="px-4 py-2.5 flex justify-between items-center">
+                      <span class="text-[11px] text-slate-400">Sex</span>
+                      <span class="text-[11px] font-semibold text-slate-700">{{ selectedRequest.resident_sex || '—' }}</span>
+                    </div>
+                    <div class="px-4 py-2.5 flex justify-between items-center">
+                      <span class="text-[11px] text-slate-400">Civil Status</span>
+                      <span class="text-[11px] font-semibold text-slate-700">{{ selectedRequest.resident_civil_status || '—' }}</span>
+                    </div>
+                    <div class="px-4 py-2.5 flex justify-between items-center">
+                      <span class="text-[11px] text-slate-400">Nationality</span>
+                      <span class="text-[11px] font-semibold text-slate-700">{{ selectedRequest.resident_nationality || 'Filipino' }}</span>
+                    </div>
+                    <div class="px-4 py-2.5 flex justify-between items-center">
+                      <span class="text-[11px] text-slate-400">Occupation</span>
+                      <span class="text-[11px] font-semibold text-slate-700">{{ selectedRequest.resident_occupation || '—' }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Address + Request -->
+                <div class="space-y-4">
+                  <!-- Address -->
+                  <div class="rounded-2xl border border-slate-200/70 overflow-hidden">
+                    <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
+                      <div class="w-5 h-5 rounded-md bg-[#3d4f7c]/10 flex items-center justify-center">
+                        <svg class="w-3 h-3 text-[#3d4f7c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                      </div>
+                      <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Address</p>
+                    </div>
+                    <div class="divide-y divide-slate-100/80">
+                      <div class="px-4 py-2.5 flex justify-between items-center">
+                        <span class="text-[11px] text-slate-400">House No.</span>
+                        <span class="text-[11px] font-semibold text-slate-700">{{ selectedRequest.resident_house_no || '—' }}</span>
+                      </div>
+                      <div class="px-4 py-2.5 flex justify-between items-center">
+                        <span class="text-[11px] text-slate-400">Purok</span>
+                        <span class="text-[11px] font-semibold text-slate-700">{{ selectedRequest.resident_purok || '—' }}</span>
+                      </div>
+                      <div class="px-4 py-2.5 flex justify-between items-center">
+                        <span class="text-[11px] text-slate-400">Sitio</span>
+                        <span class="text-[11px] font-semibold text-slate-700">{{ selectedRequest.resident_sitio || '—' }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Request Info -->
+                  <div class="rounded-2xl border border-slate-200/70 overflow-hidden">
+                    <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
+                      <div class="w-5 h-5 rounded-md bg-[#3d4f7c]/10 flex items-center justify-center">
+                        <svg class="w-3 h-3 text-[#3d4f7c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                      </div>
+                      <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Request Info</p>
+                    </div>
+                    <div class="divide-y divide-slate-100/80">
+                      <div class="px-4 py-2.5 flex justify-between items-center">
+                        <span class="text-[11px] text-slate-400">Type</span>
+                        <span class="text-[11px] font-semibold text-slate-700 text-right max-w-[140px] truncate">{{ selectedRequest.type }}</span>
+                      </div>
+                      <div class="px-4 py-2.5 flex justify-between items-center">
+                        <span class="text-[11px] text-slate-400">Preferred</span>
+                        <span class="text-[11px] font-semibold text-slate-700">{{ selectedRequest.preferred_date }}</span>
+                      </div>
+                      <div class="px-4 py-2.5 flex justify-between items-center">
+                        <span class="text-[11px] text-slate-400">Approved On</span>
+                        <span class="text-[11px] font-semibold text-slate-700">{{ formatDate(selectedRequest.updated_at) }}</span>
+                      </div>
+                    </div>
+                    <div v-if="selectedRequest.notes && selectedRequest.notes !== 'N/A'" class="px-4 py-3 border-t border-slate-100">
+                      <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Notes</p>
+                      <p class="text-[11px] text-slate-600 leading-relaxed">{{ selectedRequest.notes }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Official Remarks -->
+              <div v-if="selectedRequest.remarks" class="rounded-2xl border border-amber-200/60 overflow-hidden">
+                <div class="px-4 py-2.5 bg-amber-50/60 border-b border-amber-100/80 flex items-center gap-2">
+                  <div class="w-5 h-5 rounded-md bg-amber-100 flex items-center justify-center">
+                    <svg class="w-3 h-3 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                    </svg>
+                  </div>
+                  <p class="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Official Remarks</p>
+                </div>
+                <div class="px-4 py-3 bg-amber-50/30">
+                  <p class="text-xs text-slate-600 leading-relaxed">{{ selectedRequest.remarks }}</p>
+                </div>
+              </div>
+
+              <!-- Mark as Released Footer -->
+              <div class="rounded-2xl border border-slate-200/70 overflow-hidden">
+                <div class="px-4 py-3 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
+                  <div class="w-5 h-5 rounded-md bg-[#3d4f7c]/10 flex items-center justify-center">
+                    <svg class="w-3 h-3 text-[#3d4f7c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"/>
+                    </svg>
+                  </div>
+                  <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Document Release</p>
+                </div>
+                <div class="px-4 py-3.5 flex items-center justify-end gap-4">
+                  <button @click="markAsReleased(selectedRequest)"
+                    :disabled="releasingId === selectedRequest.id"
+                    class="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 bg-[#3d4f7c] text-white text-[11px] font-bold rounded-xl hover:bg-[#2f3d61] disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-150 active:scale-95 cursor-pointer shadow-sm tracking-wide">
+                    <svg v-if="releasingId === selectedRequest.id" class="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                    </svg>
+                    <svg v-else width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    {{ releasingId === selectedRequest.id ? 'Releasing…' : 'Mark as Released' }}
+                  </button>
+                </div>
+              </div>
+
+            </div>
           </div>
         </div>
       </div>
@@ -376,13 +499,14 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 import ServiceRequestService from '@/services/Admin/ServiceRequestService'
 import Swal from 'sweetalert2'
 
-const requests     = ref([])
-const loading      = ref(false)
-const currentPage  = ref(1)
-const itemsPerPage = 6
+const requests        = ref([])
+const loading         = ref(false)
+const currentPage     = ref(1)
+const itemsPerPage    = 6
 const showViewModal   = ref(false)
 const selectedRequest = ref(null)
-const baseUrl = import.meta.env.VITE_API_URL || ''
+const releasingId     = ref(null)   // ← was missing
+const baseUrl         = import.meta.env.VITE_API_URL || ''
 
 const filters = reactive({ search: '', type: '' })
 
@@ -418,6 +542,59 @@ async function fetchRequests() {
 
 function openViewModal(req) { selectedRequest.value = req; showViewModal.value = true }
 function resetFilters() { filters.search = ''; filters.type = ''; currentPage.value = 1 }
+
+// ── markAsReleased ── was missing entirely
+async function markAsReleased(req) {
+  const result = await Swal.fire({
+    title: 'Mark as Released?',
+    text: `Confirm that ${req.resident_name} has claimed their document.`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, Release',
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: '#3d4f7c',
+    cancelButtonColor: '#94a3b8',
+    reverseButtons: true,
+  })
+
+  if (!result.isConfirmed) return
+
+  releasingId.value = req.id
+  try {
+    await ServiceRequestService.updateStatus(req.id, 'released')
+    // Update local state immediately so UI reflects change
+    const idx = requests.value.findIndex(r => r.id === req.id)
+    if (idx !== -1) requests.value[idx].status = 'released'
+    showViewModal.value = false
+    Swal.fire({
+      icon: 'success',
+      title: 'Released!',
+      text: 'The request has been marked as released.',
+      timer: 2500,
+      showConfirmButton: false,
+      position: 'top-end',
+      toast: true,
+    })
+    await fetchRequests()
+  } catch {
+    Swal.fire({
+      icon: 'error',
+      title: 'Failed',
+      text: 'Could not update status. Please try again.',
+      timer: 3000,
+      showConfirmButton: false,
+      position: 'top-end',
+      toast: true,
+    })
+  } finally {
+    releasingId.value = null
+  }
+}
+
+function printRequest(req) {
+  if (!req) return
+  window.print()
+}
 
 watch(filters, () => { currentPage.value = 1 }, { deep: true })
 onMounted(() => fetchRequests())
