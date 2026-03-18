@@ -23,8 +23,12 @@ import ResidentDashboard from "@/pages/resident/Dashboard.vue";
 import ResidentServiceRequest from "@/pages/resident/ServiceRequest.vue";
 import ResidentComplaints from "@/pages/resident/Complaints.vue";
 
-// Staff/Official roles that can access admin
-const ADMIN_ROLES = ['admin', 'punong barangay', 'secretary', 'treasurer', 'kagawad', 'sk chairman', 'health worker', 'lupon'];
+// Lupon routes
+import LuponComplaints from "@/pages/lupon/Complaints.vue";
+
+const ADMIN_ROLES = ['admin', 'punong barangay', 'secretary', 'treasurer', 'kagawad', 'sk chairman', 'health worker'];
+
+const LUPON_ROLES = ['lupon'];
 
 const routes = [
   // Public routes
@@ -83,6 +87,21 @@ const routes = [
         component: ResidentComplaints,
         meta: { title: "Complaints" },
       }
+    ],
+  },
+
+  // Lupon routes
+  {
+    path: "/lupon",
+    component: () => import("@/layout/lupon/Layout.vue"),
+    meta: { requiresAuth: true, role: 'lupon' },
+    children: [
+      {
+        path: "complaints",
+        name: "lupon.complaints",
+        component: LuponComplaints,
+        meta: { title: "Lupon Cases" },
+      },
     ],
   },
 
@@ -184,6 +203,10 @@ const routes = [
         return { name: "resident.dashboard" };
       }
       
+      if (userRole === "lupon") {
+        return { name: "lupon.complaints" };
+      }
+      
       return { name: "admin.dashboard" };
     }
   }
@@ -206,10 +229,14 @@ const hasAdminAccess = (role) => {
   return ADMIN_ROLES.includes(role.toLowerCase());
 };
 
+const hasLuponAccess = (role) => {
+  if (!role) return false;
+  return LUPON_ROLES.includes(role.toLowerCase());
+};
+
 router.beforeEach((to, from) => {
   const isAuthenticated = localStorage.getItem("auth_token") || sessionStorage.getItem("auth_token");
   const userRole = localStorage.getItem("user_role")?.toLowerCase() || '';
-  const userRoleDisplay = localStorage.getItem("user_role") || '';
 
   if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
     return { 
@@ -219,11 +246,16 @@ router.beforeEach((to, from) => {
   }
 
   if (isAuthenticated) {
+    // Check admin routes access
     if (to.path.startsWith('/admin')) {
       if (userRole === 'resident') {
         return { name: "resident.service-requests" };
       }
-    
+      
+      if (userRole === 'lupon') {
+        return { name: "lupon.complaints" };
+      }
+      
       if (hasAdminAccess(userRole)) {
         return true;
       }
@@ -231,9 +263,31 @@ router.beforeEach((to, from) => {
       return { name: "login" };
     }
     
+    // Check lupon routes access
+    if (to.path.startsWith('/lupon')) {
+      if (userRole === 'lupon') {
+        return true;
+      }
+      
+      if (userRole === 'resident') {
+        return { name: "resident.dashboard" };
+      }
+      
+      if (hasAdminAccess(userRole)) {
+        return { name: "admin.dashboard" };
+      }
+      
+      return { name: "login" };
+    }
+    
+    // Check resident routes access
     if (to.path.startsWith('/resident')) {
       if (userRole === 'resident') {
         return true;
+      }
+      
+      if (userRole === 'lupon') {
+        return { name: "lupon.complaints" };
       }
       
       if (hasAdminAccess(userRole)) {
@@ -247,6 +301,9 @@ router.beforeEach((to, from) => {
   if (to.matched.some(record => record.meta.guest) && isAuthenticated) {
     if (userRole === 'resident') {
       return { name: "resident.service-requests" };
+    }
+    if (userRole === 'lupon') {
+      return { name: "lupon.complaints" };
     }
     if (hasAdminAccess(userRole)) {
       return { name: "admin.dashboard" };
