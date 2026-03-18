@@ -33,7 +33,7 @@
           </div>
           <div v-if="!isCollapsed || !isDesktop" class="min-w-0" :class="{ 'hidden lg:block': isCollapsed && isDesktop }">
             <h2 class="font-semibold text-xl text-white truncate">Barangay Dolores</h2>
-            <p class="text-base text-gray-400">{{ userRole === 'resident' ? 'Resident Portal' : 'Admin Dashboard' }}</p>
+            <p class="text-base text-gray-400">{{ getUserRoleDisplay() }}</p>
           </div>
         </div>
 
@@ -81,8 +81,28 @@
 
     <nav class="flex-1 overflow-y-auto py-6 px-4 space-y-8 scrollbar-thin">
       
-      <!-- Main Section (only for admin/officials) -->
-      <div v-if="userRole !== 'resident'">
+      <!-- LUPON PANEL  -->
+      <div v-if="userRole === 'lupon'">
+        <ul class="space-y-1">
+          <li>
+            <router-link
+              to="/lupon/complaints"
+              class="flex items-center gap-4 px-3 py-3 rounded-lg text-base transition-colors"
+              :class="isActiveRoute('/lupon/complaints') ? 'bg-[#2a2f3f] text-white' : 'text-gray-300 hover:bg-[#252a3a] hover:text-white'"
+              :title="isCollapsed ? 'Lupon Cases' : ''"
+              @click="closeMobileSidebar"
+            >
+              <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span v-if="!isCollapsed" class="flex-1">Lupon Cases</span>
+            </router-link>
+          </li>
+        </ul>
+      </div>
+      
+      <!-- Main Section -->
+      <div v-if="userRole !== 'resident' && userRole !== 'lupon'">
         <p v-if="!isCollapsed" class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-3">MAIN</p>
         <ul class="space-y-1">
           <li>
@@ -117,13 +137,11 @@
       </div>
 
       <!-- Management Section -->
-      <div>
-        <p v-if="!isCollapsed" class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-3">
-          {{ userRole === 'resident' ? 'SERVICES' : 'MANAGEMENT' }}
-        </p>
+      <div v-if="userRole !== 'resident' && userRole !== 'lupon'">
+        <p v-if="!isCollapsed" class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-3">MANAGEMENT</p>
         <ul class="space-y-1">
           <!-- Resident Management -->
-          <li v-if="userRole !== 'resident'">
+          <li>
             <router-link
               to="/admin/residents"
               class="flex items-center gap-4 px-3 py-3 rounded-lg text-base transition-colors"
@@ -138,25 +156,8 @@
             </router-link>
           </li>
           
-          <!-- Resident Dashboard -->
-          <li v-if="userRole === 'resident'">
-            <router-link
-              to="/resident/dashboard"
-              class="flex items-center gap-4 px-3 py-3 rounded-lg text-base transition-colors"
-              :class="isActiveRoute('/resident/dashboard') ? 'bg-[#2a2f3f] text-white' : 'text-gray-300 hover:bg-[#252a3a] hover:text-white'"
-              :title="isCollapsed ? 'Dashboard' : ''"
-              @click="closeMobileSidebar"
-            >
-              <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-              <span v-if="!isCollapsed">Dashboard</span>
-            </router-link>
-          </li>
-          
-          <!-- Service Requests with Enhanced Dropdown -->
-          <li v-if="userRole !== 'resident'">
-            <!-- Main Service Requests Button (acts as dropdown trigger) -->
+          <!-- Service Requests-->
+          <li>
             <button
               @click="toggleServiceRequestsDropdown"
               class="w-full flex items-center gap-4 px-3 py-3 rounded-lg text-base transition-colors text-gray-300 hover:bg-[#252a3a] hover:text-white"
@@ -236,24 +237,8 @@
             </Transition>
           </li>
           
-          <!-- Service Requests for residents -->
-          <li v-if="userRole === 'resident'">
-            <router-link
-              to="/resident/service-requests"
-              class="flex items-center gap-4 px-3 py-3 rounded-lg text-base transition-colors"
-              :class="isActiveRoute('/resident/service-requests') ? 'bg-[#2a2f3f] text-white' : 'text-gray-300 hover:bg-[#252a3a] hover:text-white'"
-              :title="isCollapsed ? 'Service Requests' : ''"
-              @click="closeMobileSidebar"
-            >
-              <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-              </svg>
-              <span v-if="!isCollapsed">Service Requests</span>
-            </router-link>
-          </li>
-          
-          <!-- Complaints & Disputes -->
-          <li v-if="userRole !== 'resident'">
+          <!-- Complaints & Disputes (Admin) -->
+          <li>
             <router-link
               to="/admin/complaints"
               class="flex items-center gap-4 px-3 py-3 rounded-lg text-base transition-colors"
@@ -264,28 +249,12 @@
               <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span v-if="!isCollapsed" class="flex-1">Complaints & Disputes</span>
-            </router-link>
-          </li>
-
-           <!-- Complaints & Disputes -->
-          <li v-if="userRole === 'resident'">
-            <router-link
-              to="/resident/complaints"
-              class="flex items-center gap-4 px-3 py-3 rounded-lg text-base transition-colors"
-              :class="isActiveRoute('/resident/complaints') ? 'bg-[#2a2f3f] text-white' : 'text-gray-300 hover:bg-[#252a3a] hover:text-white'"
-              :title="isCollapsed ? 'Complaints & Disputes' : ''"
-              @click="closeMobileSidebar"
-            >
-              <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span v-if="!isCollapsed" class="flex-1">Complaints & Reports</span>
+              <span v-if="!isCollapsed" class="flex-1">Lupon Cases</span>
             </router-link>
           </li>
           
           <!-- Reports & Analytics -->
-          <li v-if="userRole !== 'resident'">
+          <li>
             <router-link
               to="/admin/reports"
               class="flex items-center gap-4 px-3 py-3 rounded-lg text-base transition-colors"
@@ -302,8 +271,56 @@
         </ul>
       </div>
 
-      <!-- Content Section -->
-      <div v-if="userRole !== 'resident'">
+      <!-- Resident Dashboard -->
+      <div v-if="userRole === 'resident'">
+        <p v-if="!isCollapsed" class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-3">SERVICES</p>
+        <ul class="space-y-1">
+          <li>
+            <router-link
+              to="/resident/dashboard"
+              class="flex items-center gap-4 px-3 py-3 rounded-lg text-base transition-colors"
+              :class="isActiveRoute('/resident/dashboard') ? 'bg-[#2a2f3f] text-white' : 'text-gray-300 hover:bg-[#252a3a] hover:text-white'"
+              :title="isCollapsed ? 'Dashboard' : ''"
+              @click="closeMobileSidebar"
+            >
+              <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              <span v-if="!isCollapsed">Dashboard</span>
+            </router-link>
+          </li>
+          <li>
+            <router-link
+              to="/resident/service-requests"
+              class="flex items-center gap-4 px-3 py-3 rounded-lg text-base transition-colors"
+              :class="isActiveRoute('/resident/service-requests') ? 'bg-[#2a2f3f] text-white' : 'text-gray-300 hover:bg-[#252a3a] hover:text-white'"
+              :title="isCollapsed ? 'Service Requests' : ''"
+              @click="closeMobileSidebar"
+            >
+              <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
+              <span v-if="!isCollapsed">Service Requests</span>
+            </router-link>
+          </li>
+          <li>
+            <router-link
+              to="/resident/complaints"
+              class="flex items-center gap-4 px-3 py-3 rounded-lg text-base transition-colors"
+              :class="isActiveRoute('/resident/complaints') ? 'bg-[#2a2f3f] text-white' : 'text-gray-300 hover:bg-[#252a3a] hover:text-white'"
+              :title="isCollapsed ? 'Complaints' : ''"
+              @click="closeMobileSidebar"
+            >
+              <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span v-if="!isCollapsed">Complaints & Reports</span>
+            </router-link>
+          </li>
+        </ul>
+      </div>
+
+      <div v-if="userRole !== 'resident' && userRole !== 'lupon'">
         <p v-if="!isCollapsed" class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-3">CONTENT</p>
         <ul class="space-y-1">
           <li>
@@ -339,7 +356,6 @@
       </div>
     </nav>
 
-    <!-- Bottom Section with Logout -->
     <div class="p-4 border-t border-[#2a2f3f] mt-auto">
       <button
         @click="confirmLogout"
@@ -381,6 +397,13 @@ const serviceRequestsDropdownOpen = ref(false)
 
 const userRole = ref(localStorage.getItem('user_role') || '')
 const userName = ref(localStorage.getItem('user_name') || 'User')
+
+const getUserRoleDisplay = () => {
+  if (userRole.value === 'lupon') return 'Lupon Panel'
+  if (userRole.value === 'resident') return 'Resident Portal'
+  return 'Admin Dashboard'
+}
+
 const userInitials = computed(() => {
   if (!userName.value) return 'U'
   const parts = userName.value.split(' ')
@@ -403,6 +426,9 @@ const isActiveRoute = (path) => {
   }
   if (path === '/admin') {
     return route.path === '/admin'
+  }
+  if (path === '/lupon/complaints') {
+    return route.path === '/lupon/complaints' || route.path.startsWith('/lupon/complaints/')
   }
   return route.path === path || route.path.startsWith(path + '/')
 }
@@ -549,5 +575,4 @@ const handleLogout = async () => {
   opacity: 0;
   transform: translateY(-10px);
 }
-
 </style>
