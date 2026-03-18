@@ -748,63 +748,6 @@ const complaints = ref([
     resolution: null,
     resolved_date: null
   },
-  {
-    id: 102,
-    complainant_name: 'Pedro Reyes',
-    complainant_address: 'Purok 7, Masagana',
-    complainant_contact: '0934 567 8901',
-    respondent_name: 'Ana Gonzales',
-    respondent_address: 'Purok 2, Masagana',
-    respondent_contact: '0945 678 9012',
-    type: 'Noise Complaint',
-    status: 'mediation',
-    priority: 'medium',
-    lupon_name: 'Lupon Member Santos',
-    filed_date: '2024-03-08',
-    incident_date: '2024-03-05',
-    details: 'Complainant reports excessive noise from respondent\'s property during late hours.',
-    mediation_notes: 'Initial mediation scheduled. Both parties agreed to meet.',
-    resolution: null,
-    resolved_date: null
-  },
-  {
-    id: 103,
-    complainant_name: 'Josefa Fernandez',
-    complainant_address: 'Sitio Mabuhay',
-    complainant_contact: '0956 789 0123',
-    respondent_name: 'Ramon Fernandez',
-    respondent_address: 'Sitio Mabuhay',
-    respondent_contact: '0967 890 1234',
-    type: 'Family Dispute',
-    status: 'escalated',
-    priority: 'high',
-    lupon_name: 'Lupon Member Cruz',
-    filed_date: '2024-03-01',
-    incident_date: '2024-02-28',
-    details: 'Family disagreement over inheritance and property distribution.',
-    mediation_notes: 'Multiple mediation sessions held. Parties unable to reach agreement.',
-    resolution: null,
-    resolved_date: null
-  },
-  {
-    id: 104,
-    complainant_name: 'Roberto Lim',
-    complainant_address: 'Purok 1, Masunurin',
-    complainant_contact: '0978 901 2345',
-    respondent_name: 'Elena Lim',
-    respondent_address: 'Purok 1, Masunurin',
-    respondent_contact: '0989 012 3456',
-    type: 'Domestic Issue',
-    status: 'resolved',
-    priority: 'low',
-    lupon_name: 'Lupon Member Reyes',
-    filed_date: '2024-02-20',
-    incident_date: '2024-02-15',
-    details: 'Minor domestic disagreement resolved through mediation.',
-    mediation_notes: 'Both parties reached amicable agreement.',
-    resolution: 'Parties agreed to family counseling and signed peace covenant.',
-    resolved_date: '2024-03-05'
-  }
 ])
 
 const luponMembers = ref([

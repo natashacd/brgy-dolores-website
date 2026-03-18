@@ -498,6 +498,7 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import ServiceRequestService from '@/services/Admin/ServiceRequestService'
 import Swal from 'sweetalert2'
+import { getServiceRequests, hasServiceRequestsData, setServiceRequests } from "@/utils/dataStore";
 
 const requests        = ref([])
 const loading         = ref(false)
@@ -528,16 +529,22 @@ const filteredRequests  = computed(() => {
 const totalPages        = computed(() => Math.max(1, Math.ceil(filteredRequests.value.length / itemsPerPage)))
 const paginatedRequests = computed(() => { const s = (currentPage.value - 1) * itemsPerPage; return filteredRequests.value.slice(s, s + itemsPerPage) })
 
-async function fetchRequests() {
-  loading.value = true
+async function fetchRequests(showLoading = true) {
+  if (showLoading) loading.value = true;
   try {
-    const data = await ServiceRequestService.getApproved()
-    requests.value = Array.isArray(data) ? data : (data.data ?? [])
+    const data = await ServiceRequestService.getAll();
+    setServiceRequests(data);           
+    requests.value = filterByStatus(data);
   } catch {
-    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load approved requests.', timer: 3000, showConfirmButton: false, position: 'top-end', toast: true })
+    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load requests.', timer: 3000, showConfirmButton: false, position: 'top-end', toast: true });
   } finally {
-    loading.value = false
+    if (showLoading) loading.value = false;
   }
+}
+
+function filterByStatus(data) {
+  const arr = Array.isArray(data) ? data : (data.data ?? []);
+  return arr.filter(r => r.status === 'approved');
 }
 
 function openViewModal(req) { selectedRequest.value = req; showViewModal.value = true }
@@ -561,34 +568,18 @@ async function markAsReleased(req) {
 
   releasingId.value = req.id
   try {
-    await ServiceRequestService.updateStatus(req.id, 'released')
-    // Update local state immediately so UI reflects change
-    const idx = requests.value.findIndex(r => r.id === req.id)
-    if (idx !== -1) requests.value[idx].status = 'released'
-    showViewModal.value = false
-    Swal.fire({
-      icon: 'success',
-      title: 'Released!',
-      text: 'The request has been marked as released.',
-      timer: 2500,
-      showConfirmButton: false,
-      position: 'top-end',
-      toast: true,
-    })
-    await fetchRequests()
-  } catch {
-    Swal.fire({
-      icon: 'error',
-      title: 'Failed',
-      text: 'Could not update status. Please try again.',
-      timer: 3000,
-      showConfirmButton: false,
-      position: 'top-end',
-      toast: true,
-    })
-  } finally {
-    releasingId.value = null
-  }
+    await ServiceRequestService.release(req.id);
+
+    const stored = getServiceRequests() ?? [];
+    const updated = stored.map(r => r.id === req.id ? { ...r, status: 'released' } : r);
+    setServiceRequests(updated);
+
+    requests.value = requests.value.filter(r => r.id !== req.id);
+
+    showViewModal.value = false;
+    showSuccess('Marked as released');
+  } catch { showError('Could not update status.') }
+  finally { releasingId.value = null }
 }
 
 function printRequest(req) {
@@ -597,7 +588,13 @@ function printRequest(req) {
 }
 
 watch(filters, () => { currentPage.value = 1 }, { deep: true })
-onMounted(() => fetchRequests())
+onMounted(() => {
+  if (hasServiceRequestsData()) {
+    requests.value = filterByStatus(getServiceRequests());
+  } else {
+    fetchRequests(true);
+  }
+});
 </script>
 
 <style scoped>

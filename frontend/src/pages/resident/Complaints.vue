@@ -303,13 +303,6 @@
                   <span v-if="errors.subject" class="text-[10px] text-red-400">{{ errors.subject }}</span>
                 </div>
 
-                <!-- Respondent (Optional) -->
-                <div v-if="form.complaint_type === 'dispute'" class="flex flex-col gap-1.5">
-                  <label class="text-xs font-semibold text-slate-600">Respondent (Person involved)</label>
-                  <input v-model="form.respondent_name" type="text" placeholder="Name of person/party involved"
-                    class="border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#3d4f7c]/50 transition-all bg-slate-50 focus:bg-white" />
-                </div>
-
                 <!-- Incident Date -->
                 <div class="flex flex-col gap-1.5">
                   <label class="text-xs font-semibold text-slate-600">Date of Incident <span class="text-red-400">*</span></label>
@@ -336,44 +329,7 @@
                     class="border rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-all bg-slate-50 focus:bg-white resize-none"
                     :class="errors.description ? 'border-red-300' : 'border-slate-200 focus:border-[#3d4f7c]/50'"></textarea>
                   <span v-if="errors.description" class="text-[10px] text-red-400">{{ errors.description }}</span>
-                </div>
-
-                <!-- Supporting Documents -->
-                <div class="flex flex-col gap-1.5">
-                  <label class="text-xs font-semibold text-slate-600">Supporting Documents (Optional)</label>
-                  <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 bg-slate-50 text-center">
-                    <input type="file" ref="fileInput" @change="handleFileUpload" multiple class="hidden" />
-                    <button type="button" @click="triggerFileInput" 
-                      class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm hover:bg-slate-100 transition-colors">
-                      <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                      </svg>
-                      Upload Files
-                    </button>
-                    <p class="text-xs text-slate-400 mt-2">JPG, PNG, PDF up to 10MB</p>
-                  </div>
-                  <div v-if="uploadedFiles.length > 0" class="mt-2 space-y-1">
-                    <div v-for="(file, index) in uploadedFiles" :key="index" 
-                      class="flex items-center justify-between bg-slate-50 p-2 rounded-lg">
-                      <span class="text-xs text-slate-600">{{ file.name }}</span>
-                      <button @click="removeFile(index)" class="text-red-400 hover:text-red-600">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Confirmation -->
-                <div class="flex items-start gap-3 pt-2">
-                  <input type="checkbox" v-model="form.confirmed" id="confirm"
-                    class="mt-1 w-4 h-4 rounded border-slate-300 text-[#3d4f7c] focus:ring-[#3d4f7c]/20" />
-                  <label for="confirm" class="text-xs text-slate-600">
-                    I confirm that the information provided is true and accurate to the best of my knowledge.
-                  </label>
-                </div>
-                <span v-if="errors.confirmed" class="text-[10px] text-red-400 block -mt-2">{{ errors.confirmed }}</span>
+                </div>             
               </form>
             </div>
 

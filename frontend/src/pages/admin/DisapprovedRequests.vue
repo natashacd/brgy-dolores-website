@@ -417,6 +417,7 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import ServiceRequestService from '@/services/Admin/ServiceRequestService'
 import Swal from 'sweetalert2'
+import { getServiceRequests, hasServiceRequestsData, setServiceRequests } from "@/utils/dataStore";
 
 const requests     = ref([])
 const loading      = ref(false)
@@ -452,23 +453,35 @@ const filteredRequests  = computed(() => {
 const totalPages        = computed(() => Math.max(1, Math.ceil(filteredRequests.value.length / itemsPerPage)))
 const paginatedRequests = computed(() => { const s = (currentPage.value - 1) * itemsPerPage; return filteredRequests.value.slice(s, s + itemsPerPage) })
 
-async function fetchRequests() {
-  loading.value = true
+async function fetchRequests(showLoading = true) {
+  if (showLoading) loading.value = true;
   try {
-    const data = await ServiceRequestService.getDisapproved()
-    requests.value = Array.isArray(data) ? data : (data.data ?? [])
+    const data = await ServiceRequestService.getAll();
+    setServiceRequests(data);           
+    requests.value = filterByStatus(data);
   } catch {
-    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load disapproved requests.', timer: 3000, showConfirmButton: false, position: 'top-end', toast: true })
+    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load requests.', timer: 3000, showConfirmButton: false, position: 'top-end', toast: true });
   } finally {
-    loading.value = false
+    if (showLoading) loading.value = false;
   }
+}
+
+function filterByStatus(data) {
+  const arr = Array.isArray(data) ? data : (data.data ?? []);
+  return arr.filter(r => r.status === 'disapproved');
 }
 
 function openViewModal(req) { selectedRequest.value = req; showViewModal.value = true }
 function resetFilters() { filters.search = ''; filters.type = ''; currentPage.value = 1 }
 
 watch(filters, () => { currentPage.value = 1 }, { deep: true })
-onMounted(() => fetchRequests())
+onMounted(() => {
+  if (hasServiceRequestsData()) {
+    requests.value = filterByStatus(getServiceRequests());
+  } else {
+    fetchRequests(true);
+  }
+});
 </script>
 
 <style scoped>

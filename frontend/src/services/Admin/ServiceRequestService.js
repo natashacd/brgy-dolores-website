@@ -1,6 +1,10 @@
 import api from "@/api/api";
 
 const ServiceRequestService = {
+  async getAll() {
+    const { data } = await api.get("/api/admin/service-requests");
+    return data;
+  },
 
   async getPending() {
     const { data } = await api.get("/api/admin/service-requests", {
@@ -36,7 +40,10 @@ const ServiceRequestService = {
   },
 
   async reject(id, payload) {
-    const { data } = await api.put(`/api/admin/service-requests/${id}/reject`, payload);
+    const { data } = await api.put(
+      `/api/admin/service-requests/${id}/reject`,
+      payload,
+    );
     return data;
   },
 
