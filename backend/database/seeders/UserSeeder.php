@@ -32,6 +32,12 @@ class UserSeeder extends Seeder
                 'role_id' => 7,
                 'info' => ['first_name' => 'Resident'],
             ],
+            [
+                'email' => 'lupon@gmail.com',
+                'password' => 'adminadmin',
+                'role_id' => 5,
+                'info' => ['first_name' => 'Lupon'],
+            ],
         ];
 
         foreach ($users as $data) {

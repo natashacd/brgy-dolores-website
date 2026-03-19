@@ -468,6 +468,47 @@
                 </div>
               </div>
 
+              <!-- Mediation & Resolution -->
+              <div class="bg-slate-50 rounded-xl p-4">
+                <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                  </svg>
+                  Mediation & Resolution
+                </h4>
+                
+                <!-- Assigned Lupon -->
+                <div class="mb-3">
+                  <p class="text-[10px] text-slate-400">Assigned Lupon Member</p>
+                  <div v-if="selectedCase.lupon_name" class="flex items-center gap-2 mt-1">
+                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
+                      :style="{ background: getAvatarColor(selectedCase.lupon_name) }">
+                      {{ getInitials(selectedCase.lupon_name) }}
+                    </div>
+                    <span class="text-sm text-slate-700">{{ selectedCase.lupon_name }}</span>
+                  </div>
+                  <p class="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Complaint Details</p>
+                </div>
+                <div class="px-4 py-3.5 bg-amber-50/20">
+                  <p class="text-xs text-slate-600 leading-relaxed">{{ selectedCase.details || 'No details provided.' }}</p>
+                </div>
+              </div>
+
+              <!-- Mediation Notes -->
+              <div v-if="selectedCase.mediation_notes" class="rounded-2xl border border-blue-200/60 overflow-hidden">
+                <div class="px-4 py-2.5 bg-blue-50/60 border-b border-blue-100/80 flex items-center gap-2">
+                  <div class="w-5 h-5 rounded-md bg-blue-100 flex items-center justify-center">
+                    <svg class="w-3 h-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
+                    </svg>
+                  </div>
+                  <p class="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Mediation Notes</p>
+                </div>
+                <div class="px-4 py-3.5 bg-blue-50/20">
+                  <p class="text-xs text-slate-600 leading-relaxed">{{ selectedCase.mediation_notes }}</p>
+                </div>
+              </div>
+
               <!-- Complaint Details -->
               <div class="rounded-2xl border border-amber-200/60 overflow-hidden">
                 <div class="px-4 py-2.5 bg-amber-50/60 border-b border-amber-100/80 flex items-center gap-2">
@@ -512,6 +553,24 @@
                   <p class="text-xs text-slate-600 leading-relaxed">{{ selectedCase.resolution }}</p>
                   <p class="text-[10px] text-slate-400 mt-2">Resolved on: {{ formatDate(selectedCase.resolved_date) }}</p>
                 </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 mb-1">Action</label>
+                  <div class="flex gap-3">
+                    <label class="flex items-center gap-2 px-4 py-2.5 rounded-xl border cursor-pointer text-sm"
+                      :class="resolutionAction === 'close' ? 'border-amber-300 bg-amber-50 text-amber-700' : 'border-slate-200 bg-slate-50 text-slate-500'">
+                      <input type="radio" v-model="resolutionAction" value="close" class="hidden" />
+                      <span class="w-2 h-2 rounded-full" :class="resolutionAction === 'close' ? 'bg-amber-500' : 'bg-slate-300'"></span>
+                      Close Case
+                    </label>
+                    <label class="flex items-center gap-2 px-4 py-2.5 rounded-xl border cursor-pointer text-sm"
+                      :class="resolutionAction === 'approve' ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-slate-50 text-slate-500'">
+                      <input type="radio" v-model="resolutionAction" value="approve" class="hidden" />
+                      <span class="w-2 h-2 rounded-full" :class="resolutionAction === 'approve' ? 'bg-emerald-500' : 'bg-slate-300'"></span>
+                      Approve Resolution
+                    </label>
+                  </div>
+                </div>
               </div>
 
               <!-- Close -->
@@ -545,25 +604,6 @@ const complaints = ref([
   { id: 102, complainant_name: 'Pedro Reyes', complainant_address: 'Purok 7, Masagana', complainant_contact: '0934 567 8901', respondent_name: 'Ana Gonzales', respondent_type: 'person', respondent_address: 'Purok 2, Masagana', respondent_contact: '0945 678 9012', type: 'Noise Complaint', status: 'mediation', lupon_name: 'Lupon Member Santos', filed_date: '2024-03-08', incident_date: '2024-03-05', details: "Complainant reports excessive noise from respondent's property during late hours.", mediation_notes: 'Initial mediation scheduled. Both parties agreed to meet.', resolution: null, resolved_date: null },
   { id: 103, complainant_name: 'Josefa Fernandez', complainant_address: 'Sitio Mabuhay', complainant_contact: '0956 789 0123', respondent_name: 'Ramon Fernandez', respondent_type: 'person', respondent_address: 'Sitio Mabuhay', respondent_contact: '0967 890 1234', type: 'Family Dispute', status: 'escalated', lupon_name: 'Lupon Member Cruz', filed_date: '2024-03-01', incident_date: '2024-02-28', details: 'Family disagreement over inheritance and property distribution.', mediation_notes: 'Multiple mediation sessions held. Parties unable to reach agreement.', resolution: null, resolved_date: null },
   { id: 104, complainant_name: 'Roberto Lim', complainant_address: 'Purok 1, Masunurin', complainant_contact: '0978 901 2345', respondent_name: 'Elena Lim', respondent_type: 'person', respondent_address: 'Purok 1, Masunurin', respondent_contact: '0989 012 3456', type: 'Domestic Issue', status: 'resolved', lupon_name: 'Lupon Member Reyes', filed_date: '2024-02-20', incident_date: '2024-02-15', details: 'Minor domestic disagreement resolved through mediation.', mediation_notes: 'Both parties reached amicable agreement.', resolution: 'Parties agreed to family counseling and signed peace covenant.', resolved_date: '2024-03-05' }
-  {
-    id: 101,
-    complainant_name: 'Maria Santos',
-    complainant_address: 'Purok 3, Maligaya',
-    complainant_contact: '0912 345 6789',
-    respondent_name: 'Juan Dela Cruz',
-    respondent_address: 'Purok 5, Maligaya',
-    respondent_contact: '0923 456 7890',
-    type: 'Boundary Dispute',
-    status: 'pending',
-    priority: 'high',
-    lupon_name: null,
-    filed_date: '2024-03-10',
-    incident_date: '2024-03-08',
-    details: 'Dispute over property boundary between neighboring lots. Complainant claims respondent constructed fence encroaching on their property.',
-    mediation_notes: null,
-    resolution: null,
-    resolved_date: null
-  },
 ])
 
 const luponMembers = ref([
