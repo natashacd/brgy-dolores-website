@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AnnouncementController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ResidentController;
 use App\Http\Controllers\Admin\ServiceRequestController;
+use App\Http\Controllers\Resident\LuponCasesController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Resident\ServiceRequestController as ResidentServiceRequestController;
@@ -79,5 +80,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/service-requests', [ResidentServiceRequestController::class, 'store']);
         Route::post('/service-requests/{id}/resubmit', [ResidentServiceRequestController::class, 'resubmit']);
         Route::delete('/service-requests/{id}/cancel', [ResidentServiceRequestController::class, 'cancel']);
+
+        Route::get('/lupon-cases',          [LuponCasesController::class, 'index']);
+        Route::post('/lupon-cases',         [LuponCasesController::class, 'store']);
+        Route::get('/lupon-cases/{id}',     [LuponCasesController::class, 'viewCase']);
+        Route::delete('/lupon-cases/{id}',  [LuponCasesController::class, 'destroy']);
     });
 });
