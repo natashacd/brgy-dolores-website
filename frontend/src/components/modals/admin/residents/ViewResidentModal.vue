@@ -6,25 +6,28 @@
     <div class="bg-white rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden max-h-[98vh] sm:max-h-[92vh] flex flex-col">
 
       <!-- Header -->
-      <div class="flex-shrink-0 bg-gradient-to-r from-[#3d4f7c] to-[#252b3b] px-5 sm:px-7 py-4 sm:py-5">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3 sm:gap-4 min-w-0">
-            <div
-              class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center text-base sm:text-lg font-bold text-white flex-shrink-0 shadow-lg ring-2 ring-white/20 overflow-hidden"
-              :style="currentImage ? {} : { background: avatarBg(fullName) }"
-            >
-              <img v-if="currentImage" :src="currentImage" class="w-full h-full object-cover" alt="Profile" />
-              <span v-else>{{ initials(fullName) }}</span>
-            </div>
-            <div class="min-w-0">
-              <h2 class="text-base sm:text-xl font-bold text-white truncate">{{ fullName }}</h2>
+      <div class="flex-shrink-0 bg-white px-5 sm:px-7 py-4 sm:py-5 border-b border-slate-100">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <!-- Left accent bar + icon -->
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-1 h-10 rounded-full bg-[#3d4f7c] flex-shrink-0"></div>
+              <div class="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+                <svg width="18" height="18" fill="none" stroke="#3d4f7c" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+              </div>
+              <div class="min-w-0">
+                <h2 class="text-sm sm:text-base font-bold text-slate-800 leading-tight truncate">{{ fullName }}</h2>
+                <p class="text-xs text-slate-400 font-medium mt-0.5">View resident information</p>
+              </div>
             </div>
           </div>
           <button
-            class="w-8 h-8 flex items-center justify-center rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-all cursor-pointer border-0 bg-transparent flex-shrink-0"
+            class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all cursor-pointer border-0 bg-transparent flex-shrink-0"
             @click="$emit('close')"
           >
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
@@ -251,8 +254,6 @@ const fullName = computed(() => {
   return [i.first_name, i.middle_name, i.last_name].filter(Boolean).join(" ") || "—";
 });
 
-const isActive = computed(() => props.resident.status?.status == 1);
-
 const currentImage = computed(() => {
   if (!info.value.image_path) return null;
   const base = import.meta.env.VITE_API_URL || "";
@@ -265,22 +266,6 @@ const mapSrc = computed(() => {
   if (!hasCoordinates.value) return "";
   return `https://maps.google.com/maps?q=${addr.value.latitude},${addr.value.longitude}&z=17&output=embed`;
 });
-
-const PALETTE = ["#2563eb", "#7c3aed", "#059669", "#d97706", "#dc2626", "#0891b2", "#9333ea", "#ea580c"];
-
-function avatarBg(name) {
-  if (!name || name === "—") return "#94a3b8";
-  let h = 0;
-  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
-  return PALETTE[Math.abs(h) % PALETTE.length];
-}
-
-function initials(name) {
-  if (!name || name === "—") return "?";
-  const parts = name.trim().split(" ");
-  if (parts.length === 1) return parts[0][0]?.toUpperCase() || "?";
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
 
 function formatPhone(phone) {
   if (!phone) return "—";

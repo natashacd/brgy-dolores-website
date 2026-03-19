@@ -3,6 +3,7 @@ const dataStore = {
   roles: null,
   residents: null,
   serviceRequests: null,
+  luponCases: null,
   timestamp: null,
 };
 
@@ -26,6 +27,11 @@ export const setServiceRequests = (requests) => {
   dataStore.timestamp = Date.now();
 };
 
+export const setLuponCases = (cases) => {
+  dataStore.luponCases = cases;
+  dataStore.timestamp = Date.now();
+}
+
 export const getUsers = () => dataStore.users;
 
 export const getRoles = () => dataStore.roles;
@@ -33,6 +39,9 @@ export const getRoles = () => dataStore.roles;
 export const getResidents = () => dataStore.residents;
 
 export const getServiceRequests = () => dataStore.serviceRequests;
+
+export const getLuponCases = () => dataStore.luponCases;
+
 
 export const hasData = () => {
   return (
@@ -48,11 +57,14 @@ export const hasResidentsData = () => {
 
 export const hasServiceRequestsData = () => dataStore.serviceRequests !== null;
 
+export const hasLuponCasesData = () => dataStore.luponCases !== null;
+
 export const clearData = () => {
   dataStore.users = null;
   dataStore.roles = null;
   dataStore.residents = null;
   dataStore.serviceRequests = null;
+  dataStore.luponCases = null;
   dataStore.timestamp = null;
 };
 
@@ -61,10 +73,12 @@ export default {
   setRoles,
   setResidents,
   setServiceRequests,
+  setLuponCases,
   getUsers,
   getRoles,
   getResidents,
   getServiceRequests,
+  getLuponCases,
   hasData,
   hasResidentsData,
   clearData,

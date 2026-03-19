@@ -73,6 +73,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/announcements/{id}/duplicate', [AnnouncementController::class, 'duplicate']);
         Route::post('/announcements/bulk-delete', [AnnouncementController::class, 'bulkDelete']);
         Route::post('/announcements/bulk-update-status', [AnnouncementController::class, 'bulkUpdateStatus']);
+
+        Route::get('/lupon-cases', [LuponCasesController::class, 'adminIndex']);
     });
 
     Route::prefix('resident')->group(function () {

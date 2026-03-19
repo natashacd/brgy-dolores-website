@@ -20,6 +20,11 @@ const LuponCasesService = {
     const { data } = await api.delete(`/api/resident/lupon-cases/${id}`);
     return data;
   },
+
+  async adminCases() {
+    const { data } = await api.get("/api/admin/lupon-cases");
+    return data;
+  },
 };
 
 export default LuponCasesService;
