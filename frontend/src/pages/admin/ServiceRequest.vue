@@ -448,7 +448,7 @@
                   </svg>
                   Approve
                 </button>
-                <button @click="showRejectInput = true"
+                <button @click="confirmReject(selectedRequest)"
                   class="flex items-center gap-1.5 px-4 py-2 bg-white text-red-500 text-[11px] font-bold rounded-xl border border-red-200 hover:bg-red-50 hover:border-red-300 transition-all duration-150 active:scale-95 cursor-pointer tracking-wide">
                   <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -517,6 +517,8 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import ServiceRequestService from '@/services/Admin/ServiceRequestService'
 import Swal from 'sweetalert2'
+import { getServiceRequests, hasServiceRequestsData, setServiceRequests } from "@/utils/dataStore";
+
 
 const requests     = ref([])
 const loading      = ref(false)
@@ -554,11 +556,22 @@ const filteredRequests  = computed(() => { let r = requests.value; if (filters.s
 const totalPages        = computed(() => Math.max(1, Math.ceil(filteredRequests.value.length / itemsPerPage)))
 const paginatedRequests = computed(() => { const s = (currentPage.value - 1) * itemsPerPage; return filteredRequests.value.slice(s, s + itemsPerPage) })
 
-async function fetchRequests() {
-  loading.value = true
-  try { const data = await ServiceRequestService.getPending(); requests.value = Array.isArray(data) ? data : (data.data ?? []) }
-  catch { showError('Failed to load service requests') }
-  finally { loading.value = false }
+async function fetchRequests(showLoading = true) {
+  if (showLoading) loading.value = true;
+  try {
+    const data = await ServiceRequestService.getAll();
+    setServiceRequests(data);           
+    requests.value = filterByStatus(data);
+  } catch {
+    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load requests.', timer: 3000, showConfirmButton: false, position: 'top-end', toast: true });
+  } finally {
+    if (showLoading) loading.value = false;
+  }
+}
+
+function filterByStatus(data) {
+  const arr = Array.isArray(data) ? data : (data.data ?? []);
+  return arr.filter(r => r.status === 'pending');
 }
 
 function openViewModal(req) { selectedRequest.value = req; showRejectInput.value = false; rejectionRemarks.value = ''; showViewModal.value = true }
@@ -566,15 +579,36 @@ function openViewModal(req) { selectedRequest.value = req; showRejectInput.value
 async function confirmApprove(req) {
   const result = await Swal.fire({ title: 'Approve Request?', text: `Approve "${formatType(req.type)}" for ${req.resident_name}?`, icon: 'question', showCancelButton: true, confirmButtonColor: '#059669', cancelButtonColor: '#3d4f7c', confirmButtonText: 'Yes, approve' })
   if (!result.isConfirmed) return
-  try { await ServiceRequestService.approve(req.id); showSuccess('Request approved successfully'); showViewModal.value = false; await fetchRequests() }
-  catch { showError('Failed to approve request') }
+  try {
+    await ServiceRequestService.approve(req.id);
+    const stored = getServiceRequests() ?? [];
+    const updated = stored.map(r => r.id === req.id ? { ...r, status: 'approved' } : r);
+    setServiceRequests(updated);
+    requests.value = requests.value.filter(r => r.id !== req.id);
+    showViewModal.value = false;
+    showSuccess('Request approved successfully');
+  } catch { showError('Failed to approve request') }
 }
 
 async function confirmReject(req) {
   const result = await Swal.fire({ title: 'Disapprove Request?', text: `Disapprove "${formatType(req.type)}" for ${req.resident_name}?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#3d4f7c', confirmButtonText: 'Yes, disapprove' })
   if (!result.isConfirmed) return
-  try { await ServiceRequestService.reject(req.id, { remarks: rejectionRemarks.value }); showSuccess('Request disapproved'); showViewModal.value = false; showRejectInput.value = false; rejectionRemarks.value = ''; await fetchRequests() }
-  catch { showError('Failed to disapprove request') }
+  try {
+    await ServiceRequestService.reject(req.id, { remarks: rejectionRemarks.value });
+
+    const stored = getServiceRequests() ?? [];
+    const updated = stored.map(r =>
+      r.id === req.id ? { ...r, status: 'disapproved', remarks: rejectionRemarks.value } : r
+    );
+    setServiceRequests(updated);
+
+    requests.value = requests.value.filter(r => r.id !== req.id);
+
+    showViewModal.value = false;
+    showRejectInput.value = false;
+    rejectionRemarks.value = '';
+    showSuccess('Request disapproved');
+  } catch { showError('Failed to disapprove request') }
 }
 
 function resetFilters() { filters.search = ''; filters.status = ''; filters.type = ''; currentPage.value = 1 }
@@ -582,8 +616,13 @@ const showSuccess = msg => Swal.fire({ icon: 'success', title: 'Success', text: 
 const showError   = msg => Swal.fire({ icon: 'error', title: 'Error', text: msg, timer: 3000, showConfirmButton: false, position: 'top-end', toast: true })
 
 watch(filters, () => { currentPage.value = 1 }, { deep: true })
-onMounted(() => fetchRequests())
-</script>
+onMounted(() => {
+  if (hasServiceRequestsData()) {
+    requests.value = filterByStatus(getServiceRequests());
+  } else {
+    fetchRequests(true);
+  }
+});</script>
 
 <style scoped>
 .modal-enter-active, .modal-leave-active { transition: opacity 0.2s ease; }

@@ -154,6 +154,14 @@
                 <!-- Actions -->
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-1">
+                    <button @click="openViewModal(resident)"
+                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-sky-50 text-sky-600 border border-sky-200 hover:bg-sky-500 hover:text-white active:scale-95 transition-all duration-150 cursor-pointer"
+                      title="View">
+                      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                      </svg>
+                    </button>
                     <button @click="openEditModal(resident)"
                       class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#3d4f7c]/10 text-[#3d4f7c] border border-[#3d4f7c]/20 hover:bg-[#3d4f7c] hover:text-white active:scale-95 transition-all duration-150 cursor-pointer">
                       <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -227,6 +235,14 @@
 
                 <!-- Actions -->
                 <div class="flex items-center gap-1.5 flex-shrink-0">
+                  <button @click="openViewModal(resident)"
+                    class="w-8 h-8 flex items-center justify-center rounded-xl bg-sky-50 text-sky-600 border border-sky-100 hover:bg-sky-500 hover:text-white active:scale-95 transition-all cursor-pointer"
+                    title="View">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                  </button>
                   <button @click="openEditModal(resident)"
                     class="w-8 h-8 flex items-center justify-center rounded-xl bg-[#3d4f7c]/8 text-[#3d4f7c] border border-[#3d4f7c]/15 hover:bg-[#3d4f7c] hover:text-white active:scale-95 transition-all cursor-pointer"
                     style="background: rgba(61,79,124,0.08);">
@@ -361,6 +377,11 @@
     <!-- Modals -->
     <AddResidentModal v-if="showAddModal" :roles="roles" @close="showAddModal = false" @saved="handleResidentAdded"/>
     <EditResidentModal v-if="showEditModal && selectedResident" :resident="selectedResident" :roles="roles" @close="showEditModal = false" @saved="handleResidentUpdated"/>
+    <ViewResidentModal
+      v-if="showViewModal && selectedResident"
+      :resident="selectedResident"
+      @close="showViewModal = false; selectedResident = null"
+    />
   </div>
 </template>
 
@@ -369,6 +390,7 @@ import { ref, computed, onMounted, watch } from "vue";
 import ResidentService from "@/services/Admin/ResidentService";
 import AddResidentModal from "@/components/modals/admin/residents/AddResidentModal.vue";
 import EditResidentModal from "@/components/modals/admin/residents/EditResidentModal.vue";
+import ViewResidentModal from "@/components/modals/admin/residents/ViewResidentModal.vue";
 import Swal from "sweetalert2";
 import { getResidents, getRoles, hasResidentsData, hasData, setResidents, setRoles } from "@/utils/dataStore";
 
@@ -377,6 +399,7 @@ const roles            = ref([]);
 const loading          = ref(false);
 const showAddModal     = ref(false);
 const showEditModal    = ref(false);
+const showViewModal = ref(false);
 const selectedResident = ref(null);
 const searchQuery      = ref("");
 const purokFilter      = ref("all");
@@ -469,6 +492,7 @@ async function fetchRoles() {
 
 function openEditModal(resident) { selectedResident.value = resident; showEditModal.value = true; }
 function resetFilters() { searchQuery.value = ""; purokFilter.value = "all"; currentPage.value = 1; }
+function openViewModal(resident) { selectedResident.value = resident; showViewModal.value = true; }
 
 async function handleDelete(resident) {
   const result = await Swal.fire({ title: "Delete Resident?", html: `Are you sure you want to delete <strong>${fullName(resident)}</strong>?<br><br><span class="text-xs text-slate-500">This action cannot be undone.</span>`, icon: "warning", showCancelButton: true, confirmButtonColor: "#d33", cancelButtonColor: "#3d4f7c", confirmButtonText: "Yes, delete", cancelButtonText: "Cancel" });

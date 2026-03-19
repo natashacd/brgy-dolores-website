@@ -198,7 +198,8 @@ import Swal from "sweetalert2";
 import authService from "@/services/authService";
 import UserService from "@/services/Admin/UserService";
 import ResidentService from "@/services/Admin/ResidentService";
-import { setUsers, setRoles, setResidents } from "@/utils/dataStore";
+import ServiceRequestService from "@/services/Admin/ServiceRequestService";
+import { setUsers, setRoles, setResidents, setServiceRequests } from "@/utils/dataStore";
 
 const router = useRouter()
 
@@ -262,12 +263,13 @@ const handleLogin = async () => {
       Promise.all([
         UserService.getUsers(),
         UserService.getRoles(),
-        ResidentService.getResidents()
-      ]).then(([users, roles, residents]) => {
+        ResidentService.getResidents(),
+        ServiceRequestService.getAll()
+      ]).then(([users, roles, residents, serviceRequests]) => {
         setUsers(users);
         setRoles(roles);
         setResidents(residents);
-        console.log('✅ Users, roles, and residents data prefetched in background');
+        setServiceRequests(serviceRequests);
       }).catch(error => {
         console.error('Failed to prefetch data:', error);
       });
