@@ -26,7 +26,10 @@ import ResidentComplaints from "@/pages/resident/Complaints.vue";
 // Lupon routes
 import LuponComplaints from "@/pages/lupon/Complaints.vue";
 
-const ADMIN_ROLES = ['admin', 'punong barangay', 'secretary', 'treasurer', 'kagawad', 'sk chairman', 'health worker'];
+// Secretary routes
+import SecretaryResident from "@/pages/secretary/Resident.vue";
+
+const ADMIN_ROLES = ['admin', 'punong barangay', 'treasurer', 'kagawad', 'sk chairman', 'health worker'];
 
 const LUPON_ROLES = ['lupon'];
 
@@ -62,7 +65,7 @@ const routes = [
       },
     ],
   },
-  
+
   // Resident routes
   {
     path: "/resident",
@@ -70,16 +73,16 @@ const routes = [
     meta: { requiresAuth: true, role: 'resident' },
     children: [
       {
-        path: "service-requests",
-        name: "resident.service-requests",
-        component: ResidentServiceRequest,
-        meta: { title: "Service Requests" },
-      },
-      {
         path: "dashboard",
         name: "resident.dashboard",
         component: ResidentDashboard,
         meta: { title: "Dashboard" },
+      },
+      {
+        path: "service-requests",
+        name: "resident.service-requests",
+        component: ResidentServiceRequest,
+        meta: { title: "Service Requests" },
       },
       {
         path: "complaints",
@@ -97,12 +100,65 @@ const routes = [
     meta: { requiresAuth: true, role: 'lupon' },
     children: [
       {
+        path: "",                                    // ← ADD THIS
+        redirect: { name: "lupon.residents" }        // ← ADD THIS
+      },
+      {
+        path: "residents",
+        name: "lupon.residents",
+        component: SecretaryResident,
+        meta: { title: "Resident Management" },
+      },
+      {
         path: "complaints",
         name: "lupon.complaints",
         component: LuponComplaints,
         meta: { title: "Lupon Cases" },
       },
     ],
+  },
+
+  // Secretary routes
+  {
+    path: "/secretary",
+    component: () => import("@/layout/admin/Layout.vue"),
+    meta: { requiresAuth: true, role: 'secretary' },
+    children: [
+      {
+        path: "",
+        redirect: { name: "secretary.residents" }
+      },
+      {
+        path: "residents",
+        name: "secretary.residents",
+        component: SecretaryResident,
+        meta: { title: "Resident Management" },
+      },
+      {
+        path: "service-requests",
+        name: "secretary.service-requests",
+        component: AdminServiceRequest,
+        meta: { title: "Service Requests" },
+      },
+      {
+        path: "service-requests/approved",
+        name: "secretary.service-requests.approved",
+        component: ApprovedRequests,
+        meta: { title: "Approved Requests" },
+      },
+      {
+        path: "service-requests/disapproved",
+        name: "secretary.service-requests.disapproved",
+        component: DisapprovedRequests,
+        meta: { title: "Disapproved Requests" },
+      },
+      {
+        path: "service-requests/released",
+        name: "secretary.service-requests.released",
+        component: ReleasedRequests,
+        meta: { title: "Released Requests" },
+      },
+    ]
   },
 
   // Admin routes
@@ -179,34 +235,27 @@ const routes = [
       }
     ],
   },
-  
+
   {
     path: "/login",
     name: "login",
     component: Login,
     meta: { guest: true },
   },
-  
-  // 404 page
+
+  // 404 / catch-all
   {
     path: "/:pathMatch(.*)*",
     name: "not-found",
-    redirect: (to) => {
+    redirect: () => {
       const isAuthenticated = localStorage.getItem("auth_token");
       const userRole = localStorage.getItem("user_role")?.toLowerCase();
-      
-      if (!isAuthenticated) {
-        return { name: "login" };
-      }
-      
-      if (userRole === "resident") {
-        return { name: "resident.dashboard" };
-      }
-      
-      if (userRole === "lupon") {
-        return { name: "lupon.complaints" };
-      }
-      
+
+      if (!isAuthenticated) return { name: "login" };
+      if (userRole === "resident") return { name: "resident.dashboard" };
+      if (userRole === "lupon") return { name: "lupon.residents" };
+      if (userRole === "secretary") return { name: "secretary.residents" };
+
       return { name: "admin.dashboard" };
     }
   }
@@ -216,11 +265,8 @@ const router = createRouter({
   history: createWebHistory(),
   routes,
   scrollBehavior(to, from, savedPosition) {
-    if (savedPosition) {
-      return savedPosition;
-    } else {
-      return { top: 0 };
-    }
+    if (savedPosition) return savedPosition;
+    return { top: 0 };
   },
 });
 
@@ -238,76 +284,56 @@ router.beforeEach((to, from) => {
   const isAuthenticated = localStorage.getItem("auth_token") || sessionStorage.getItem("auth_token");
   const userRole = localStorage.getItem("user_role")?.toLowerCase() || '';
 
+  // Require auth
   if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
-    return { 
-      name: "login", 
-      query: { redirect: to.fullPath } 
-    };
+    return { name: "login", query: { redirect: to.fullPath } };
   }
 
   if (isAuthenticated) {
-    // Check admin routes access
+
+    // --- /admin routes ---
     if (to.path.startsWith('/admin')) {
-      if (userRole === 'resident') {
-        return { name: "resident.service-requests" };
-      }
-      
-      if (userRole === 'lupon') {
-        return { name: "lupon.complaints" };
-      }
-      
-      if (hasAdminAccess(userRole)) {
-        return true;
-      }
-      
+      if (userRole === 'resident') return { name: "resident.service-requests" };
+      if (userRole === 'lupon') return { name: "lupon.residents" };
+      if (userRole === 'secretary') return { name: "secretary.residents" };
+      if (hasAdminAccess(userRole)) return true;
       return { name: "login" };
     }
-    
-    // Check lupon routes access
+
+    // --- /secretary routes ---
+    if (to.path.startsWith('/secretary')) {
+      if (userRole === 'secretary') return true;
+      if (userRole === 'resident') return { name: "resident.dashboard" };
+      if (userRole === 'lupon') return { name: "lupon.residents" };
+      if (hasAdminAccess(userRole)) return { name: "admin.dashboard" };
+      return { name: "login" };
+    }
+
+    // --- /lupon routes ---
     if (to.path.startsWith('/lupon')) {
-      if (userRole === 'lupon') {
-        return true;
-      }
-      
-      if (userRole === 'resident') {
-        return { name: "resident.dashboard" };
-      }
-      
-      if (hasAdminAccess(userRole)) {
-        return { name: "admin.dashboard" };
-      }
-      
+      if (userRole === 'lupon') return true;
+      if (userRole === 'resident') return { name: "resident.dashboard" };
+      if (userRole === 'secretary') return { name: "secretary.residents" };
+      if (hasAdminAccess(userRole)) return { name: "admin.dashboard" };
       return { name: "login" };
     }
-    
-    // Check resident routes access
+
+    // --- /resident routes ---
     if (to.path.startsWith('/resident')) {
-      if (userRole === 'resident') {
-        return true;
-      }
-      
-      if (userRole === 'lupon') {
-        return { name: "lupon.complaints" };
-      }
-      
-      if (hasAdminAccess(userRole)) {
-        return { name: "admin.dashboard" };
-      }
-      
+      if (userRole === 'resident') return true;
+      if (userRole === 'lupon') return { name: "lupon.residents" };
+      if (userRole === 'secretary') return { name: "secretary.residents" };
+      if (hasAdminAccess(userRole)) return { name: "admin.dashboard" };
       return { name: "login" };
     }
   }
 
+  // Redirect already-logged-in users away from /login
   if (to.matched.some(record => record.meta.guest) && isAuthenticated) {
-    if (userRole === 'resident') {
-      return { name: "resident.service-requests" };
-    }
-    if (userRole === 'lupon') {
-      return { name: "lupon.complaints" };
-    }
-    if (hasAdminAccess(userRole)) {
-      return { name: "admin.dashboard" };
-    }
+    if (userRole === 'resident') return { name: "resident.service-requests" };
+    if (userRole === 'lupon') return { name: "lupon.residents" };
+    if (userRole === 'secretary') return { name: "secretary.residents" };
+    if (hasAdminAccess(userRole)) return { name: "admin.dashboard" };
     return { name: "login" };
   }
 

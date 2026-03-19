@@ -18,6 +18,12 @@ class LuponCasesController extends Controller
 
         return response()->json($cases);
     }
+    
+    public function adminIndex()
+    {
+        $cases = Lupon_Cases::latest()->get();
+        return response()->json($cases);
+    }
 
     public function store(Request $request)
     {
