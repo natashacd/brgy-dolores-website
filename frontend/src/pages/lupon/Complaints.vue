@@ -162,32 +162,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                       </svg>
                     </button>
-                    <!-- Reassign -->
-                    <button @click="openReassignModal(case_)"
-                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-600 hover:text-white hover:shadow-md active:scale-95 transition-all duration-150 cursor-pointer"
-                      title="Reassign Lupon Member">
-                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                      </svg>
-                    </button>
-                    <!-- Escalate -->
-                    <button v-if="case_.status !== 'escalated' && case_.status !== 'resolved' && case_.status !== 'closed'"
-                      @click="confirmEscalate(case_)"
-                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white hover:shadow-md active:scale-95 transition-all duration-150 cursor-pointer"
-                      title="Escalate Case">
-                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                      </svg>
-                    </button>
-                    <!-- Resolve -->
-                    <button v-if="case_.status === 'mediation'"
-                      @click="openResolutionModal(case_)"
-                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-600 hover:text-white hover:shadow-md active:scale-95 transition-all duration-150 cursor-pointer"
-                      title="Approve Resolution">
-                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </button>
                   </div>
                 </td>
               </tr>
@@ -272,32 +246,6 @@
                   </div>
                 </div>
               </div>
-
-              <div class="mx-3 mb-3 flex items-center gap-2">
-                <button @click.stop="openReassignModal(case_)"
-                  class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-semibold bg-indigo-50 text-indigo-600 border border-indigo-200 active:scale-95 transition-all cursor-pointer">
-                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                  </svg>
-                  Reassign
-                </button>
-                <button v-if="case_.status !== 'escalated' && case_.status !== 'resolved' && case_.status !== 'closed'"
-                  @click.stop="confirmEscalate(case_)"
-                  class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-semibold bg-red-50 text-red-600 border border-red-200 active:scale-95 transition-all cursor-pointer">
-                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                  </svg>
-                  Escalate
-                </button>
-                <button v-if="case_.status === 'mediation'"
-                  @click.stop="openResolutionModal(case_)"
-                  class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200 active:scale-95 transition-all cursor-pointer">
-                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Resolve
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -337,198 +285,126 @@
     </div>
 
     <!-- ── View Modal ── -->
-    <Transition name="modal">
-      <div v-if="showViewModal" class="fixed inset-0 z-50 flex flex-col sm:items-center sm:justify-center sm:p-4">
-        <div class="fixed inset-0 bg-black/55 backdrop-blur-md" @click="showViewModal = false"></div>
-        <div class="relative bg-white w-full h-full sm:h-auto sm:rounded-3xl sm:max-w-2xl sm:max-h-[90vh] flex flex-col overflow-hidden"
-          style="box-shadow:0 40px 80px -12px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.04);">
+        <Transition name="modal">
+          <div v-if="showViewModal" class="fixed inset-0 z-50 flex flex-col sm:items-center sm:justify-center sm:p-4">
+            <div class="fixed inset-0 bg-black/55 backdrop-blur-md"></div>
+            <div class="relative bg-white w-full h-full sm:h-auto sm:rounded-3xl sm:max-w-2xl sm:max-h-[90vh] flex flex-col overflow-hidden"
+              style="box-shadow:0 40px 80px -12px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.04);">
 
-          <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
-            <div class="flex items-center gap-3">
-              <div class="w-1 h-8 rounded-full bg-[#3d4f7c]"></div>
-              <div>
-                <h3 class="text-sm font-bold text-slate-800 tracking-tight">Case Details</h3>
-                <p class="text-[11px] text-slate-400 font-mono mt-0.5">#C-{{ selectedCase ? String(selectedCase.id).padStart(5, '0') : '' }}</p>
-              </div>
-            </div>
-            <button @click="showViewModal = false" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all cursor-pointer">
-              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-          </div>
-
-          <div v-if="selectedCase" class="flex-1 overflow-y-auto scrollbar-thin px-6 py-5 space-y-4">
-
-            <!-- Status Banner -->
-            <div class="bg-slate-50 rounded-xl px-4 py-3 flex items-center justify-between">
-              <span :class="statusBadge(selectedCase.status)"
-                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold">
-                <span class="relative flex h-1.5 w-1.5">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" :class="statusDot(selectedCase.status)"></span>
-                  <span class="relative inline-flex rounded-full h-1.5 w-1.5" :class="statusDotSolid(selectedCase.status)"></span>
-                </span>
-                {{ formatStatus(selectedCase.status) }}
-              </span>
-              <span class="text-xs text-slate-400">Filed: {{ formatDate(selectedCase.created_at) }}</span>
-            </div>
-
-            <!-- Case Info -->
-            <div class="rounded-2xl border border-slate-200/70 overflow-hidden">
-              <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
-                <div class="w-5 h-5 rounded-md bg-[#3d4f7c]/10 flex items-center justify-center">
-                  <svg class="w-3 h-3 text-[#3d4f7c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              <!-- Header -->
+              <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
+                <div class="flex items-center gap-3">
+                  <div class="w-1 h-9 rounded-full bg-[#3d4f7c]"></div>
+                  <div>
+                    <h3 class="text-base font-bold text-slate-800 tracking-tight">Case Details</h3>
+                    <p class="text-xs text-slate-400 font-mono mt-0.5">#C-{{ selectedCase ? String(selectedCase.id).padStart(5, '0') : '' }}</p>
+                  </div>
+                </div>
+                <button @click="showViewModal = false"
+                  class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all cursor-pointer">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                   </svg>
-                </div>
-                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Case Information</p>
+                </button>
               </div>
-              <div class="divide-y divide-slate-100/80">
-                <div class="px-4 py-2.5 flex justify-between items-center gap-2">
-                  <span class="text-[11px] text-slate-400 flex-shrink-0">Type</span>
-                  <span class="text-[11px] font-semibold text-slate-700 text-right">{{ typeLabel(selectedCase.type) }}</span>
+
+              <div v-if="selectedCase" class="flex-1 overflow-y-auto scrollbar-thin px-6 py-5 space-y-4">
+
+                <!-- Status Banner -->
+                <div class="bg-slate-50 rounded-2xl px-5 py-3.5 flex items-center justify-between">
+                  <span :class="statusBadge(selectedCase.status)"
+                    class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold">
+                    <span class="relative flex h-2 w-2">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" :class="statusDot(selectedCase.status)"></span>
+                      <span class="relative inline-flex rounded-full h-2 w-2" :class="statusDotSolid(selectedCase.status)"></span>
+                    </span>
+                    {{ formatStatus(selectedCase.status) }}
+                  </span>
+                  <span class="text-xs font-medium text-slate-400">Filed: {{ formatDate(selectedCase.created_at) }}</span>
                 </div>
-                <div class="px-4 py-2.5 flex justify-between items-center gap-2">
-                  <span class="text-[11px] text-slate-400 flex-shrink-0">Title</span>
-                  <span class="text-[11px] font-semibold text-slate-700 text-right max-w-[260px]">{{ selectedCase.title }}</span>
+
+                <!-- Case Info -->
+                <div class="rounded-2xl border border-slate-200/70 overflow-hidden">
+                  <div class="px-5 py-3 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-lg bg-[#3d4f7c]/10 flex items-center justify-center">
+                      <svg class="w-3.5 h-3.5 text-[#3d4f7c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                      </svg>
+                    </div>
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Case Information</p>
+                  </div>
+                  <div class="divide-y divide-slate-100">
+                    <div class="px-5 py-3.5 flex justify-between items-center gap-4">
+                      <span class="text-sm text-slate-500 flex-shrink-0">Type</span>
+                      <span class="text-sm font-semibold text-slate-800 text-right">{{ typeLabel(selectedCase.type) }}</span>
+                    </div>
+                    <div class="px-5 py-3.5 flex justify-between items-center gap-4">
+                      <span class="text-sm text-slate-500 flex-shrink-0">Title</span>
+                      <span class="text-sm font-semibold text-slate-800 text-right max-w-[280px]">{{ selectedCase.title }}</span>
+                    </div>
+                    <div class="px-5 py-3.5 flex justify-between items-center gap-4">
+                      <span class="text-sm text-slate-500 flex-shrink-0">Incident Date</span>
+                      <span class="text-sm font-semibold text-slate-800 text-right">{{ formatDate(selectedCase.incident_date) }}</span>
+                    </div>
+                    <div class="px-5 py-3.5 flex justify-between items-center gap-4">
+                      <span class="text-sm text-slate-500 flex-shrink-0">Location</span>
+                      <span class="text-sm font-semibold text-slate-800 text-right max-w-[280px]">{{ selectedCase.location }}</span>
+                    </div>
+                    <div class="px-5 py-3.5 flex justify-between items-center gap-4">
+                      <span class="text-sm text-slate-500 flex-shrink-0">Filed By</span>
+                      <span class="text-sm font-semibold text-slate-800 text-right">
+                        {{ selectedCase.user?.name ?? `User #${selectedCase.user_id}` }}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div class="px-4 py-2.5 flex justify-between items-center gap-2">
-                  <span class="text-[11px] text-slate-400 flex-shrink-0">Incident Date</span>
-                  <span class="text-[11px] font-semibold text-slate-700 text-right">{{ formatDate(selectedCase.incident_date) }}</span>
+
+                <!-- Description -->
+                <div class="rounded-2xl border border-blue-200/60 overflow-hidden">
+                  <div class="px-5 py-3 bg-blue-50/60 border-b border-blue-100/80 flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center">
+                      <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                      </svg>
+                    </div>
+                    <p class="text-xs font-bold text-blue-600 uppercase tracking-widest">Description</p>
+                  </div>
+                  <div class="px-5 py-4 bg-blue-50/20">
+                    <p class="text-sm text-slate-600 leading-relaxed">{{ selectedCase.description || 'No description provided.' }}</p>
+                  </div>
                 </div>
-                <div class="px-4 py-2.5 flex justify-between items-center gap-2">
-                  <span class="text-[11px] text-slate-400 flex-shrink-0">Location</span>
-                  <span class="text-[11px] font-semibold text-slate-700 text-right max-w-[260px]">{{ selectedCase.location }}</span>
+
+                <!-- Action Buttons -->
+                <div v-if="selectedCase.status === 'pending' || selectedCase.status === 'mediation'"
+                  class="grid grid-cols-2 gap-3 pt-1">
+                  <button @click="handleApprove(selectedCase)"
+                    class="flex items-center justify-center gap-2 px-4 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer shadow-sm hover:shadow-md">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Approve
+                  </button>
+                  <button @click="handleDisapprove(selectedCase)"
+                    class="flex items-center justify-center gap-2 px-4 py-3.5 bg-red-600 hover:bg-red-700 text-white rounded-2xl text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer shadow-sm hover:shadow-md">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Disapprove
+                  </button>
                 </div>
-                <div class="px-4 py-2.5 flex justify-between items-center gap-2">
-                  <span class="text-[11px] text-slate-400 flex-shrink-0">Filed By (User ID)</span>
-                  <span class="text-[11px] font-semibold text-slate-700 text-right">#{{ selectedCase.user_id }}</span>
-                </div>
+
               </div>
-            </div>
 
-            <!-- Description -->
-            <div class="rounded-2xl border border-blue-200/60 overflow-hidden">
-              <div class="px-4 py-2.5 bg-blue-50/60 border-b border-blue-100/80 flex items-center gap-2">
-                <div class="w-5 h-5 rounded-md bg-blue-100 flex items-center justify-center">
-                  <svg class="w-3 h-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-                  </svg>
-                </div>
-                <p class="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Description</p>
-              </div>
-              <div class="px-4 py-3.5 bg-blue-50/20">
-                <p class="text-xs text-slate-600 leading-relaxed">{{ selectedCase.description || 'No description provided.' }}</p>
-              </div>
-            </div>
-
-          </div>
-
-          <div class="flex-shrink-0 flex justify-end px-6 py-4 border-t border-slate-100 bg-slate-50/60">
-            <button @click="showViewModal = false"
-              class="flex items-center gap-1.5 px-4 py-2 text-[11px] font-semibold text-slate-500 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all cursor-pointer">
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    </Transition>
-
-    <!-- ── Reassign Modal (UI only — no API yet) ── -->
-    <Transition name="modal">
-      <div v-if="showReassignModal" class="fixed inset-0 z-50 flex flex-col sm:items-center sm:justify-center sm:p-4">
-        <div class="fixed inset-0 bg-black/55 backdrop-blur-md" @click="showReassignModal = false"></div>
-        <div class="relative bg-white w-full sm:rounded-3xl sm:max-w-md overflow-hidden"
-          style="box-shadow:0 40px 80px -12px rgba(0,0,0,0.22);">
-          <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-1 h-8 rounded-full bg-[#3d4f7c]"></div>
-              <div>
-                <h3 class="text-sm font-bold text-slate-800">Reassign Lupon Member</h3>
-                <p class="text-[11px] text-slate-400 font-mono mt-0.5">#C-{{ selectedCase ? String(selectedCase.id).padStart(5, '0') : '' }}</p>
-              </div>
-            </div>
-            <button @click="showReassignModal = false" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer">
-              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-          </div>
-          <div class="px-6 py-5">
-            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Select Lupon Member</label>
-            <select v-model="selectedLuponId"
-              class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#3d4f7c]/20 focus:border-[#3d4f7c] bg-slate-50 focus:bg-white">
-              <option value="">— Select Lupon member —</option>
-              <option v-for="member in luponMembers" :key="member.id" :value="member.id">{{ member.name }}</option>
-            </select>
-            <p class="text-[10px] text-slate-400 mt-2">API integration coming soon.</p>
-          </div>
-          <div class="px-6 py-4 border-t border-slate-100 flex gap-2 justify-end">
-            <button @click="showReassignModal = false"
-              class="px-4 py-2 text-sm font-semibold text-slate-600 border border-slate-200 rounded-xl hover:bg-slate-50 cursor-pointer">Cancel</button>
-            <button :disabled="!selectedLuponId"
-              class="px-5 py-2 text-sm font-semibold text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
-              style="background:#3d4f7c">
-              Confirm Reassign
-            </button>
-          </div>
-        </div>
-      </div>
-    </Transition>
-
-    <!-- ── Resolution Modal (UI only — no API yet) ── -->
-    <Transition name="modal">
-      <div v-if="showResolutionModal" class="fixed inset-0 z-50 flex flex-col sm:items-center sm:justify-center sm:p-4">
-        <div class="fixed inset-0 bg-black/55 backdrop-blur-md" @click="showResolutionModal = false"></div>
-        <div class="relative bg-white w-full sm:rounded-3xl sm:max-w-lg overflow-hidden"
-          style="box-shadow:0 40px 80px -12px rgba(0,0,0,0.22);">
-          <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-1 h-8 rounded-full bg-[#3d4f7c]"></div>
-              <h3 class="text-sm font-bold text-slate-800">Approve Resolution</h3>
-            </div>
-            <button @click="showResolutionModal = false" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer">
-              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-          </div>
-          <div class="px-6 py-5 space-y-4">
-            <div class="bg-[#3d4f7c]/5 border border-[#3d4f7c]/20 rounded-xl p-3">
-              <p class="text-xs font-semibold text-[#3d4f7c] font-mono">#C-{{ selectedCase ? String(selectedCase.id).padStart(5, '0') : '' }}</p>
-              <p class="text-sm text-slate-600 mt-0.5">{{ selectedCase?.title }}</p>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-500 mb-1.5">Resolution Details</label>
-              <textarea v-model="resolutionText" rows="4" placeholder="Enter the resolution details..."
-                class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#3d4f7c]/20 focus:border-[#3d4f7c] bg-slate-50 focus:bg-white resize-none"></textarea>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-500 mb-1.5">Action</label>
-              <div class="flex gap-3">
-                <label class="flex-1 flex items-center gap-2 px-4 py-2.5 rounded-xl border cursor-pointer text-sm transition-all"
-                  :class="resolutionAction === 'close' ? 'border-slate-400 bg-slate-50 text-slate-700' : 'border-slate-200 bg-slate-50 text-slate-500'">
-                  <input type="radio" v-model="resolutionAction" value="close" class="hidden" />
-                  <span class="w-2 h-2 rounded-full flex-shrink-0" :class="resolutionAction === 'close' ? 'bg-slate-500' : 'bg-slate-300'"></span>
-                  Close Case
-                </label>
-                <label class="flex-1 flex items-center gap-2 px-4 py-2.5 rounded-xl border cursor-pointer text-sm transition-all"
-                  :class="resolutionAction === 'approve' ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-slate-50 text-slate-500'">
-                  <input type="radio" v-model="resolutionAction" value="approve" class="hidden" />
-                  <span class="w-2 h-2 rounded-full flex-shrink-0" :class="resolutionAction === 'approve' ? 'bg-emerald-500' : 'bg-slate-300'"></span>
-                  Approve
-                </label>
+              <!-- Footer -->
+              <div class="flex-shrink-0 flex justify-end px-6 py-4 border-t border-slate-100 bg-slate-50/60">
+                <button @click="showViewModal = false"
+                  class="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all cursor-pointer">
+                  Close
+                </button>
               </div>
             </div>
-            <p class="text-[10px] text-slate-400">API integration coming soon.</p>
           </div>
-          <div class="px-6 py-4 border-t border-slate-100 flex gap-2 justify-end">
-            <button @click="showResolutionModal = false"
-              class="px-4 py-2 text-sm font-semibold text-slate-600 border border-slate-200 rounded-xl hover:bg-slate-50 cursor-pointer">Cancel</button>
-            <button
-              class="px-5 py-2 text-sm font-semibold text-white rounded-xl transition-all cursor-pointer"
-              :class="resolutionAction === 'close' ? 'bg-[#3d4f7c] hover:bg-[#252b3b]' : 'bg-emerald-600 hover:bg-emerald-700'">
-              {{ resolutionAction === 'close' ? 'Close Case' : 'Approve Resolution' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </Transition>
-
+        </Transition>
   </div>
 </template>
 
@@ -538,28 +414,14 @@ import Swal from 'sweetalert2'
 import LuponCasesService from '@/services/Resident/LuponCasesService'
 import { getLuponCases, hasLuponCasesData, setLuponCases } from "@/utils/dataStore";
 
-
 // ── State ─────────────────────────────────────────────────────
-const loading             = ref(false)
-const currentPage         = ref(1)
-const itemsPerPage        = 8
-const showViewModal       = ref(false)
-const showReassignModal   = ref(false)
-const showResolutionModal = ref(false)
-const selectedCase        = ref(null)
-const selectedLuponId     = ref('')
-const resolutionText      = ref('')
-const resolutionAction    = ref('approve')
-const complaints          = ref([])
-const filters             = reactive({ search: '', status: '', type: '' })
-
-// Static lupon list until API is wired
-const luponMembers = ref([
-  { id: 1, name: 'Lupon Member Santos' },
-  { id: 2, name: 'Lupon Member Cruz' },
-  { id: 3, name: 'Lupon Member Reyes' },
-  { id: 4, name: 'Lupon Member Gomez' },
-])
+const loading = ref(false)
+const currentPage = ref(1)
+const itemsPerPage = 8
+const showViewModal = ref(false)
+const selectedCase = ref(null)
+const complaints = ref([])
+const filters = reactive({ search: '', status: '', type: '' })
 
 // ── Helpers ───────────────────────────────────────────────────
 function typeLabel(t) {
@@ -601,7 +463,6 @@ function statusDotSolid(s) {
 }
 
 async function fetchComplaints() {
-  // Serve from cache if already loaded
   if (hasLuponCasesData()) {
     complaints.value = getLuponCases()
     return
@@ -611,7 +472,7 @@ async function fetchComplaints() {
   try {
     const data = await LuponCasesService.adminCases()
     const result = Array.isArray(data) ? data : (data.data ?? [])
-    setLuponCases(result)       // cache it
+    setLuponCases(result)
     complaints.value = result
   } catch (err) {
     console.error('Fetch error:', err)
@@ -646,26 +507,84 @@ const paginatedComplaints = computed(() => {
   return filteredComplaints.value.slice(s, s + itemsPerPage)
 })
 
-function resetFilters() { filters.search = ''; filters.status = ''; filters.type = ''; currentPage.value = 1 }
+function resetFilters() { 
+  filters.search = ''; 
+  filters.status = ''; 
+  filters.type = ''; 
+  currentPage.value = 1 
+}
+
 watch(filters, () => { currentPage.value = 1 }, { deep: true })
 
-// ── Modal openers (actions wired to UI only for now) ──────────
-function openViewModal(c)       { selectedCase.value = c; showViewModal.value = true }
-function openReassignModal(c)   { selectedCase.value = c; selectedLuponId.value = ''; showReassignModal.value = true }
-function openResolutionModal(c) { selectedCase.value = c; resolutionText.value = ''; resolutionAction.value = 'approve'; showResolutionModal.value = true }
+function openViewModal(c) { 
+  console.log('Opening modal for case:', c)
+  selectedCase.value = c; 
+  showViewModal.value = true 
+}
 
-function confirmEscalate(case_) {
+function handleApprove(case_) {
   Swal.fire({
-    title: 'Escalate Case?',
-    text: `Escalate case #C-${String(case_.id).padStart(5, '0')}?`,
+    title: 'Approve Case?',
+    text: `Are you sure you want to approve case #C-${String(case_.id).padStart(5, '0')}?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#10b981',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Yes, approve',
+  }).then(r => {
+    if (r.isConfirmed) {
+      Swal.fire({ 
+        icon: 'success', 
+        title: 'Approved', 
+        text: 'Case has been approved successfully.', 
+        confirmButtonColor: '#3d4f7c' 
+      })
+    }
+  })
+}
+
+
+function handleDisapprove(case_) {
+  Swal.fire({
+    title: 'Disapprove Case?',
+    html: `
+      <p class="text-sm text-slate-500 mb-4">
+        You are about to disapprove case
+        <span class="font-semibold text-slate-700">#C-${String(case_.id).padStart(5, '0')}</span>.
+        Please provide a reason.
+      </p>
+      <textarea
+        id="swal-remarks"
+        rows="4"
+        placeholder="Enter remarks or reason for disapproval…"
+        class="w-full text-sm text-slate-700 border border-slate-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-red-300 focus:border-red-400 transition-all"
+        style="font-family: inherit;"
+      ></textarea>
+    `,
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#dc2626',
     cancelButtonColor: '#6b7280',
-    confirmButtonText: 'Yes, escalate',
+    confirmButtonText: 'Disapprove',
+    cancelButtonText: 'Cancel',
+    focusConfirm: false,
+    preConfirm: () => {
+      const remarks = document.getElementById('swal-remarks').value.trim()
+      if (!remarks) {
+        Swal.showValidationMessage('Please enter a remark before disapproving.')
+        return false
+      }
+      return remarks
+    },
   }).then(r => {
     if (r.isConfirmed) {
-      Swal.fire({ icon: 'info', title: 'Coming Soon', text: 'Escalate API not yet connected.', confirmButtonColor: '#3d4f7c' })
+      console.log('Disapproval remarks:', r.value)
+      Swal.fire({
+        icon: 'info',
+        title: 'Disapproved',
+        text: 'Case has been disapproved.',
+        confirmButtonColor: '#3d4f7c',
+      })
     }
   })
 }
@@ -681,5 +600,4 @@ onMounted(() => fetchComplaints())
 .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
 .modal-enter-active, .modal-leave-active { transition: opacity 0.2s ease; }
 .modal-enter-from, .modal-leave-to { opacity: 0; }
-.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-clamp: 2; }
 </style>
