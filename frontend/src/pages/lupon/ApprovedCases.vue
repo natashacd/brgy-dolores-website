@@ -43,6 +43,13 @@
             <option value="report">General Report</option>
             <option value="other">Other</option>
           </select>
+          <!-- Status filter -->
+          <select v-model="filters.status"
+            class="flex-1 sm:flex-none appearance-none bg-slate-50 border border-slate-200 text-slate-600 text-xs font-semibold rounded-xl px-3 py-2.5 cursor-pointer hover:border-slate-300 focus:outline-none transition-all">
+            <option value="">All Status</option>
+            <option value="approved">Approved</option>
+            <option value="scheduled">Scheduled</option>
+          </select>
           <button v-if="hasActiveFilters" @click="resetFilters"
             class="w-9 h-9 flex items-center justify-center text-slate-500 hover:text-red-600 bg-slate-50 hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded-xl transition-all cursor-pointer flex-shrink-0">
             <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -63,7 +70,8 @@
             <div class="w-1.5 h-8 rounded-full bg-white/20"></div>
             <h2 class="text-base sm:text-lg font-semibold text-white tracking-tight">Approved Cases List</h2>
           </div>
-          <span class="text-xs text-white/50">{{ filteredCases.length }} case{{ filteredCases.length !== 1 ? 's' : '' }}</span>
+          <div class="flex items-center gap-3">
+          </div>
         </div>
       </div>
 
@@ -83,13 +91,14 @@
             <thead>
               <tr class="border-b border-slate-100 bg-slate-50/60">
                 <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Case #</th>
+                <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Filed By</th>
                 <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Type</th>
                 <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Title</th>
                 <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Location</th>
-                <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Filed By</th>
                 <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Incident Date</th>
-                <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Filed Date</th>
-                <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest w-28">Actions</th>
+                <!-- Sub-status column -->
+                <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Progress</th>
+                <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest w-24">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -102,6 +111,10 @@
                   <span class="text-xs font-mono font-medium px-2 py-1 rounded-lg" style="color:#3d4f7c; background:#3d4f7c10; border:1px solid #3d4f7c20">
                     #C-{{ String(case_.id).padStart(5, '0') }}
                   </span>
+                </td>
+
+                <td class="px-6 py-4">
+                  <p class="text-sm text-slate-600 font-medium">{{ getFiledBy(case_) }}</p>
                 </td>
 
                 <td class="px-6 py-4">
@@ -122,15 +135,19 @@
                 </td>
 
                 <td class="px-6 py-4">
-                  <p class="text-sm text-slate-600 font-medium">User #{{ case_.user_id }}</p>
-                </td>
-
-                <td class="px-6 py-4">
                   <span class="text-sm text-slate-500">{{ formatDate(case_.incident_date) }}</span>
                 </td>
 
+                <!-- Sub-status badge -->
                 <td class="px-6 py-4">
-                  <span class="text-sm text-slate-500">{{ formatDate(case_.created_at) }}</span>
+                  <span :class="statusBadge(case_.status)"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap">
+                    <span class="relative flex h-1.5 w-1.5">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" :class="statusDot(case_.status)"></span>
+                      <span class="relative inline-flex rounded-full h-1.5 w-1.5" :class="statusDotSolid(case_.status)"></span>
+                    </span>
+                    {{ statusLabel(case_.status) }}
+                  </span>
                 </td>
 
                 <td class="px-6 py-4">
@@ -159,7 +176,7 @@
                     <p class="text-sm font-bold text-slate-600">No approved cases found</p>
                     <p class="text-xs text-slate-400">Try adjusting your search or filter criteria</p>
                     <button v-if="hasActiveFilters" @click="resetFilters"
-                      class="text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer"
+                      class="text-xs font-semibold px-4 py-2 rounded-xl cursor-pointer"
                       style="color:#3d4f7c; background:#3d4f7c10; border:1px solid #3d4f7c25">Clear Filters</button>
                   </div>
                 </td>
@@ -178,9 +195,6 @@
             </div>
             <p class="text-sm font-bold text-slate-600">No approved cases found</p>
             <p class="text-xs text-slate-400">Try adjusting your search or filters</p>
-            <button v-if="hasActiveFilters" @click="resetFilters"
-              class="text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer"
-              style="color:#3d4f7c; background:#3d4f7c10; border:1px solid #3d4f7c25">Clear Filters</button>
           </div>
 
           <div class="p-3 space-y-3">
@@ -195,9 +209,11 @@
                   <p class="text-sm font-bold text-slate-800 leading-tight truncate">{{ case_.title }}</p>
                   <p class="text-xs text-slate-400 mt-0.5 truncate">{{ case_.location }}</p>
                 </div>
-                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap flex-shrink-0 mt-0.5" style="background:#3d4f7c10; color:#3d4f7c; border:1px solid #3d4f7c25">
-                  <span class="w-1.5 h-1.5 rounded-full" style="background:#3d4f7c"></span>
-                  Approved
+                <!-- Sub-status badge on card -->
+                <span :class="statusBadge(case_.status)"
+                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap flex-shrink-0 mt-0.5">
+                  <span class="w-1.5 h-1.5 rounded-full" :class="statusDotSolid(case_.status)"></span>
+                  {{ statusLabel(case_.status) }}
                 </span>
               </div>
 
@@ -228,24 +244,21 @@
                 </div>
               </div>
 
-              <!-- Mobile quick action chips -->
               <div class="px-4 pb-3 flex gap-2 flex-wrap">
-                <button @click.stop="handleClosedCase(case_)"
-                  :disabled="actionLoading"
+                <button @click.stop="handleClosedCase(case_)" :disabled="actionLoading"
                   class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all active:scale-95 disabled:opacity-50">
                   <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                  Case Closed
+                  Close Case
                 </button>
-                <button @click.stop="handleScheduleSummon(case_)"
-                  :disabled="actionLoading"
-                  class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all active:scale-95 disabled:opacity-50">
+                <button @click.stop="handleScheduleSummon(case_)" :disabled="actionLoading"
+                  class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-violet-50 text-violet-600 hover:bg-violet-100 transition-all active:scale-95 disabled:opacity-50">
                   <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                   Summon
                 </button>
-                <button @click.stop="handleCertificate(case_)"
-                  class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-600 hover:bg-amber-100 transition-all active:scale-95">
-                  <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                  Certificate
+                <button @click.stop="handleCertificate(case_)" :disabled="actionLoading"
+                  class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-600 hover:bg-amber-100 transition-all active:scale-95 disabled:opacity-50">
+                  <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                  Print Cert
                 </button>
               </div>
             </div>
@@ -262,26 +275,20 @@
         <p class="text-xs text-slate-400 sm:hidden">Page {{ currentPage }} of {{ totalPages }}</p>
         <div class="flex items-center gap-1.5">
           <button :disabled="currentPage === 1" @click="currentPage--"
-            class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
-            @mouseover="e => { if(!e.currentTarget.disabled){ e.currentTarget.style.borderColor='#3d4f7c'; e.currentTarget.style.color='#3d4f7c' }}"
-            @mouseleave="e => { e.currentTarget.style.borderColor=''; e.currentTarget.style.color='' }">
+            class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer">
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
           </button>
           <template v-for="page in totalPages" :key="page">
             <button v-if="page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1"
               @click="currentPage = page"
               class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all cursor-pointer border border-transparent"
-              :style="page === currentPage ? 'background:#3d4f7c; color:white' : 'color:#64748b'"
-              @mouseover="e => { if(page !== currentPage) e.currentTarget.style.background='#3d4f7c10' }"
-              @mouseleave="e => { if(page !== currentPage) e.currentTarget.style.background='' }">
+              :style="page === currentPage ? 'background:#3d4f7c; color:white' : 'color:#64748b'">
               {{ page }}
             </button>
             <span v-else-if="Math.abs(page - currentPage) === 2" class="w-8 h-8 flex items-end justify-center text-slate-300 text-xs pb-1.5">…</span>
           </template>
           <button :disabled="currentPage === totalPages" @click="currentPage++"
-            class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
-            @mouseover="e => { if(!e.currentTarget.disabled){ e.currentTarget.style.borderColor='#3d4f7c'; e.currentTarget.style.color='#3d4f7c' }}"
-            @mouseleave="e => { e.currentTarget.style.borderColor=''; e.currentTarget.style.color='' }">
+            class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer">
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
           </button>
         </div>
@@ -295,11 +302,10 @@
     <!-- ── View Modal ── -->
     <Transition name="modal">
       <div v-if="showViewModal" class="fixed inset-0 z-50 flex flex-col sm:items-center sm:justify-center sm:p-4">
-        <div class="fixed inset-0 bg-black/55 backdrop-blur-md"></div>
+        <div class="fixed inset-0 bg-black/55 backdrop-blur-md" @click="showViewModal = false"></div>
         <div class="relative bg-white w-full h-full sm:h-auto sm:rounded-3xl sm:max-w-2xl sm:max-h-[90vh] flex flex-col overflow-hidden"
           style="box-shadow:0 40px 80px -12px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.04);">
 
-          <!-- Modal Header -->
           <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
             <div class="flex items-center gap-3">
               <div class="w-1 h-8 rounded-full" style="background:#3d4f7c"></div>
@@ -315,16 +321,38 @@
 
           <div v-if="selectedCase" class="flex-1 overflow-y-auto scrollbar-thin px-6 py-5 space-y-4">
 
-            <!-- Status Banner -->
+            <!-- Status Banner — shows approved or scheduled status -->
             <div class="rounded-xl px-4 py-3 flex items-center justify-between border" style="background:#3d4f7c08; border-color:#3d4f7c20">
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold" style="background:#3d4f7c15; color:#3d4f7c; border:1px solid #3d4f7c25">
-                <span class="relative flex h-1.5 w-1.5">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style="background:#3d4f7c"></span>
-                  <span class="relative inline-flex rounded-full h-1.5 w-1.5" style="background:#3d4f7c"></span>
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold" style="background:#3d4f7c15; color:#3d4f7c; border:1px solid #3d4f7c25">
+                  <span class="w-1.5 h-1.5 rounded-full" style="background:#3d4f7c"></span>
+                  Approved
                 </span>
-                Approved
-              </span>
-              <span class="text-xs text-slate-400">Filed: {{ formatDate(selectedCase.created_at) }}</span>
+                <!-- Sub-status pill — only shows for scheduled -->
+                <span v-if="selectedCase.status === 'scheduled'"
+                  :class="statusBadge(selectedCase.status)"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold">
+                  <span class="relative flex h-1.5 w-1.5">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" :class="statusDot(selectedCase.status)"></span>
+                    <span class="relative inline-flex rounded-full h-1.5 w-1.5" :class="statusDotSolid(selectedCase.status)"></span>
+                  </span>
+                  {{ statusLabel(selectedCase.status) }}
+                </span>
+              </div>
+              <span class="text-xs text-slate-400 flex-shrink-0">Filed: {{ formatDate(selectedCase.created_at) }}</span>
+            </div>
+
+            <!-- Scheduled date info if applicable -->
+            <div v-if="selectedCase.status === 'scheduled' && selectedCase.summon_date"
+              class="rounded-2xl border border-violet-200/60 bg-violet-50/30 px-4 py-3.5 flex items-start gap-3">
+              <svg class="w-4 h-4 text-violet-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              <div>
+                <p class="text-xs font-bold text-violet-700">Summon Scheduled</p>
+                <p class="text-xs text-violet-600 mt-0.5">{{ new Date(selectedCase.summon_date).toLocaleString() }}</p>
+                <p v-if="selectedCase.summon_notes" class="text-xs text-slate-500 mt-1">{{ selectedCase.summon_notes }}</p>
+              </div>
             </div>
 
             <!-- Case Info -->
@@ -388,56 +416,57 @@
               </div>
               <div class="p-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
 
-                <!-- Case Closed -->
-                <button @click="handleClosedCase(selectedCase)"
-                  :disabled="actionLoading"
+                <!-- Case Closed — removes from approved list -->
+                <button @click="handleClosedCase(selectedCase)" :disabled="actionLoading"
                   class="group flex flex-col items-center gap-2.5 px-4 py-4 rounded-xl border-2 bg-white transition-all active:scale-[0.97] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   style="border-color:#e2e8f0"
                   @mouseover="e => { if(!e.currentTarget.disabled){ e.currentTarget.style.borderColor='#94a3b8'; e.currentTarget.style.background='#f8fafc' }}"
                   @mouseleave="e => { e.currentTarget.style.borderColor='#e2e8f0'; e.currentTarget.style.background='white' }">
-                  <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center transition-colors group-hover:bg-slate-200">
+                  <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center group-hover:bg-slate-200 transition-colors">
                     <svg width="18" height="18" fill="none" stroke="#475569" stroke-width="2" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                   </div>
                   <div class="text-center">
                     <p class="text-xs font-bold text-slate-700">Case Closed</p>
-                    <p class="text-[10px] text-slate-400 mt-0.5 leading-tight">Mark this case as closed</p>
+                    <p class="text-[10px] text-slate-400 mt-0.5 leading-tight">Moves to closed cases</p>
                   </div>
                 </button>
 
-                <!-- Schedule Summon -->
-                <button @click="handleScheduleSummon(selectedCase)"
-                  :disabled="actionLoading"
+                <!-- Schedule Summon — changes DB status to scheduled -->
+                <button @click="handleScheduleSummon(selectedCase)" :disabled="actionLoading"
                   class="group flex flex-col items-center gap-2.5 px-4 py-4 rounded-xl border-2 bg-white transition-all active:scale-[0.97] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  style="border-color:#bfdbfe"
-                  @mouseover="e => { if(!e.currentTarget.disabled){ e.currentTarget.style.borderColor='#60a5fa'; e.currentTarget.style.background='#eff6ff' }}"
-                  @mouseleave="e => { e.currentTarget.style.borderColor='#bfdbfe'; e.currentTarget.style.background='white' }">
-                  <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center transition-colors group-hover:bg-blue-100">
-                    <svg width="18" height="18" fill="none" stroke="#2563eb" stroke-width="2" viewBox="0 0 24 24">
+                  :style="selectedCase.status === 'scheduled' ? 'border-color:#a78bfa; background:#f5f3ff' : 'border-color:#ddd6fe'"
+                  @mouseover="e => { if(!e.currentTarget.disabled){ e.currentTarget.style.borderColor='#8b5cf6'; e.currentTarget.style.background='#f5f3ff' }}"
+                  @mouseleave="e => { e.currentTarget.style.borderColor = selectedCase.status === 'scheduled' ? '#a78bfa' : '#ddd6fe'; e.currentTarget.style.background = selectedCase.status === 'scheduled' ? '#f5f3ff' : 'white' }">
+                  <div class="w-10 h-10 rounded-xl flex items-center justify-center transition-colors"
+                    :class="selectedCase.status === 'scheduled' ? 'bg-violet-200' : 'bg-violet-50 group-hover:bg-violet-100'">
+                    <svg width="18" height="18" fill="none" stroke="#7c3aed" stroke-width="2" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
                   </div>
                   <div class="text-center">
-                    <p class="text-xs font-bold text-blue-700">Schedule Summon</p>
-                    <p class="text-[10px] text-slate-400 mt-0.5 leading-tight">Set a summon schedule</p>
+                    <p class="text-xs font-bold text-violet-700">
+                      {{ selectedCase.status === 'scheduled' ? 'Reschedule Summon' : 'Schedule Summon' }}
+                    </p>
+                    <p class="text-[10px] text-slate-400 mt-0.5 leading-tight">Stays in approved cases</p>
                   </div>
                 </button>
 
-                <!-- Certificate to File Action -->
-                <button @click="handleCertificate(selectedCase)"
-                  class="group flex flex-col items-center gap-2.5 px-4 py-4 rounded-xl border-2 bg-white transition-all active:scale-[0.97] cursor-pointer"
+                <!-- Certificate to File — just prints the document, no status change -->
+                <button @click="handleCertificate(selectedCase)" :disabled="actionLoading"
+                  class="group flex flex-col items-center gap-2.5 px-4 py-4 rounded-xl border-2 bg-white transition-all active:scale-[0.97] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   style="border-color:#fde68a"
-                  @mouseover="e => { e.currentTarget.style.borderColor='#fbbf24'; e.currentTarget.style.background='#fffbeb' }"
+                  @mouseover="e => { if(!e.currentTarget.disabled){ e.currentTarget.style.borderColor='#f59e0b'; e.currentTarget.style.background='#fffbeb' }}"
                   @mouseleave="e => { e.currentTarget.style.borderColor='#fde68a'; e.currentTarget.style.background='white' }">
-                  <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center transition-colors group-hover:bg-amber-100">
+                  <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
                     <svg width="18" height="18" fill="none" stroke="#d97706" stroke-width="2" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                     </svg>
                   </div>
                   <div class="text-center">
-                    <p class="text-xs font-bold text-amber-700">Certificate to File</p>
-                    <p class="text-[10px] text-slate-400 mt-0.5 leading-tight">Issue certificate to file action</p>
+                    <p class="text-xs font-bold text-amber-700">Print Certificate</p>
+                    <p class="text-[10px] text-slate-400 mt-0.5 leading-tight">Certificate to File Action</p>
                   </div>
                 </button>
 
@@ -446,7 +475,6 @@
 
           </div>
 
-          <!-- Modal Footer -->
           <div class="flex-shrink-0 flex justify-end px-6 py-4 border-t border-slate-100 bg-slate-50/60">
             <button @click="showViewModal = false"
               class="flex items-center gap-1.5 px-4 py-2 text-[11px] font-semibold text-slate-500 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all cursor-pointer">
@@ -473,14 +501,36 @@ const itemsPerPage  = 8
 const showViewModal = ref(false)
 const selectedCase  = ref(null)
 const cases         = ref([])
-const filters = reactive({ search: '', type: '' })
+const filters       = reactive({ search: '', type: '', status: '' })
 
-// ── Fetch ──────────────────────────────────────────────────
+// ── Status badge helpers — reads c.status directly from DB ──
+function statusLabel(s) {
+  return { approved: 'Approved', scheduled: 'Scheduled' }[s] || 'Approved'
+}
+function statusBadge(s) {
+  return {
+    approved:  'bg-emerald-50 text-emerald-700 border border-emerald-200',
+    scheduled: 'bg-violet-50 text-violet-700 border border-violet-200',
+  }[s] || 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+}
+function statusDot(s) {
+  return { approved: 'bg-emerald-400', scheduled: 'bg-violet-400' }[s] || 'bg-emerald-400'
+}
+function statusDotSolid(s) {
+  return { approved: 'bg-emerald-500', scheduled: 'bg-violet-500' }[s] || 'bg-emerald-500'
+}
+
+// ── Fetch — status comes directly from DB, no derivation needed ──
 async function fetchApprovedCases() {
   loading.value = true
   try {
     const data = await LuponCasesService.approvedCases()
-    cases.value = Array.isArray(data) ? data : (data.data ?? [])
+    const raw = Array.isArray(data) ? data : (data.data ?? [])
+    cases.value = raw.map(c => ({
+      ...c,
+      summon_date:  c.summon?.date  || null,
+      summon_notes: c.summon?.notes || null,
+    }))
   } catch (err) {
     console.error('Fetch error:', err)
     Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load approved cases.', confirmButtonColor: '#3d4f7c' })
@@ -510,8 +560,18 @@ function formatDate(d) {
   catch { return d }
 }
 
+function getFiledBy(c) {
+  if (c.user?.information) {
+    const i = c.user.information
+    const name = `${i.first_name || ''} ${i.last_name || ''}`.trim()
+    if (name) return name
+  }
+  if (c.user?.name) return c.user.name
+  return `User #${c.user_id}`
+}
+
 // ── Filters & Pagination ───────────────────────────────────
-const hasActiveFilters = computed(() => filters.search || filters.type)
+const hasActiveFilters = computed(() => filters.search || filters.type || filters.status)
 
 const filteredCases = computed(() => {
   let f = [...cases.value]
@@ -525,7 +585,8 @@ const filteredCases = computed(() => {
       String(c.id).includes(s)
     )
   }
-  if (filters.type) f = f.filter(c => c.type === filters.type)
+  if (filters.type)   f = f.filter(c => c.type === filters.type)
+  if (filters.status) f = f.filter(c => c.status === filters.status)
   return f
 })
 
@@ -535,21 +596,32 @@ const paginatedCases = computed(() => {
   return filteredCases.value.slice(s, s + itemsPerPage)
 })
 
-function resetFilters() { filters.search = ''; filters.type = ''; currentPage.value = 1 }
+function resetFilters() { filters.search = ''; filters.type = ''; filters.status = ''; currentPage.value = 1 }
 watch(filters, () => { currentPage.value = 1 }, { deep: true })
 function openViewModal(c) { selectedCase.value = c; showViewModal.value = true }
 
-// ── Sync case in local list after action ───────────────────
+// ── Update status locally after API action ─────────────────
+function updateStatus(id, status, extra = {}) {
+  const idx = cases.value.findIndex(c => c.id === id)
+  if (idx !== -1) {
+    cases.value[idx] = { ...cases.value[idx], status, ...extra }
+    if (selectedCase.value?.id === id) {
+      selectedCase.value = { ...selectedCase.value, status, ...extra }
+    }
+  }
+}
+
+// ── Remove from list (close case → goes to closed module) ──
 function removeCase(id) {
   cases.value = cases.value.filter(c => c.id !== id)
   if (selectedCase.value?.id === id) showViewModal.value = false
 }
 
-// ── Case Closed ────────────────────────────────────────────
+// ── Case Closed — removes from approved, goes to closed ────
 async function handleClosedCase(case_) {
   const result = await Swal.fire({
     title: 'Close Case?',
-    text: `Mark case #C-${String(case_.id).padStart(5, '0')} as closed?`,
+    text: `Mark case #C-${String(case_.id).padStart(5, '0')} as closed? It will move to Closed Cases.`,
     icon: 'question',
     showCancelButton: true,
     confirmButtonColor: '#475569',
@@ -557,48 +629,36 @@ async function handleClosedCase(case_) {
     confirmButtonText: 'Yes, close it',
     cancelButtonText: 'Cancel',
   })
-
   if (!result.isConfirmed) return
 
   actionLoading.value = true
   try {
     await LuponCasesService.closeCase(case_.id)
     removeCase(case_.id)
-    Swal.fire({
-      icon: 'success',
-      title: 'Case Closed',
-      text: 'The case has been marked as closed.',
-      timer: 2000,
-      showConfirmButton: false,
-    })
+    Swal.fire({ icon: 'success', title: 'Case Closed', text: 'The case has been moved to Closed Cases.', timer: 2000, showConfirmButton: false })
   } catch (err) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: err.response?.data?.message || 'Failed to close case.',
-      confirmButtonColor: '#3d4f7c',
-    })
+    Swal.fire({ icon: 'error', title: 'Error', text: err.response?.data?.message || 'Failed to close case.', confirmButtonColor: '#3d4f7c' })
   } finally {
     actionLoading.value = false
   }
 }
 
-// ── Schedule Summon ────────────────────────────────────────
+// ── Schedule Summon — changes status to scheduled in DB ──
 async function handleScheduleSummon(case_) {
   const result = await Swal.fire({
     title: 'Schedule Summon',
     html: `
       <p class="text-sm text-slate-500 mb-4">Set a summon date and time for case <span class="font-semibold text-slate-700">#C-${String(case_.id).padStart(5, '0')}</span>.</p>
       <input id="swal-summon-date" type="datetime-local"
-        class="w-full text-sm text-slate-700 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition-all"
-        style="font-family: inherit;" />
+        class="w-full text-sm text-slate-700 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-violet-300 focus:border-violet-400 transition-all"
+        style="font-family:inherit;" />
       <textarea id="swal-summon-notes" rows="3" placeholder="Additional notes (optional)…"
-        class="w-full mt-3 text-sm text-slate-700 border border-slate-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition-all"
-        style="font-family: inherit;"></textarea>
+        class="w-full mt-3 text-sm text-slate-700 border border-slate-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-violet-300 focus:border-violet-400 transition-all"
+        style="font-family:inherit;"></textarea>
     `,
     icon: 'info',
     showCancelButton: true,
-    confirmButtonColor: '#2563eb',
+    confirmButtonColor: '#7c3aed',
     cancelButtonColor: '#6b7280',
     confirmButtonText: 'Schedule',
     cancelButtonText: 'Cancel',
@@ -609,45 +669,50 @@ async function handleScheduleSummon(case_) {
       return { date, notes: document.getElementById('swal-summon-notes').value.trim() }
     },
   })
-
   if (!result.isConfirmed) return
 
   actionLoading.value = true
   try {
     await LuponCasesService.scheduleSummon(case_.id, result.value)
-    removeCase(case_.id)
+    // Status changes to 'scheduled' in DB — update locally
+    updateStatus(case_.id, 'scheduled', {
+      summon_date:  result.value.date,
+      summon_notes: result.value.notes,
+    })
     Swal.fire({
       icon: 'success',
       title: 'Summon Scheduled',
       text: `Summon set for ${new Date(result.value.date).toLocaleString()}.`,
-      timer: 2500,
+      timer: 3000,
       showConfirmButton: false,
     })
   } catch (err) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: err.response?.data?.message || 'Failed to schedule summon.',
-      confirmButtonColor: '#3d4f7c',
-    })
+    Swal.fire({ icon: 'error', title: 'Error', text: err.response?.data?.message || 'Failed to schedule summon.', confirmButtonColor: '#3d4f7c' })
   } finally {
     actionLoading.value = false
   }
 }
 
-// ── Certificate to File Action (untouched) ─────────────────
+// ── Certificate to File — just prints, no status change ────
 function handleCertificate(case_) {
   Swal.fire({
-    title: 'Issue Certificate to File Action?',
-    text: `Issue a Certificate to File Action for case #C-${String(case_.id).padStart(5, '0')}?`,
-    icon: 'warning',
+    title: 'Print Certificate to File Action',
+    html: `
+      <p class="text-sm text-slate-500 mb-2">
+        You are about to print the <strong>Certificate to File Action</strong> for:<br/>
+        <span class="font-semibold text-slate-700">#C-${String(case_.id).padStart(5, '0')} — ${case_.title}</span>
+      </p>
+      <p class="text-xs text-slate-400">This will open the print dialog. No status will be changed.</p>
+    `,
+    icon: 'info',
     showCancelButton: true,
     confirmButtonColor: '#d97706',
     cancelButtonColor: '#6b7280',
-    confirmButtonText: 'Yes, issue it',
-  }).then(r => {
-    if (r.isConfirmed) {
-      Swal.fire({ icon: 'success', title: 'Certificate Issued', text: 'Certificate to File Action has been issued.', confirmButtonColor: '#3d4f7c' })
+    confirmButtonText: 'Print',
+    cancelButtonText: 'Cancel',
+  }).then(result => {
+    if (result.isConfirmed) {
+      window.print()
     }
   })
 }

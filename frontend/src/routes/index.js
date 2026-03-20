@@ -17,6 +17,10 @@ import Resident from "@/pages/admin/Resident.vue";
 import AdminServiceRequest from "@/pages/admin/ServiceRequest.vue";
 import DisapprovedRequests from "@/pages/admin/DisapprovedRequests.vue";
 import Settings from "@/pages/admin/Settings.vue";
+import AdminApprovedCases from "@/pages/admin/cases/ApprovedCases.vue";
+import AdminClosedCases from "@/pages/admin/cases/ClosedCases.vue";
+import AdminDisapprovedCases from "@/pages/admin/cases/DisapprovedCases.vue";
+
 
 // Resident routes
 import ResidentDashboard from "@/pages/resident/Dashboard.vue";
@@ -27,6 +31,7 @@ import ResidentComplaints from "@/pages/resident/Complaints.vue";
 import LuponComplaints from "@/pages/lupon/Complaints.vue";
 import ApprovedCases from "@/pages/lupon/ApprovedCases.vue";
 import DisapprovedCases from "@/pages/lupon/DisapprovedCases.vue";
+import ClosedCases from "@/pages/lupon/ClosedCases.vue";
 
 // Secretary routes
 import SecretaryResident from "@/pages/secretary/Resident.vue";
@@ -128,6 +133,12 @@ const routes = [
         name: "lupon.complaints.disapproved",
         component: DisapprovedCases,
         meta: { title: "Disapproved Cases" },
+      },
+      {
+        path: "complaints/closed",
+        name: "lupon.complaints.closed",
+        component: ClosedCases,
+        meta: { title: "Closed Cases" },
       }
     ],
   },
@@ -204,6 +215,24 @@ const routes = [
         name: "admin.complaints",
         component: Complaints,
         meta: { title: "Complaints & Disputes" },
+      },
+      {
+        path: "complaints/approved",
+        name: "admin.complaints.approved",
+        component: AdminApprovedCases,
+        meta: { title: "Approved Cases" },
+      },
+      {
+        path: "complaints/disapproved",
+        name: "admin.complaints.disapproved",
+        component: AdminDisapprovedCases,
+        meta: { title: "Disapproved Cases" },
+      },
+      {
+        path: "complaints/closed",
+        name: "admin.complaints.closed",
+        component: AdminClosedCases,
+        meta: { title: "Closed Cases" },
       },
       {
         path: "residents",

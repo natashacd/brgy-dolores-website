@@ -21,7 +21,7 @@ class LuponCasesController extends Controller
     
     public function adminIndex()
     {
-        $cases = Lupon_Cases::latest()->get();
+        $cases = Lupon_Cases::with(['user.information', 'summon'])->latest()->get();
         return response()->json($cases);
     }
 

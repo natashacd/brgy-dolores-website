@@ -138,55 +138,107 @@
       </div>
     </section>
 
-
-    <!-- ═══════════════════════════════════════════
-         HOW TO APPLY
-    ════════════════════════════════════════════ -->
-    <section
-      ref="stepsRef"
-      class="bg-white py-16 border-t border-gray-100 steps-section"
-      :class="{ 'steps-entered': stepsVisible }"
-    >
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-12 steps-header">
-          <p class="text-xs font-extrabold tracking-[0.22em] uppercase mb-2" style="color:#0f2d6b">Simple Process</p>
-          <h2 class="text-3xl md:text-4xl font-black text-gray-900 mb-4">
-            How to <span style="background: linear-gradient(135deg,#0f2d6b,#b91c1c); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text">Apply</span>
-          </h2>
-          <p class="text-gray-500 max-w-2xl mx-auto">Simple steps to access barangay services</p>
-        </div>
-
-        <div class="grid md:grid-cols-3 gap-8 relative">
-          <!-- Connector line (desktop) -->
-          <div class="hidden md:block absolute top-8 left-[17%] right-[17%] h-0.5 steps-connector"
-            style="background: linear-gradient(90deg, #0f2d6b22, #0f2d6b55, #b91c1c55, #b91c1c22)">
+  <!-- ═══════════════════════════════════════════
+          HOW TO APPLY
+      ════════════════════════════════════════════ -->
+      <section
+        ref="stepsRef"
+        class="bg-white py-16 border-t border-gray-100 steps-section"
+        :class="{ 'steps-entered': stepsVisible }"
+      >
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="text-center mb-12 steps-header">
+            <p class="text-xs font-extrabold tracking-[0.22em] uppercase mb-2" style="color:#0f2d6b">Simple Process</p>
+            <h2 class="text-3xl md:text-4xl font-black text-gray-900 mb-4">
+              How to <span style="background: linear-gradient(135deg,#0f2d6b,#b91c1c); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text">Apply</span>
+            </h2>
+            <p class="text-gray-500 max-w-2xl mx-auto">Three simple steps to access barangay services</p>
           </div>
 
-          <div
-            v-for="(step, i) in steps"
-            :key="step.title"
-            class="text-center step-item"
-            :style="`animation-delay: ${i * 0.15}s`"
-          >
-            <!-- Number badge -->
-            <div class="relative inline-block mb-4">
-              <div
-                class="w-16 h-16 rounded-full flex items-center justify-center text-2xl mx-auto transition-all duration-300 group hover:scale-110"
-                :style="`background: ${step.bg}`"
-              >{{ step.icon }}</div>
-              <div
-                class="absolute -top-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-[0.6rem] font-black text-white shadow-md"
-                :style="`background: ${step.badge}`"
-              >{{ i + 1 }}</div>
+          <div class="grid md:grid-cols-3 gap-8 relative">
+            <!-- Connector line (desktop) -->
+            <div class="hidden md:block absolute top-8 left-[17%] right-[17%] h-0.5 steps-connector"
+              style="background: linear-gradient(90deg, #0f2d6b22, #0f2d6b55, #b91c1c55, #b91c1c22)">
             </div>
 
-            <h3 class="font-bold text-gray-900 mb-2 text-base">{{ step.title }}</h3>
-            <p class="text-sm text-gray-400 max-w-xs mx-auto leading-relaxed">{{ step.desc }}</p>
+            <!-- Step 1: Visit or Login -->
+            <div
+              class="text-center step-item"
+              style="animation-delay: 0s"
+            >
+              <div class="relative inline-block mb-4">
+                <div
+                  class="w-16 h-16 rounded-full flex items-center justify-center text-2xl mx-auto transition-all duration-300 group hover:scale-110"
+                  style="background: #0f2d6b15"
+                >
+                  <svg class="w-8 h-8" style="color: #0f2d6b" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                  </svg>
+                </div>
+                <div
+                  class="absolute -top-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-[0.6rem] font-black text-white shadow-md"
+                  style="background: #0f2d6b"
+                >1</div>
+              </div>
+              <h3 class="font-bold text-gray-900 mb-2 text-base">Visit or Login</h3>
+              <p class="text-sm text-gray-400 max-w-xs mx-auto leading-relaxed">Visit the barangay hall or log in to your resident account to start your application</p>
+            </div>
+
+            <!-- Step 2: Submit Request -->
+            <div
+              class="text-center step-item"
+              style="animation-delay: 0.15s"
+            >
+              <div class="relative inline-block mb-4">
+                <div
+                  class="w-16 h-16 rounded-full flex items-center justify-center text-2xl mx-auto transition-all duration-300 group hover:scale-110"
+                  style="background: #0f2d6b15"
+                >
+                  <svg class="w-8 h-8" style="color: #0f2d6b" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div
+                  class="absolute -top-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-[0.6rem] font-black text-white shadow-md"
+                  style="background: #b91c1c"
+                >2</div>
+              </div>
+              <h3 class="font-bold text-gray-900 mb-2 text-base">Submit Request</h3>
+              <p class="text-sm text-gray-400 max-w-xs mx-auto leading-relaxed">Fill out the request form with your details and required documents</p>
+            </div>
+
+            <!-- Step 3: Claim Document -->
+            <div
+              class="text-center step-item"
+              style="animation-delay: 0.3s"
+            >
+              <div class="relative inline-block mb-4">
+                <div
+                  class="w-16 h-16 rounded-full flex items-center justify-center text-2xl mx-auto transition-all duration-300 group hover:scale-110"
+                  style="background: #0f2d6b15"
+                >
+                  <svg class="w-8 h-8" style="color: #0f2d6b" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                </div>
+                <div
+                  class="absolute -top-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-[0.6rem] font-black text-white shadow-md"
+                  style="background: #0f2d6b"
+                >3</div>
+              </div>
+              <h3 class="font-bold text-gray-900 mb-2 text-base">Claim Document</h3>
+              <p class="text-sm text-gray-400 max-w-xs mx-auto leading-relaxed">Once approved, visit the barangay hall to claim your document or certificate</p>
+            </div>
+          </div>
+
+          <!-- Additional Info Banner -->
+          <div class="mt-12 bg-gradient-to-r from-[#0f2d6b08] to-[#b91c1c08] rounded-2xl p-6 text-center">
+            <p class="text-sm text-gray-600">
+              <span class="font-semibold" style="color:#0f2d6b">Need assistance?</span> Our staff at the barangay hall is ready to help you with your application.
+            </p>
           </div>
         </div>
-      </div>
-    </section>
-
+      </section>
   </div>
 </template>
 

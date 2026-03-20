@@ -11,12 +11,12 @@
         <div class="w-1.5 h-10 rounded-full flex-shrink-0" style="background:#3d4f7c"></div>
         <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#3d4f7c15; color:#3d4f7c">
           <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
         <div class="min-w-0">
-          <h1 class="text-xl sm:text-3xl font-semibold text-slate-800 tracking-tight">Disapproved Cases</h1>
-          <p class="text-xs sm:text-sm text-slate-500 mt-0.5 hidden sm:block">View all disapproved Lupon cases and their remarks</p>
+          <h1 class="text-xl sm:text-3xl font-semibold text-slate-800 tracking-tight">Approved Cases</h1>
+          <p class="text-xs sm:text-sm text-slate-500 mt-0.5 hidden sm:block">View approved Lupon cases</p>
         </div>
       </div>
     </div>
@@ -43,6 +43,13 @@
             <option value="report">General Report</option>
             <option value="other">Other</option>
           </select>
+          <!-- Status filter -->
+          <select v-model="filters.status"
+            class="flex-1 sm:flex-none appearance-none bg-slate-50 border border-slate-200 text-slate-600 text-xs font-semibold rounded-xl px-3 py-2.5 cursor-pointer hover:border-slate-300 focus:outline-none transition-all">
+            <option value="">All Status</option>
+            <option value="approved">Approved</option>
+            <option value="scheduled">Scheduled</option>
+          </select>
           <button v-if="hasActiveFilters" @click="resetFilters"
             class="w-9 h-9 flex items-center justify-center text-slate-500 hover:text-red-600 bg-slate-50 hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded-xl transition-all cursor-pointer flex-shrink-0">
             <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -61,9 +68,10 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div class="w-1.5 h-8 rounded-full bg-white/20"></div>
-            <h2 class="text-base sm:text-lg font-semibold text-white tracking-tight">Disapproved Cases List</h2>
+            <h2 class="text-base sm:text-lg font-semibold text-white tracking-tight">Approved Cases List</h2>
           </div>
-          <span class="text-xs text-white/50">{{ filteredCases.length }} case{{ filteredCases.length !== 1 ? 's' : '' }}</span>
+          <div class="flex items-center gap-3">
+          </div>
         </div>
       </div>
 
@@ -73,11 +81,10 @@
           <div class="absolute inset-0 border-[3px] border-slate-100 rounded-full"></div>
           <div class="absolute inset-0 border-[3px] border-[#3d4f7c] border-t-transparent rounded-full animate-spin"></div>
         </div>
-        <p class="text-sm text-slate-400 font-medium">Loading disapproved cases...</p>
+        <p class="text-sm text-slate-400 font-medium">Loading approved cases...</p>
       </div>
 
       <div v-else>
-
         <!-- ── Desktop Table ── -->
         <div class="hidden md:block overflow-x-auto">
           <table class="w-full">
@@ -89,18 +96,18 @@
                 <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Title</th>
                 <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Location</th>
                 <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Incident Date</th>
-                <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Disapproved Date</th>
-                <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest w-28">Actions</th>
-              </tr>
+                <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Progress</th>
+                <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest w-24">Actions</th>
+               </tr>
             </thead>
             <tbody>
               <tr v-for="case_ in paginatedCases" :key="case_.id"
                 class="border-b border-slate-50 transition-colors duration-100"
-                @mouseover="e => e.currentTarget.style.background='#fff1f208'"
+                @mouseover="e => e.currentTarget.style.background='#3d4f7c08'"
                 @mouseleave="e => e.currentTarget.style.background=''">
 
                 <td class="px-6 py-4">
-                  <span class="text-xs font-mono font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded-lg">
+                  <span class="text-xs font-mono font-medium px-2 py-1 rounded-lg" style="color:#3d4f7c; background:#3d4f7c10; border:1px solid #3d4f7c20">
                     #C-{{ String(case_.id).padStart(5, '0') }}
                   </span>
                 </td>
@@ -122,22 +129,29 @@
                   <p class="text-sm font-semibold text-slate-800">{{ case_.title }}</p>
                 </td>
 
-
                 <td class="px-6 py-4">
-                  <p class="text-sm text-slate-600 font-medium">{{ getFiledBy(case_) }}</p>
+                  <p class="text-sm text-slate-500 truncate max-w-[140px]">{{ case_.location }}</p>
                 </td>
 
                 <td class="px-6 py-4">
                   <span class="text-sm text-slate-500">{{ formatDate(case_.incident_date) }}</span>
                 </td>
 
+                <!-- Sub-status badge -->
                 <td class="px-6 py-4">
-                  <span class="text-sm text-slate-500">{{ formatDate(case_.updated_at) }}</span>
+                  <span :class="statusBadge(case_.status)"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap">
+                    <span class="relative flex h-1.5 w-1.5">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" :class="statusDot(case_.status)"></span>
+                      <span class="relative inline-flex rounded-full h-1.5 w-1.5" :class="statusDotSolid(case_.status)"></span>
+                    </span>
+                    {{ statusLabel(case_.status) }}
+                  </span>
                 </td>
 
                 <td class="px-6 py-4">
                   <button @click="openViewModal(case_)"
-                    class="w-8 h-8 flex items-center justify-center rounded-lg border active:scale-95 transition-all duration-150 cursor-pointer"
+                    class="w-8 h-8 flex items-center justify-center rounded-lg border hover:shadow-md active:scale-95 transition-all duration-150 cursor-pointer"
                     style="background:#3d4f7c10; color:#3d4f7c; border-color:#3d4f7c20"
                     @mouseover="e => { e.currentTarget.style.background='#3d4f7c'; e.currentTarget.style.color='white' }"
                     @mouseleave="e => { e.currentTarget.style.background='#3d4f7c10'; e.currentTarget.style.color='#3d4f7c' }"
@@ -150,19 +164,18 @@
                 </td>
               </tr>
 
-              <!-- Empty State -->
               <tr v-if="filteredCases.length === 0">
                 <td colspan="8" class="py-16 text-center">
                   <div class="flex flex-col items-center gap-3">
-                    <div class="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center">
-                      <svg class="w-7 h-7 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center" style="background:#3d4f7c10">
+                      <svg class="w-7 h-7" style="color:#3d4f7c60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
-                    <p class="text-sm font-bold text-slate-600">No disapproved cases found</p>
+                    <p class="text-sm font-bold text-slate-600">No approved cases found</p>
                     <p class="text-xs text-slate-400">Try adjusting your search or filter criteria</p>
                     <button v-if="hasActiveFilters" @click="resetFilters"
-                      class="text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer"
+                      class="text-xs font-semibold px-4 py-2 rounded-xl cursor-pointer"
                       style="color:#3d4f7c; background:#3d4f7c10; border:1px solid #3d4f7c25">Clear Filters</button>
                   </div>
                 </td>
@@ -174,16 +187,13 @@
         <!-- ── Mobile Cards ── -->
         <div class="md:hidden">
           <div v-if="filteredCases.length === 0" class="flex flex-col items-center gap-3 py-16 text-center px-4">
-            <div class="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center">
-              <svg class="w-7 h-7 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center" style="background:#3d4f7c10">
+              <svg class="w-7 h-7" style="color:#3d4f7c60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <p class="text-sm font-bold text-slate-600">No disapproved cases found</p>
+            <p class="text-sm font-bold text-slate-600">No approved cases found</p>
             <p class="text-xs text-slate-400">Try adjusting your search or filters</p>
-            <button v-if="hasActiveFilters" @click="resetFilters"
-              class="text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer"
-              style="color:#3d4f7c; background:#3d4f7c10; border:1px solid #3d4f7c25">Clear Filters</button>
           </div>
 
           <div class="p-3 space-y-3">
@@ -193,37 +203,20 @@
               @click="openViewModal(case_)">
 
               <div class="px-4 pt-4 pb-3 flex items-start justify-between gap-3">
-                <div class="min-w-0 flex-1">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="text-[10px] font-semibold font-mono text-red-500">#C-{{ String(case_.id).padStart(5, '0') }}</span>
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold" :class="typeChipClass(case_.type)">
-                      {{ typeLabel(case_.type) }}
-                    </span>
-                  </div>
-                  <p class="text-sm font-bold text-slate-800 leading-tight line-clamp-2">{{ case_.title }}</p>
-                  <div class="flex items-center gap-1 mt-1">
-                    <svg class="w-3 h-3 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
-                    <p class="text-xs text-slate-400 truncate">{{ case_.location }}</p>
-                  </div>
+                <div class="min-w-0">
+                  <p class="text-[10px] font-semibold font-mono mb-0.5" style="color:#3d4f7c">#C-{{ String(case_.id).padStart(5, '0') }}</p>
+                  <p class="text-sm font-bold text-slate-800 leading-tight truncate">{{ case_.title }}</p>
+                  <p class="text-xs text-slate-400 mt-0.5 truncate">{{ case_.location }}</p>
                 </div>
-                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap flex-shrink-0 mt-0.5 bg-red-50 text-red-600 border border-red-100">
-                  <svg width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                  </svg>
-                  Disapproved
+                <!-- Sub-status badge on card -->
+                <span :class="statusBadge(case_.status)"
+                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap flex-shrink-0 mt-0.5">
+                  <span class="w-1.5 h-1.5 rounded-full" :class="statusDotSolid(case_.status)"></span>
+                  {{ statusLabel(case_.status) }}
                 </span>
               </div>
 
               <div class="mx-4 h-px bg-slate-100"></div>
-
-              <!-- Remarks Preview -->
-              <div v-if="case_.remarks" class="mx-4 mt-3 px-3 py-2.5 rounded-xl bg-red-50/60 border border-red-100">
-                <p class="text-[9px] font-bold text-red-400 uppercase tracking-wider mb-1">Remarks</p>
-                <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">{{ case_.remarks }}</p>
-              </div>
 
               <div class="grid grid-cols-2 gap-0 p-3">
                 <div class="flex items-start gap-2 p-2 rounded-xl">
@@ -238,30 +231,20 @@
                   </div>
                 </div>
                 <div class="flex items-start gap-2 p-2 rounded-xl">
-                  <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 bg-red-50">
-                    <svg width="11" height="11" fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24">
+                  <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 bg-slate-50">
+                    <svg width="11" height="11" fill="none" stroke="#64748b" stroke-width="2" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
                   </div>
                   <div class="min-w-0">
-                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Disapproved</p>
-                    <p class="text-xs font-semibold text-slate-700 mt-0.5">{{ formatDate(case_.updated_at) }}</p>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Incident Date</p>
+                    <p class="text-xs font-semibold text-slate-700 mt-0.5">{{ formatDate(case_.incident_date) }}</p>
                   </div>
                 </div>
-              </div>
-
-              <div class="px-4 pb-3 flex items-center justify-end">
-                <span class="text-[10px] text-slate-400 flex items-center gap-1">
-                  Tap to view details
-                  <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                  </svg>
-                </span>
               </div>
             </div>
           </div>
         </div>
-
       </div>
 
       <!-- Pagination -->
@@ -273,26 +256,20 @@
         <p class="text-xs text-slate-400 sm:hidden">Page {{ currentPage }} of {{ totalPages }}</p>
         <div class="flex items-center gap-1.5">
           <button :disabled="currentPage === 1" @click="currentPage--"
-            class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
-            @mouseover="e => { if(!e.currentTarget.disabled){ e.currentTarget.style.borderColor='#3d4f7c'; e.currentTarget.style.color='#3d4f7c' }}"
-            @mouseleave="e => { e.currentTarget.style.borderColor=''; e.currentTarget.style.color='' }">
+            class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer">
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
           </button>
           <template v-for="page in totalPages" :key="page">
             <button v-if="page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1"
               @click="currentPage = page"
               class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all cursor-pointer border border-transparent"
-              :style="page === currentPage ? 'background:#3d4f7c; color:white' : 'color:#64748b'"
-              @mouseover="e => { if(page !== currentPage) e.currentTarget.style.background='#3d4f7c10' }"
-              @mouseleave="e => { if(page !== currentPage) e.currentTarget.style.background='' }">
+              :style="page === currentPage ? 'background:#3d4f7c; color:white' : 'color:#64748b'">
               {{ page }}
             </button>
             <span v-else-if="Math.abs(page - currentPage) === 2" class="w-8 h-8 flex items-end justify-center text-slate-300 text-xs pb-1.5">…</span>
           </template>
           <button :disabled="currentPage === totalPages" @click="currentPage++"
-            class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
-            @mouseover="e => { if(!e.currentTarget.disabled){ e.currentTarget.style.borderColor='#3d4f7c'; e.currentTarget.style.color='#3d4f7c' }}"
-            @mouseleave="e => { e.currentTarget.style.borderColor=''; e.currentTarget.style.color='' }">
+            class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer">
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
           </button>
         </div>
@@ -303,44 +280,59 @@
       </div>
     </div>
 
-    <!-- ── View Modal ── -->
+    <!-- ── View Modal (Read-Only) ── -->
     <Transition name="modal">
       <div v-if="showViewModal" class="fixed inset-0 z-50 flex flex-col sm:items-center sm:justify-center sm:p-4">
-        <div class="fixed inset-0 bg-black/55 backdrop-blur-md"></div>
+        <div class="fixed inset-0 bg-black/55 backdrop-blur-md" @click="showViewModal = false"></div>
         <div class="relative bg-white w-full h-full sm:h-auto sm:rounded-3xl sm:max-w-2xl sm:max-h-[90vh] flex flex-col overflow-hidden"
           style="box-shadow:0 40px 80px -12px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.04);">
 
-          <!-- Modal Header -->
           <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
             <div class="flex items-center gap-3">
-              <div class="w-1 h-8 rounded-full bg-red-500"></div>
+              <div class="w-1 h-8 rounded-full" style="background:#3d4f7c"></div>
               <div>
                 <h3 class="text-sm font-bold text-slate-800 tracking-tight">Case Details</h3>
                 <p class="text-[11px] text-slate-400 font-mono mt-0.5">#C-{{ selectedCase ? String(selectedCase.id).padStart(5, '0') : '' }}</p>
               </div>
             </div>
-            <button @click="showViewModal = false"
-              class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all cursor-pointer">
-              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
+            <button @click="showViewModal = false" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all cursor-pointer">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
 
           <div v-if="selectedCase" class="flex-1 overflow-y-auto scrollbar-thin px-6 py-5 space-y-4">
 
             <!-- Status Banner -->
-            <div class="bg-red-50 rounded-xl px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border border-red-100">
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-red-100 text-red-600 border border-red-200 w-fit">
-                <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-                Disapproved
-              </span>
-              <div class="flex items-center gap-3 text-xs text-slate-400">
-                <span>Filed: {{ formatDate(selectedCase.created_at) }}</span>
-                <span class="hidden sm:inline">·</span>
-                <span>Disapproved: {{ formatDate(selectedCase.updated_at) }}</span>
+            <div class="rounded-xl px-4 py-3 flex items-center justify-between border" style="background:#3d4f7c08; border-color:#3d4f7c20">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold" style="background:#3d4f7c15; color:#3d4f7c; border:1px solid #3d4f7c25">
+                  <span class="w-1.5 h-1.5 rounded-full" style="background:#3d4f7c"></span>
+                  Approved
+                </span>
+                <!-- Sub-status pill for scheduled cases -->
+                <span v-if="selectedCase.status === 'scheduled'"
+                  :class="statusBadge(selectedCase.status)"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold">
+                  <span class="relative flex h-1.5 w-1.5">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" :class="statusDot(selectedCase.status)"></span>
+                    <span class="relative inline-flex rounded-full h-1.5 w-1.5" :class="statusDotSolid(selectedCase.status)"></span>
+                  </span>
+                  {{ statusLabel(selectedCase.status) }}
+                </span>
+              </div>
+              <span class="text-xs text-slate-400 flex-shrink-0">Filed: {{ formatDate(selectedCase.created_at) }}</span>
+            </div>
+
+            <!-- Scheduled date info if applicable -->
+            <div v-if="selectedCase.status === 'scheduled' && selectedCase.summon_date"
+              class="rounded-2xl border border-violet-200/60 bg-violet-50/30 px-4 py-3.5 flex items-start gap-3">
+              <svg class="w-4 h-4 text-violet-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              <div>
+                <p class="text-xs font-bold text-violet-700">Summon Scheduled</p>
+                <p class="text-xs text-violet-600 mt-0.5">{{ new Date(selectedCase.summon_date).toLocaleString() }}</p>
+                <p v-if="selectedCase.summon_notes" class="text-xs text-slate-500 mt-1">{{ selectedCase.summon_notes }}</p>
               </div>
             </div>
 
@@ -359,21 +351,26 @@
                   <span class="text-[11px] text-slate-400 flex-shrink-0">Type</span>
                   <span class="text-[11px] font-semibold text-slate-700 text-right">{{ typeLabel(selectedCase.type) }}</span>
                 </div>
-                <div class="px-4 py-2.5 flex justify-between items-start gap-2">
+                <div class="px-4 py-2.5 flex justify-between items-center gap-2">
                   <span class="text-[11px] text-slate-400 flex-shrink-0">Title</span>
-                  <span class="text-[11px] font-semibold text-slate-700 text-right max-w-[220px] sm:max-w-[260px]">{{ selectedCase.title }}</span>
+                  <span class="text-[11px] font-semibold text-slate-700 text-right max-w-[260px]">{{ selectedCase.title }}</span>
                 </div>
                 <div class="px-4 py-2.5 flex justify-between items-center gap-2">
                   <span class="text-[11px] text-slate-400 flex-shrink-0">Incident Date</span>
                   <span class="text-[11px] font-semibold text-slate-700 text-right">{{ formatDate(selectedCase.incident_date) }}</span>
                 </div>
-                <div class="px-4 py-2.5 flex justify-between items-start gap-2">
+                <div class="px-4 py-2.5 flex justify-between items-center gap-2">
                   <span class="text-[11px] text-slate-400 flex-shrink-0">Location</span>
-                  <span class="text-[11px] font-semibold text-slate-700 text-right max-w-[220px] sm:max-w-[260px]">{{ selectedCase.location }}</span>
+                  <span class="text-[11px] font-semibold text-slate-700 text-right max-w-[260px]">{{ selectedCase.location }}</span>
+                </div>
+                <!-- Person(s) Involved field -->
+                <div v-if="selectedCase.involved_user" class="px-4 py-2.5 flex justify-between items-start gap-2">
+                  <span class="text-[11px] text-slate-400 flex-shrink-0">Person(s) Involved</span>
+                  <span class="text-[11px] font-semibold text-slate-700 text-right max-w-[260px]">{{ selectedCase.involved_user }}</span>
                 </div>
                 <div class="px-4 py-2.5 flex justify-between items-center gap-2">
                   <span class="text-[11px] text-slate-400 flex-shrink-0">Filed By</span>
-                  <span class="text-[11px] font-semibold text-slate-700 text-right">User #{{ selectedCase.user_id }}</span>
+                  <span class="text-[11px] font-semibold text-slate-700 text-right">{{ getFiledBy(selectedCase) }}</span>
                 </div>
               </div>
             </div>
@@ -393,24 +390,8 @@
               </div>
             </div>
 
-            <!-- Reason for Disapproval (remarks column) -->
-            <div class="rounded-2xl border border-red-200/70 overflow-hidden">
-              <div class="px-4 py-2.5 bg-red-50/60 border-b border-red-100 flex items-center gap-2">
-                <div class="w-5 h-5 rounded-md bg-red-100 flex items-center justify-center">
-                  <svg class="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                  </svg>
-                </div>
-                <p class="text-[10px] font-bold text-red-500 uppercase tracking-widest">Reason for Disapproval</p>
-              </div>
-              <div class="px-4 py-3.5 bg-red-50/20">
-                <p class="text-xs text-slate-600 leading-relaxed">{{ selectedCase.remarks || 'No remarks provided.' }}</p>
-              </div>
-            </div>
-
           </div>
 
-          <!-- Modal Footer -->
           <div class="flex-shrink-0 flex justify-end px-6 py-4 border-t border-slate-100 bg-slate-50/60">
             <button @click="showViewModal = false"
               class="flex items-center gap-1.5 px-4 py-2 text-[11px] font-semibold text-slate-500 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all cursor-pointer">
@@ -436,17 +417,39 @@ const itemsPerPage  = 8
 const showViewModal = ref(false)
 const selectedCase  = ref(null)
 const cases         = ref([])
-const filters = reactive({ search: '', type: '' })
+const filters       = reactive({ search: '', type: '', status: '' })
 
-// ── Fetch ──────────────────────────────────────────────────
-async function fetchDisapprovedCases() {
+// ── Status badge helpers ──
+function statusLabel(s) {
+  return { approved: 'Approved', scheduled: 'Scheduled' }[s] || 'Approved'
+}
+function statusBadge(s) {
+  return {
+    approved:  'bg-emerald-50 text-emerald-700 border border-emerald-200',
+    scheduled: 'bg-violet-50 text-violet-700 border border-violet-200',
+  }[s] || 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+}
+function statusDot(s) {
+  return { approved: 'bg-emerald-400', scheduled: 'bg-violet-400' }[s] || 'bg-emerald-400'
+}
+function statusDotSolid(s) {
+  return { approved: 'bg-emerald-500', scheduled: 'bg-violet-500' }[s] || 'bg-emerald-500'
+}
+
+// ── Fetch approved cases ──
+async function fetchApprovedCases() {
   loading.value = true
   try {
-    const data = await LuponCasesService.disapprovedCases()
-    cases.value = Array.isArray(data) ? data : (data.data ?? [])
+    const data = await LuponCasesService.approvedCases()
+    const raw = Array.isArray(data) ? data : (data.data ?? [])
+    cases.value = raw.map(c => ({
+      ...c,
+      summon_date:  c.summon?.date  || null,
+      summon_notes: c.summon?.notes || null,
+    }))
   } catch (err) {
     console.error('Fetch error:', err)
-    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load disapproved cases.', confirmButtonColor: '#3d4f7c' })
+    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load approved cases.', confirmButtonColor: '#3d4f7c' })
   } finally {
     loading.value = false
   }
@@ -462,14 +465,6 @@ function typeIconBg(t) {
 function typeIconColor(t) {
   return { incident: 'text-red-600', dispute: 'text-amber-600', report: 'text-blue-600', other: 'text-purple-600' }[t] || 'text-slate-500'
 }
-function typeChipClass(t) {
-  return {
-    incident: 'bg-red-50 text-red-600',
-    dispute:  'bg-amber-50 text-amber-600',
-    report:   'bg-blue-50 text-blue-600',
-    other:    'bg-purple-50 text-purple-600',
-  }[t] || 'bg-slate-100 text-slate-500'
-}
 function typeIcon(t) {
   if (t === 'incident') return '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>'
   if (t === 'dispute')  return '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>'
@@ -480,6 +475,7 @@ function formatDate(d) {
   try { return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) }
   catch { return d }
 }
+
 function getFiledBy(c) {
   if (c.user?.information) {
     const i = c.user.information
@@ -491,7 +487,7 @@ function getFiledBy(c) {
 }
 
 // ── Filters & Pagination ───────────────────────────────────
-const hasActiveFilters = computed(() => filters.search || filters.type)
+const hasActiveFilters = computed(() => filters.search || filters.type || filters.status)
 
 const filteredCases = computed(() => {
   let f = [...cases.value]
@@ -501,11 +497,12 @@ const filteredCases = computed(() => {
       c.title?.toLowerCase().includes(s) ||
       c.location?.toLowerCase().includes(s) ||
       c.type?.toLowerCase().includes(s) ||
-      c.remarks?.toLowerCase().includes(s) ||
+      c.user_id?.toString().includes(s) ||
       String(c.id).includes(s)
     )
   }
-  if (filters.type) f = f.filter(c => c.type === filters.type)
+  if (filters.type)   f = f.filter(c => c.type === filters.type)
+  if (filters.status) f = f.filter(c => c.status === filters.status)
   return f
 })
 
@@ -515,11 +512,21 @@ const paginatedCases = computed(() => {
   return filteredCases.value.slice(s, s + itemsPerPage)
 })
 
-function resetFilters() { filters.search = ''; filters.type = ''; currentPage.value = 1 }
-watch(filters, () => { currentPage.value = 1 }, { deep: true })
-function openViewModal(c) { selectedCase.value = c; showViewModal.value = true }
+function resetFilters() { 
+  filters.search = ''; 
+  filters.type = ''; 
+  filters.status = ''; 
+  currentPage.value = 1 
+}
 
-onMounted(() => fetchDisapprovedCases())
+watch(filters, () => { currentPage.value = 1 }, { deep: true })
+
+function openViewModal(c) { 
+  selectedCase.value = c; 
+  showViewModal.value = true 
+}
+
+onMounted(() => fetchApprovedCases())
 </script>
 
 <style scoped>
@@ -530,5 +537,4 @@ onMounted(() => fetchDisapprovedCases())
 .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
 .modal-enter-active, .modal-leave-active { transition: opacity 0.2s ease; }
 .modal-enter-from, .modal-leave-to { opacity: 0; }
-.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-clamp: 2; }
 </style>

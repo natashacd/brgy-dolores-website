@@ -20,11 +20,8 @@
             <p class="text-xs sm:text-sm text-slate-500 mt-0.5">File and track your barangay complaints and incident reports</p>
           </div>
         </div>
-        <!-- File button in header on desktop -->
-        <button
-          @click="openNewComplaintModal"
-          class="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 bg-[#3d4f7c] text-white text-sm font-semibold rounded-xl hover:bg-[#252b3b] transition-all shadow-sm hover:shadow-md active:scale-[0.98] cursor-pointer"
-        >
+        <button @click="openNewComplaintModal"
+          class="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 bg-[#3d4f7c] text-white text-sm font-semibold rounded-xl hover:bg-[#252b3b] transition-all shadow-sm hover:shadow-md active:scale-[0.98] cursor-pointer">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
           </svg>
@@ -35,10 +32,8 @@
 
     <!-- Mobile File Button -->
     <div class="sm:hidden mb-4 flex justify-end">
-      <button
-        @click="openNewComplaintModal"
-        class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#3d4f7c] text-white text-sm font-semibold rounded-xl hover:bg-[#252b3b] transition-all shadow-sm active:scale-[0.98] cursor-pointer"
-      >
+      <button @click="openNewComplaintModal"
+        class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#3d4f7c] text-white text-sm font-semibold rounded-xl hover:bg-[#252b3b] transition-all shadow-sm active:scale-[0.98] cursor-pointer">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
         </svg>
@@ -91,11 +86,8 @@
 
                   <td class="px-6 py-4">
                     <div class="flex items-center gap-2">
-                      <div class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
-                        :class="typeIconBg(complaint.type)">
-                        <svg class="w-3 h-3" :class="typeIconColor(complaint.type)"
-                          fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                          v-html="typeIcon(complaint.type)"></svg>
+                      <div class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" :class="typeIconBg(complaint.type)">
+                        <svg class="w-3 h-3" :class="typeIconColor(complaint.type)" fill="none" stroke="currentColor" viewBox="0 0 24 24" v-html="typeIcon(complaint.type)"></svg>
                       </div>
                       <span class="text-sm text-slate-600">{{ typeLabel(complaint.type) }}</span>
                     </div>
@@ -133,16 +125,15 @@
                   <td class="px-6 py-4">
                     <div class="flex items-center gap-1">
                       <button @click="viewComplaint(complaint)"
-                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#3d4f7c]/10 text-[#3d4f7c] border border-[#3d4f7c]/20 hover:bg-[#3d4f7c] hover:text-white hover:shadow-md active:scale-95 transition-all duration-150 cursor-pointer"
+                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#3d4f7c]/10 text-[#3d4f7c] border border-[#3d4f7c]/20 hover:bg-[#3d4f7c] hover:text-white hover:shadow-md active:scale-95 transition-all cursor-pointer"
                         title="View Details">
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                           <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                         </svg>
                       </button>
-                      <button v-if="complaint.status === 'pending'"
-                        @click="cancelComplaint(complaint.id)"
-                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white hover:shadow-md active:scale-95 transition-all duration-150 cursor-pointer"
+                      <button v-if="complaint.status === 'pending'" @click="cancelComplaint(complaint.id)"
+                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white hover:shadow-md active:scale-95 transition-all cursor-pointer"
                         title="Cancel Complaint">
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -152,7 +143,6 @@
                   </td>
                 </tr>
 
-                <!-- Empty State -->
                 <tr v-if="myComplaints.length === 0">
                   <td colspan="7" class="py-20 text-center">
                     <div class="flex flex-col items-center gap-3">
@@ -311,12 +301,25 @@
                     :class="form.type === t.value ? 'border-[#3d4f7c] bg-[#3d4f7c]' : 'border-slate-300 bg-white'">
                     <span v-if="form.type === t.value" class="w-2 h-2 rounded-full bg-white"></span>
                   </div>
-                  <span class="text-sm font-medium"
-                    :class="form.type === t.value ? 'text-[#3d4f7c]' : 'text-slate-600'">{{ t.label }}</span>
+                  <span class="text-sm font-medium" :class="form.type === t.value ? 'text-[#3d4f7c]' : 'text-slate-600'">{{ t.label }}</span>
                 </label>
               </div>
               <p v-if="errors.type" class="text-[10px] text-red-400 mt-1">{{ errors.type }}</p>
             </div>
+
+            <!-- ── "Other" type description — shows only when Other is selected ── -->
+            <Transition name="slide-down">
+              <div v-if="form.type === 'other'">
+                <label class="block text-xs font-semibold text-slate-600 mb-1.5">
+                  Specify Complaint Type <span class="text-red-400">*</span>
+                </label>
+                <input v-model="form.other_type" type="text"
+                  placeholder="e.g. Environmental concern, Public disturbance…"
+                  class="w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all bg-slate-50 focus:bg-white"
+                  :class="errors.other_type ? 'border-red-300 focus:ring-red-200' : 'border-slate-200 focus:border-[#3d4f7c] focus:ring-[#3d4f7c]/20'" />
+                <p v-if="errors.other_type" class="text-[10px] text-red-400 mt-1">{{ errors.other_type }}</p>
+              </div>
+            </Transition>
 
             <!-- Title -->
             <div>
@@ -358,22 +361,17 @@
               </div>
             </div>
 
-            <!-- Confirmation — now blue -->
-            <div class="bg-blue-50/60 border border-blue-200/60 rounded-xl px-4 py-3.5">
-              <label class="flex items-start gap-3 cursor-pointer" @click="form.confirmed = !form.confirmed">
-                <div class="mt-0.5 w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all"
-                  :class="form.confirmed ? 'border-[#3d4f7c] bg-[#3d4f7c]' : 'border-slate-300 bg-white'">
-                  <svg v-if="form.confirmed" width="9" height="9" fill="none" stroke="white" stroke-width="3" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                  </svg>
-                </div>
-                <span class="text-xs text-blue-800 leading-relaxed select-none">
-                  I hereby confirm that the information provided above is truthful and accurate. I understand that filing a false report may be subject to barangay sanctions.
-                </span>
+            <!-- ── Involved Person — optional ── -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1.5">
+                Person(s) Involved
+                <span class="ml-1 text-[10px] font-normal text-slate-400">(Optional)</span>
               </label>
-              <p v-if="errors.confirmed" class="text-[10px] text-red-400 mt-2 ml-7">{{ errors.confirmed }}</p>
+              <textarea v-model="form.involved_user" rows="2"
+                placeholder="Name or description of the person(s) involved in the incident (if applicable)…"
+                class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#3d4f7c]/20 focus:border-[#3d4f7c] transition-all bg-slate-50 focus:bg-white resize-none"></textarea>
+              <p class="text-[10px] text-slate-400 mt-1">Leave blank if not applicable or if identity is unknown.</p>
             </div>
-
           </div>
 
           <!-- Modal Footer -->
@@ -466,10 +464,15 @@
                   <span class="text-[11px] text-slate-400 flex-shrink-0">Location</span>
                   <span class="text-[11px] font-semibold text-slate-700 text-right max-w-[220px]">{{ selectedComplaint.location }}</span>
                 </div>
+                <!-- Show involved person if filled -->
+                <div v-if="selectedComplaint.involved_user" class="px-4 py-2.5 flex justify-between items-start gap-2">
+                  <span class="text-[11px] text-slate-400 flex-shrink-0">Person(s) Involved</span>
+                  <span class="text-[11px] font-semibold text-slate-700 text-right max-w-[220px]">{{ selectedComplaint.involved_user }}</span>
+                </div>
               </div>
             </div>
 
-            <!-- Description — now blue -->
+            <!-- Description -->
             <div class="rounded-2xl border border-blue-200/60 overflow-hidden">
               <div class="px-4 py-2.5 bg-blue-50/60 border-b border-blue-100/80 flex items-center gap-2">
                 <div class="w-5 h-5 rounded-md bg-blue-100 flex items-center justify-center">
@@ -492,7 +495,6 @@
               </svg>
               <p class="text-xs text-blue-700 leading-relaxed">Your complaint is under review by the Barangay. You will be notified of any updates.</p>
             </div>
-
             <div v-else-if="selectedComplaint.status === 'approved'"
               class="rounded-2xl border border-emerald-200/60 bg-emerald-50/40 px-4 py-3.5 flex items-start gap-3">
               <svg class="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -500,7 +502,6 @@
               </svg>
               <p class="text-xs text-emerald-700 leading-relaxed">Your complaint has been approved and is being processed by the Barangay Lupon.</p>
             </div>
-
             <div v-else-if="selectedComplaint.status === 'scheduled'"
               class="rounded-2xl border border-violet-200/60 bg-violet-50/40 px-4 py-3.5 flex items-start gap-3">
               <svg class="w-4 h-4 text-violet-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -508,7 +509,6 @@
               </svg>
               <p class="text-xs text-violet-700 leading-relaxed">A mediation session has been scheduled. Please check with the Barangay for the date and time.</p>
             </div>
-
             <div v-else-if="selectedComplaint.status === 'disapproved'"
               class="rounded-2xl border border-red-200/60 bg-red-50/40 px-4 py-3.5 flex items-start gap-3">
               <svg class="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -516,7 +516,6 @@
               </svg>
               <p class="text-xs text-red-700 leading-relaxed">Your complaint was not approved. Please visit the Barangay Hall for more information.</p>
             </div>
-
             <div v-else-if="selectedComplaint.status === 'closed'"
               class="rounded-2xl border border-slate-200/60 bg-slate-50/40 px-4 py-3.5 flex items-start gap-3">
               <svg class="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -541,11 +540,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import Swal from 'sweetalert2'
 import LuponCasesService from '@/services/Resident/LuponCasesService'
 
-// ── State ─────────────────────────────────────────────────────
 const loading    = ref(false)
 const submitting = ref(false)
 const showNewComplaintModal = ref(false)
@@ -556,7 +554,6 @@ const currentPage           = ref(1)
 const itemsPerPage          = 8
 const today = new Date().toISOString().split('T')[0]
 
-// Maps exactly to the DB `type` enum values
 const complaintTypes = [
   { value: 'incident', label: 'Incident Report' },
   { value: 'dispute',  label: 'Dispute' },
@@ -564,28 +561,30 @@ const complaintTypes = [
   { value: 'other',    label: 'Other' },
 ]
 
-// Form fields match DB columns exactly: type, title, incident_date, location, description
 const form = ref({
   type:          'incident',
+  other_type:    '',       // shown when type === 'other'
   title:         '',
   incident_date: '',
   location:      '',
   description:   '',
+  involved_user: '',       // optional — person(s) involved
   confirmed:     false,
 })
 
 const errors = ref({})
 
-// ── Pagination ────────────────────────────────────────────────
-const totalPages = computed(() =>
-  Math.max(1, Math.ceil(myComplaints.value.length / itemsPerPage))
-)
+// Clear other_type when switching away from 'other'
+watch(() => form.value.type, (val) => {
+  if (val !== 'other') form.value.other_type = ''
+})
+
+const totalPages = computed(() => Math.max(1, Math.ceil(myComplaints.value.length / itemsPerPage)))
 const paginatedComplaints = computed(() => {
   const s = (currentPage.value - 1) * itemsPerPage
   return myComplaints.value.slice(s, s + itemsPerPage)
 })
 
-// ── Helpers ───────────────────────────────────────────────────
 function typeLabel(t) {
   return { incident: 'Incident Report', dispute: 'Dispute', report: 'General Report', other: 'Other' }[t] || t
 }
@@ -606,13 +605,7 @@ function formatDate(d) {
   catch { return d }
 }
 function formatStatus(s) {
-  return {
-    pending:     'Pending',
-    approved:    'Approved',
-    disapproved: 'Disapproved',
-    scheduled:   'Scheduled',
-    closed:      'Closed',
-  }[s] || s
+  return { pending: 'Pending', approved: 'Approved', disapproved: 'Disapproved', scheduled: 'Scheduled', closed: 'Closed' }[s] || s
 }
 function statusBadge(s) {
   return {
@@ -624,30 +617,16 @@ function statusBadge(s) {
   }[s] || 'bg-slate-100 text-slate-500 border border-slate-200'
 }
 function statusDot(s) {
-  return {
-    pending:     'bg-blue-400',
-    approved:    'bg-emerald-400',
-    disapproved: 'bg-red-400',
-    scheduled:   'bg-violet-400',
-    closed:      'bg-slate-400',
-  }[s] || 'bg-slate-400'
+  return { pending: 'bg-blue-400', approved: 'bg-emerald-400', disapproved: 'bg-red-400', scheduled: 'bg-violet-400', closed: 'bg-slate-400' }[s] || 'bg-slate-400'
 }
 function statusDotSolid(s) {
-  return {
-    pending:     'bg-blue-500',
-    approved:    'bg-emerald-500',
-    disapproved: 'bg-red-500',
-    scheduled:   'bg-violet-500',
-    closed:      'bg-slate-500',
-  }[s] || 'bg-slate-500'
+  return { pending: 'bg-blue-500', approved: 'bg-emerald-500', disapproved: 'bg-red-500', scheduled: 'bg-violet-500', closed: 'bg-slate-500' }[s] || 'bg-slate-500'
 }
 
-// ── Fetch ─────────────────────────────────────────────────────
 async function fetchMyComplaints(showLoading = true) {
   if (showLoading) loading.value = true
   try {
     const data = await LuponCasesService.getMyCases()
-    // Handle both array and paginated { data: [] } responses
     myComplaints.value = Array.isArray(data) ? data : (data.data ?? [])
   } catch {
     Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load your complaints.', confirmButtonColor: '#3d4f7c' })
@@ -656,45 +635,46 @@ async function fetchMyComplaints(showLoading = true) {
   }
 }
 
-// ── Modals ────────────────────────────────────────────────────
 function openNewComplaintModal() {
-  form.value = { type: 'incident', title: '', incident_date: '', location: '', description: '', confirmed: false }
+  form.value = { type: 'incident', other_type: '', title: '', incident_date: '', location: '', description: '', involved_user: '', confirmed: false }
   errors.value = {}
   showNewComplaintModal.value = true
 }
 function viewComplaint(c) { selectedComplaint.value = c; showViewModal.value = true }
 
-// ── Validation ────────────────────────────────────────────────
 function validateForm() {
   const e = {}
-  if (!form.value.type)                               e.type          = 'Please select a complaint type'
-  if (!form.value.title?.trim())                       e.title         = 'Title is required'
-  if (!form.value.incident_date)                       e.incident_date = 'Incident date is required'
-  if (!form.value.location?.trim())                    e.location      = 'Location is required'
-  if (!form.value.description?.trim())                 e.description   = 'Description is required'
-  else if (form.value.description.trim().length < 20)  e.description   = 'Please provide more detail (at least 20 characters)'
-  if (!form.value.confirmed)                           e.confirmed     = 'You must confirm the information is truthful'
+  if (!form.value.type)                              e.type          = 'Please select a complaint type'
+  if (form.value.type === 'other' && !form.value.other_type?.trim())
+                                                     e.other_type    = 'Please specify the complaint type'
+  if (!form.value.title?.trim())                      e.title         = 'Title is required'
+  if (!form.value.incident_date)                      e.incident_date = 'Incident date is required'
+  if (!form.value.location?.trim())                   e.location      = 'Location is required'
+  if (!form.value.description?.trim())                e.description   = 'Description is required'
+  else if (form.value.description.trim().length < 20) e.description   = 'Please provide more detail (at least 20 characters)'
   errors.value = e
   return Object.keys(e).length === 0
 }
 
-// ── Submit — payload matches DB columns exactly ───────────────
 async function submitComplaint() {
   if (!validateForm()) return
   submitting.value = true
   try {
     await LuponCasesService.createCase({
       type:          form.value.type,
-      title:         form.value.title,
+      title:         form.value.type === 'other' && form.value.other_type
+                       ? `[${form.value.other_type}] ${form.value.title}`
+                       : form.value.title,
       incident_date: form.value.incident_date,
       location:      form.value.location,
       description:   form.value.description,
+      // only send involved_user if filled
+      ...(form.value.involved_user?.trim() && { involved_user: form.value.involved_user.trim() }),
     })
     showNewComplaintModal.value = false
     Swal.fire({ icon: 'success', title: 'Complaint Filed', text: 'Your complaint has been submitted successfully.', timer: 2000, showConfirmButton: false })
     await fetchMyComplaints(false)
   } catch (error) {
-    // Show each validation error from Laravel if available
     const msg = error.response?.data?.message || 'Failed to submit complaint. Please try again.'
     Swal.fire({ icon: 'error', title: 'Submission Failed', text: msg, confirmButtonColor: '#3d4f7c' })
   } finally {
@@ -702,17 +682,12 @@ async function submitComplaint() {
   }
 }
 
-// ── Cancel ────────────────────────────────────────────────────
 async function cancelComplaint(id) {
   const result = await Swal.fire({
-    title: 'Cancel Complaint?',
-    text: 'Are you sure you want to withdraw this complaint?',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#6b7280',
-    confirmButtonText: 'Yes, cancel it',
-    cancelButtonText: 'No, keep it',
+    title: 'Cancel Complaint?', text: 'Are you sure you want to withdraw this complaint?',
+    icon: 'warning', showCancelButton: true,
+    confirmButtonColor: '#d33', cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Yes, cancel it', cancelButtonText: 'No, keep it',
   })
   if (!result.isConfirmed) return
   try {
@@ -735,4 +710,7 @@ onMounted(() => fetchMyComplaints())
 .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
 .modal-enter-active, .modal-leave-active { transition: opacity 0.2s ease; }
 .modal-enter-from, .modal-leave-to { opacity: 0; }
+.slide-down-enter-active { transition: all 0.2s ease; }
+.slide-down-leave-active { transition: all 0.15s ease; }
+.slide-down-enter-from, .slide-down-leave-to { opacity: 0; transform: translateY(-6px); }
 </style>

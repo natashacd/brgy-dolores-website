@@ -16,7 +16,7 @@
             </svg>
           </div>
           <div class="min-w-0">
-            <h1 class="text-xl sm:text-3xl font-semibold text-slate-800 tracking-tight">Complaints & Reports</h1>
+            <h1 class="text-xl sm:text-3xl font-semibold text-slate-800 tracking-tight">Lupon Cases</h1>
             <p class="text-xs sm:text-sm text-slate-500 mt-0.5 hidden sm:block">Manage and monitor all complaints, reports, and Lupon cases</p>
           </div>
         </div>
@@ -34,15 +34,8 @@
             class="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3d4f7c]/20 focus:border-[#3d4f7c] hover:border-slate-300 transition-all bg-slate-50 focus:bg-white"/>
         </div>
         <div class="flex items-center gap-2 flex-wrap">
-          <select v-model="filters.status"
-            class="flex-1 sm:flex-none appearance-none bg-slate-50 border border-slate-200 text-slate-600 text-xs font-semibold rounded-xl px-3 py-2.5 cursor-pointer hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#3d4f7c]/20 focus:border-[#3d4f7c] transition-all">
-            <option value="">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="disapproved">Disapproved</option>
-          </select>
           <select v-model="filters.type"
-            class="flex-1 sm:flex-none appearance-none bg-slate-50 border border-slate-200 text-slate-600 text-xs font-semibold rounded-xl px-3 py-2.5 cursor-pointer hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#3d4f7c]/20 focus:border-[#3d4f7c] transition-all">
+            class="flex-1 sm:flex-none appearance-none bg-slate-50 border border-slate-200 text-slate-600 text-xs font-semibold rounded-xl px-3 py-2.5 cursor-pointer hover:border-slate-300 focus:outline-none transition-all">
             <option value="">All Types</option>
             <option value="incident">Incident Report</option>
             <option value="dispute">Dispute</option>
@@ -69,7 +62,6 @@
             <div class="w-1.5 h-8 rounded-full bg-white/20"></div>
             <h2 class="text-base sm:text-lg font-semibold text-white tracking-tight">Complaints & Reports List</h2>
           </div>
-          <span class="text-xs text-white/50">{{ filteredComplaints.length }} case{{ filteredComplaints.length !== 1 ? 's' : '' }}</span>
         </div>
       </div>
 
@@ -79,7 +71,7 @@
           <div class="absolute inset-0 border-[3px] border-slate-100 rounded-full"></div>
           <div class="absolute inset-0 border-[3px] border-[#3d4f7c] border-t-transparent rounded-full animate-spin"></div>
         </div>
-        <p class="text-sm text-slate-400 font-medium">Loading complaints...</p>
+        <p class="text-sm text-slate-400 font-medium">Loading cases...</p>
       </div>
 
       <div v-else>
@@ -90,13 +82,13 @@
             <thead>
               <tr class="border-b border-slate-100 bg-slate-50/60">
                 <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Case #</th>
+                <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Filed By</th>
                 <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Type</th>
                 <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Title</th>
                 <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Location</th>
-                <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Status</th>
                 <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Incident Date</th>
                 <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Filed Date</th>
-                <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest w-36">Actions</th>
+                <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest w-24">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -111,11 +103,18 @@
 
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
-                      :class="typeIconBg(case_.type)">
-                      <svg class="w-3 h-3" :class="typeIconColor(case_.type)"
-                        fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                        v-html="typeIcon(case_.type)"></svg>
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                      :style="{ background: getAvatarColor(getFiledBy(case_)) }">
+                      {{ getInitials(getFiledBy(case_)) }}
+                    </div>
+                    <span class="text-sm font-semibold text-slate-800">{{ getFiledBy(case_) }}</span>
+                  </div>
+                </td>
+
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" :class="typeIconBg(case_.type)">
+                      <svg class="w-3 h-3" :class="typeIconColor(case_.type)" fill="none" stroke="currentColor" viewBox="0 0 24 24" v-html="typeIcon(case_.type)"></svg>
                     </div>
                     <span class="text-sm text-slate-600">{{ typeLabel(case_.type) }}</span>
                   </div>
@@ -130,17 +129,6 @@
                 </td>
 
                 <td class="px-6 py-4">
-                  <span :class="statusBadge(case_.status)"
-                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap">
-                    <span class="relative flex h-1.5 w-1.5">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" :class="statusDot(case_.status)"></span>
-                      <span class="relative inline-flex rounded-full h-1.5 w-1.5" :class="statusDotSolid(case_.status)"></span>
-                    </span>
-                    {{ formatStatus(case_.status) }}
-                  </span>
-                </td>
-
-                <td class="px-6 py-4">
                   <span class="text-sm text-slate-500">{{ formatDate(case_.incident_date) }}</span>
                 </td>
 
@@ -149,16 +137,14 @@
                 </td>
 
                 <td class="px-6 py-4">
-                  <div class="flex items-center gap-1">
-                    <button @click="openViewModal(case_)"
-                      class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#3d4f7c]/10 text-[#3d4f7c] border border-[#3d4f7c]/20 hover:bg-[#3d4f7c] hover:text-white hover:shadow-md active:scale-95 transition-all duration-150 cursor-pointer"
-                      title="View Details">
-                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                      </svg>
-                    </button>
-                  </div>
+                  <button @click="openViewModal(case_)"
+                    class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#3d4f7c]/10 text-[#3d4f7c] border border-[#3d4f7c]/20 hover:bg-[#3d4f7c] hover:text-white hover:shadow-md active:scale-95 transition-all cursor-pointer"
+                    title="View Details">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                  </button>
                 </td>
               </tr>
 
@@ -170,10 +156,10 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
-                    <p class="text-sm font-bold text-slate-600">No complaints found</p>
+                    <p class="text-sm font-bold text-slate-600">No pending cases found</p>
                     <p class="text-xs text-slate-400">Try adjusting your search or filter criteria</p>
                     <button v-if="hasActiveFilters" @click="resetFilters"
-                      class="text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer"
+                      class="text-xs font-semibold px-4 py-2 rounded-xl cursor-pointer"
                       style="color:#3d4f7c; background:#3d4f7c15; border:1px solid #3d4f7c30">Clear Filters</button>
                   </div>
                 </td>
@@ -190,11 +176,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <p class="text-sm font-bold text-slate-600">No complaints found</p>
-            <p class="text-xs text-slate-400">Try adjusting your search or filters</p>
-            <button v-if="hasActiveFilters" @click="resetFilters"
-              class="text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer"
-              style="color:#3d4f7c; background:#3d4f7c15; border:1px solid #3d4f7c30">Clear Filters</button>
+            <p class="text-sm font-bold text-slate-600">No pending cases</p>
+            <p class="text-xs text-slate-400">New complaints filed by residents will appear here</p>
           </div>
 
           <div class="p-3 space-y-3">
@@ -206,13 +189,13 @@
               <div class="px-4 pt-4 pb-3 flex items-start justify-between gap-3">
                 <div class="min-w-0">
                   <p class="text-[10px] font-semibold text-[#3d4f7c] font-mono mb-0.5">#C-{{ String(case_.id).padStart(5, '0') }}</p>
+                  <p class="text-xs font-medium text-slate-500 mb-1">{{ getFiledBy(case_) }}</p>
                   <p class="text-sm font-bold text-slate-800 leading-tight truncate">{{ case_.title }}</p>
                   <p class="text-xs text-slate-400 mt-0.5 truncate">{{ case_.location }}</p>
                 </div>
-                <span :class="statusBadge(case_.status)"
-                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap flex-shrink-0 mt-0.5">
-                  <span class="w-1.5 h-1.5 rounded-full" :class="statusDotSolid(case_.status)"></span>
-                  {{ formatStatus(case_.status) }}
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap flex-shrink-0 mt-0.5 bg-amber-50 text-amber-700 border border-amber-200">
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                  Pending
                 </span>
               </div>
 
@@ -287,7 +270,6 @@
         <div class="relative bg-white w-full h-full sm:h-auto sm:rounded-3xl sm:max-w-2xl sm:max-h-[90vh] flex flex-col overflow-hidden"
           style="box-shadow:0 40px 80px -12px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.04);">
 
-          <!-- Header -->
           <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
             <div class="flex items-center gap-3">
               <div class="w-1 h-9 rounded-full bg-[#3d4f7c]"></div>
@@ -307,16 +289,31 @@
           <div v-if="selectedCase" class="flex-1 overflow-y-auto scrollbar-thin px-6 py-5 space-y-4">
 
             <!-- Status Banner -->
-            <div class="bg-slate-50 rounded-2xl px-5 py-3.5 flex items-center justify-between">
-              <span :class="statusBadge(selectedCase.status)"
-                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold">
+            <div class="bg-amber-50 rounded-2xl px-5 py-3.5 flex items-center justify-between border border-amber-100">
+              <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-100 text-amber-700">
                 <span class="relative flex h-2 w-2">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" :class="statusDot(selectedCase.status)"></span>
-                  <span class="relative inline-flex rounded-full h-2 w-2" :class="statusDotSolid(selectedCase.status)"></span>
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-amber-400"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
                 </span>
-                {{ formatStatus(selectedCase.status) }}
+                Pending Review
               </span>
               <span class="text-xs font-medium text-slate-400">Filed: {{ formatDate(selectedCase.created_at) }}</span>
+            </div>
+
+            <!-- Filed By -->
+            <div class="rounded-2xl border border-slate-200/70 overflow-hidden">
+              <div class="px-5 py-3 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
+                <div class="w-6 h-6 rounded-lg bg-[#3d4f7c]/10 flex items-center justify-center">
+                  <svg class="w-3.5 h-3.5 text-[#3d4f7c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                  </svg>
+                </div>
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Complainant</p>
+              </div>
+              <div class="px-5 py-3.5 flex justify-between items-center gap-4">
+                <span class="text-sm text-slate-500 flex-shrink-0">Name</span>
+                <span class="text-sm font-semibold text-slate-800 text-right">{{ getFiledBy(selectedCase) }}</span>
+              </div>
             </div>
 
             <!-- Case Info -->
@@ -332,7 +329,7 @@
               <div class="divide-y divide-slate-100">
                 <div class="px-5 py-3.5 flex justify-between items-center gap-4">
                   <span class="text-sm text-slate-500 flex-shrink-0">Type</span>
-                  <span class="text-sm font-semibold text-slate-800 text-right">{{ typeLabel(selectedCase.type) }}</span>
+                  <span class="text-sm font-semibold text-slate-800">{{ typeLabel(selectedCase.type) }}</span>
                 </div>
                 <div class="px-5 py-3.5 flex justify-between items-center gap-4">
                   <span class="text-sm text-slate-500 flex-shrink-0">Title</span>
@@ -340,17 +337,11 @@
                 </div>
                 <div class="px-5 py-3.5 flex justify-between items-center gap-4">
                   <span class="text-sm text-slate-500 flex-shrink-0">Incident Date</span>
-                  <span class="text-sm font-semibold text-slate-800 text-right">{{ formatDate(selectedCase.incident_date) }}</span>
+                  <span class="text-sm font-semibold text-slate-800">{{ formatDate(selectedCase.incident_date) }}</span>
                 </div>
                 <div class="px-5 py-3.5 flex justify-between items-center gap-4">
                   <span class="text-sm text-slate-500 flex-shrink-0">Location</span>
                   <span class="text-sm font-semibold text-slate-800 text-right max-w-[280px]">{{ selectedCase.location }}</span>
-                </div>
-                <div class="px-5 py-3.5 flex justify-between items-center gap-4">
-                  <span class="text-sm text-slate-500 flex-shrink-0">Filed By</span>
-                  <span class="text-sm font-semibold text-slate-800 text-right">
-                    {{ selectedCase.user?.name ?? `User #${selectedCase.user_id}` }}
-                  </span>
                 </div>
               </div>
             </div>
@@ -370,46 +361,27 @@
               </div>
             </div>
 
-            <!-- Remarks (if any) -->
-            <div v-if="selectedCase.remarks" class="rounded-2xl border border-amber-200/60 overflow-hidden">
-              <div class="px-5 py-3 bg-amber-50/60 border-b border-amber-100/80 flex items-center gap-2">
-                <div class="w-6 h-6 rounded-lg bg-amber-100 flex items-center justify-center">
-                  <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
-                  </svg>
-                </div>
-                <p class="text-xs font-bold text-amber-600 uppercase tracking-widest">Official Remarks</p>
-              </div>
-              <div class="px-5 py-4 bg-amber-50/20">
-                <p class="text-sm text-slate-600 leading-relaxed">{{ selectedCase.remarks }}</p>
-              </div>
-            </div>
-
-            <!-- Action Buttons — only show if case is actionable -->
-            <div v-if="isActionable(selectedCase.status)" class="grid grid-cols-2 gap-3 pt-1">
-              <button
-                @click="handleApprove(selectedCase)"
-                :disabled="actionLoading"
+            <!-- Action Buttons -->
+            <div class="grid grid-cols-2 gap-3 pt-1">
+              <button @click="handleApprove(selectedCase)" :disabled="actionLoading"
                 class="flex items-center justify-center gap-2 px-4 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer shadow-sm hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
                 <svg v-if="actionLoading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
                 </svg>
                 <svg v-else width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                 </svg>
                 Approve
               </button>
-              <button
-                @click="handleDisapprove(selectedCase)"
-                :disabled="actionLoading"
+              <button @click="handleDisapprove(selectedCase)" :disabled="actionLoading"
                 class="flex items-center justify-center gap-2 px-4 py-3.5 bg-red-600 hover:bg-red-700 text-white rounded-2xl text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer shadow-sm hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
                 <svg v-if="actionLoading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
                 </svg>
                 <svg v-else width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
                 Disapprove
               </button>
@@ -417,7 +389,6 @@
 
           </div>
 
-          <!-- Footer -->
           <div class="flex-shrink-0 flex justify-end px-6 py-4 border-t border-slate-100 bg-slate-50/60">
             <button @click="showViewModal = false"
               class="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all cursor-pointer">
@@ -433,25 +404,52 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 import LuponCasesService from '@/services/Lupon/LuponCasesService'
 
-// ── State ─────────────────────────────────────────────────────
-const loading      = ref(false)
+const router = useRouter()
+
+const loading       = ref(false)
 const actionLoading = ref(false)
-const currentPage  = ref(1)
-const itemsPerPage = 8
+const currentPage   = ref(1)
+const itemsPerPage  = 8
 const showViewModal = ref(false)
 const selectedCase  = ref(null)
 const complaints    = ref([])
-const filters = reactive({ search: '', status: '', type: '' })
+const filters       = reactive({ search: '', type: '' })
 
-// ── Fetch ─────────────────────────────────────────────────────
+// ── Get filer name from user relationship ─────────────────────
+function getFiledBy(c) {
+  if (c.user?.information) {
+    const i = c.user.information
+    const name = `${i.first_name || ''} ${i.last_name || ''}`.trim()
+    if (name) return name
+  }
+  if (c.user?.name) return c.user.name
+  return `User #${c.user_id}`
+}
+
+const AVATAR_COLORS = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#9333ea','#ea580c']
+function getAvatarColor(name = '') {
+  if (!name) return '#94a3b8'
+  let h = 0
+  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h)
+  return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length]
+}
+function getInitials(name = '') {
+  if (!name) return '?'
+  const p = name.trim().split(' ')
+  return p.length === 1 ? p[0][0]?.toUpperCase() || '?' : (p[0][0] + p[p.length - 1][0]).toUpperCase()
+}
+
+// ── Fetch — uses allCases() which includes user.information ───
 async function fetchComplaints() {
   loading.value = true
   try {
-    const data = await LuponCasesService.adminCases()
-    complaints.value = Array.isArray(data) ? data : (data.data ?? [])
+    const data = await LuponCasesService.allCases()
+    const all = Array.isArray(data) ? data : (data.data ?? [])
+    complaints.value = all.filter(c => c.status === 'pending')
   } catch (err) {
     console.error('Fetch error:', err)
     Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load complaints.', confirmButtonColor: '#3d4f7c' })
@@ -460,19 +458,12 @@ async function fetchComplaints() {
   }
 }
 
-// ── Helpers ───────────────────────────────────────────────────
-function typeLabel(t) {
-  return { incident: 'Incident Report', dispute: 'Dispute', report: 'General Report', other: 'Other' }[t] || t
-}
-function typeIconBg(t) {
-  return { incident: 'bg-red-100', dispute: 'bg-amber-100', report: 'bg-blue-100', other: 'bg-purple-100' }[t] || 'bg-slate-100'
-}
-function typeIconColor(t) {
-  return { incident: 'text-red-600', dispute: 'text-amber-600', report: 'text-blue-600', other: 'text-purple-600' }[t] || 'text-slate-500'
-}
+function typeLabel(t) { return { incident: 'Incident Report', dispute: 'Dispute', report: 'General Report', other: 'Other' }[t] || t }
+function typeIconBg(t) { return { incident: 'bg-red-100', dispute: 'bg-amber-100', report: 'bg-blue-100', other: 'bg-purple-100' }[t] || 'bg-slate-100' }
+function typeIconColor(t) { return { incident: 'text-red-600', dispute: 'text-amber-600', report: 'text-blue-600', other: 'text-purple-600' }[t] || 'text-slate-500' }
 function typeIcon(t) {
   if (t === 'incident') return '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>'
-  if (t === 'dispute')  return '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>'
+  if (t === 'dispute') return '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>'
   return '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>'
 }
 function formatDate(d) {
@@ -480,30 +471,8 @@ function formatDate(d) {
   try { return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) }
   catch { return d }
 }
-function formatStatus(s) {
-  return { pending: 'Pending', approved: 'Approved', disapproved: 'Disapproved' }[s] || s
-}
-function statusBadge(s) {
-  return {
-    pending:  'bg-amber-50 text-amber-700 border border-amber-200',
-    approved: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
-    disapproved:   'bg-slate-100 text-slate-600 border border-slate-200',
-  }[s] || 'bg-slate-100 text-slate-600'
-}
-function statusDot(s) {
-  return { pending: 'bg-amber-400', approved: 'bg-emerald-400', disapproved: 'bg-slate-400' }[s] || 'bg-slate-400'
-}
-function statusDotSolid(s) {
-  return { pending: 'bg-amber-500', approved: 'bg-emerald-500', disapproved: 'bg-slate-500' }[s] || 'bg-slate-500'
-}
 
-// Only show action buttons for actionable statuses
-function isActionable(status) {
-  return status === 'pending'
-}
-
-// ── Filters & Pagination ──────────────────────────────────────
-const hasActiveFilters = computed(() => filters.search || filters.status || filters.type)
+const hasActiveFilters = computed(() => filters.search || filters.type)
 
 const filteredComplaints = computed(() => {
   let f = [...complaints.value]
@@ -513,11 +482,11 @@ const filteredComplaints = computed(() => {
       c.title?.toLowerCase().includes(s) ||
       c.location?.toLowerCase().includes(s) ||
       c.type?.toLowerCase().includes(s) ||
+      getFiledBy(c).toLowerCase().includes(s) ||
       String(c.id).includes(s)
     )
   }
-  if (filters.status) f = f.filter(c => c.status === filters.status)
-  if (filters.type)   f = f.filter(c => c.type === filters.type)
+  if (filters.type) f = f.filter(c => c.type === filters.type)
   return f
 })
 
@@ -527,123 +496,59 @@ const paginatedComplaints = computed(() => {
   return filteredComplaints.value.slice(s, s + itemsPerPage)
 })
 
-function resetFilters() {
-  filters.search = ''
-  filters.status = ''
-  filters.type   = ''
-  currentPage.value = 1
-}
-
+function resetFilters() { filters.search = ''; filters.type = ''; currentPage.value = 1 }
 watch(filters, () => { currentPage.value = 1 }, { deep: true })
+function openViewModal(c) { selectedCase.value = c; showViewModal.value = true }
 
-function openViewModal(c) {
-  selectedCase.value  = c
-  showViewModal.value = true
-}
-
-// ── Update local list after action ────────────────────────────
-function syncCase(updated) {
-  const idx = complaints.value.findIndex(c => c.id === updated.id)
-  if (idx !== -1) complaints.value[idx] = updated
-  // Keep modal in sync
-  if (selectedCase.value?.id === updated.id) selectedCase.value = updated
-}
-
-// ── Approve ───────────────────────────────────────────────────
 async function handleApprove(case_) {
   const result = await Swal.fire({
     title: 'Approve Case?',
     text: `Case #C-${String(case_.id).padStart(5, '0')} will be marked as Approved.`,
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonColor: '#10b981',
-    cancelButtonColor:  '#6b7280',
-    confirmButtonText:  'Yes, approve',
-    cancelButtonText:   'Cancel',
+    icon: 'question', showCancelButton: true,
+    confirmButtonColor: '#10b981', cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Yes, approve', cancelButtonText: 'Cancel',
   })
-
   if (!result.isConfirmed) return
-
   actionLoading.value = true
   try {
-    const data = await LuponCasesService.approveCase(case_.id)
-    syncCase(data.case)
-    Swal.fire({
-      icon: 'success',
-      title: 'Approved',
-      text: 'Case has been approved successfully.',
-      timer: 2000,
-      showConfirmButton: false,
-    })
+    await LuponCasesService.approveCase(case_.id)
+    complaints.value = complaints.value.filter(c => c.id !== case_.id)
+    showViewModal.value = false
+    Swal.fire({ icon: 'success', title: 'Approved', text: 'Case approved successfully.', timer: 2000, showConfirmButton: false })
+    setTimeout(() => router.push('/lupon/complaints/approved'), 1500)
   } catch (err) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: err.response?.data?.message || 'Failed to approve case.',
-      confirmButtonColor: '#3d4f7c',
-    })
-  } finally {
-    actionLoading.value = false
-  }
+    Swal.fire({ icon: 'error', title: 'Error', text: err.response?.data?.message || 'Failed to approve.', confirmButtonColor: '#3d4f7c' })
+  } finally { actionLoading.value = false }
 }
 
-// ── Disapprove ────────────────────────────────────────────────
 async function handleDisapprove(case_) {
   const result = await Swal.fire({
     title: 'Disapprove Case?',
-    html: `
-      <p class="text-sm text-slate-500 mb-4">
-        Case <span class="font-semibold text-slate-700">#C-${String(case_.id).padStart(5, '0')}</span>
-        will be disapproved. Please provide a reason.
-      </p>
-      <textarea
-        id="swal-remarks"
-        rows="4"
-        placeholder="Enter remarks or reason for disapproval…"
+    html: `<p class="text-sm text-slate-500 mb-4">Case <span class="font-semibold text-slate-700">#C-${String(case_.id).padStart(5, '0')}</span> will be disapproved. Please provide a reason.</p>
+      <textarea id="swal-remarks" rows="4" placeholder="Enter remarks or reason for disapproval…"
         class="w-full text-sm text-slate-700 border border-slate-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-red-300 focus:border-red-400 transition-all"
-        style="font-family: inherit;"
-      ></textarea>
-    `,
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#dc2626',
-    cancelButtonColor:  '#6b7280',
-    confirmButtonText:  'Disapprove',
-    cancelButtonText:   'Cancel',
+        style="font-family:inherit;"></textarea>`,
+    icon: 'warning', showCancelButton: true,
+    confirmButtonColor: '#dc2626', cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Disapprove', cancelButtonText: 'Cancel',
     focusConfirm: false,
     preConfirm: () => {
-      const remarks = document.getElementById('swal-remarks').value.trim()
-      if (!remarks) {
-        Swal.showValidationMessage('Please enter a remark before disapproving.')
-        return false
-      }
-      return remarks
+      const r = document.getElementById('swal-remarks').value.trim()
+      if (!r) { Swal.showValidationMessage('Please enter a remark.'); return false }
+      return r
     },
   })
-
   if (!result.isConfirmed) return
-
   actionLoading.value = true
   try {
-    const data = await LuponCasesService.disapproveCase(case_.id, result.value)
-    syncCase(data.case)
-    Swal.fire({
-      icon: 'info',
-      title: 'Disapproved',
-      text: 'Case has been disapproved and disapproved.',
-      timer: 2000,
-      showConfirmButton: false,
-    })
+    await LuponCasesService.disapproveCase(case_.id, result.value)
+    complaints.value = complaints.value.filter(c => c.id !== case_.id)
+    showViewModal.value = false
+    Swal.fire({ icon: 'info', title: 'Disapproved', text: 'Case has been disapproved.', timer: 2000, showConfirmButton: false })
+    setTimeout(() => router.push('/lupon/complaints/disapproved'), 1500)
   } catch (err) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: err.response?.data?.message || 'Failed to disapprove case.',
-      confirmButtonColor: '#3d4f7c',
-    })
-  } finally {
-    actionLoading.value = false
-  }
+    Swal.fire({ icon: 'error', title: 'Error', text: err.response?.data?.message || 'Failed to disapprove.', confirmButtonColor: '#3d4f7c' })
+  } finally { actionLoading.value = false }
 }
 
 onMounted(() => fetchComplaints())

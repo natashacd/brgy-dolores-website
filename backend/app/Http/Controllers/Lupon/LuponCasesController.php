@@ -9,64 +9,56 @@ use Illuminate\Http\Request;
 
 class LuponCasesController extends Controller
 {
-    /**
-     * List all lupon cases (for lupon members).
-     */
+
     public function index()
     {
-        $cases = Lupon_Cases::latest()->get();
+        $cases = Lupon_Cases::with(['summon', 'user.information'])->latest()->get();
         return response()->json($cases);
     }
 
-    /**
-     * List only approved cases.
-     */
     public function approvedCases()
     {
-        $cases = Lupon_Cases::where('status', 'approved')
+        $cases = Lupon_Cases::with(['summon', 'user.information'])
+            ->whereIn('status', ['approved', 'scheduled'])
             ->latest()
             ->get();
 
         return response()->json($cases);
     }
 
-    /**
-     * List only disapproved cases.
-     */
     public function disapprovedCases()
     {
-        $cases = Lupon_Cases::where('status', 'disapproved')
+        $cases = Lupon_Cases::with('user.information')
+            ->where('status', 'disapproved')
             ->latest()
             ->get();
 
         return response()->json($cases);
     }
 
-    /**
-     * View a single case.
-     */
+    public function closedCases()
+    {
+        $cases = Lupon_Cases::with(['summon', 'user.information'])
+            ->where('status', 'closed')
+            ->latest()
+            ->get();
+
+        return response()->json($cases);
+    }
+
     public function show($id)
     {
-        $case = Lupon_Cases::findOrFail($id);
+        $case = Lupon_Cases::with(['summon', 'user.information'])->findOrFail($id);
         return response()->json($case);
     }
 
-    /**
-     * Approve a case — sets status to 'approved'.
-     */
     public function approve(Request $request, $id)
     {
         $case = Lupon_Cases::findOrFail($id);
 
         if ($case->status !== 'pending') {
-            return response()->json([
-                'message' => 'Only pending cases can be approved.',
-            ], 422);
+            return response()->json(['message' => 'Only pending cases can be approved.'], 422);
         }
-
-        $request->validate([
-            'remarks' => 'nullable|string',
-        ]);
 
         $case->update([
             'status'  => 'approved',
@@ -75,26 +67,20 @@ class LuponCasesController extends Controller
 
         return response()->json([
             'message' => 'Case approved successfully.',
-            'case'    => $case->fresh(),
+            'case'    => $case->fresh()->load('summon'),
         ]);
     }
 
-    /**
-     * Disapprove a case — requires remarks, sets status to 'disapproved'.
-     */
+
     public function disapprove(Request $request, $id)
     {
         $case = Lupon_Cases::findOrFail($id);
 
         if ($case->status !== 'pending') {
-            return response()->json([
-                'message' => 'Only pending cases can be disapproved.',
-            ], 422);
+            return response()->json(['message' => 'Only pending cases can be disapproved.'], 422);
         }
 
-        $request->validate([
-            'remarks' => 'required|string',
-        ]);
+        $request->validate(['remarks' => 'required|string']);
 
         $case->update([
             'status'  => 'disapproved',
@@ -107,17 +93,12 @@ class LuponCasesController extends Controller
         ]);
     }
 
-    /**
-     * Close a case — sets status to 'closed'.
-     */
     public function close($id)
     {
         $case = Lupon_Cases::findOrFail($id);
 
-        if ($case->status !== 'approved') {
-            return response()->json([
-                'message' => 'Only approved cases can be closed.',
-            ], 422);
+        if (!in_array($case->status, ['approved', 'scheduled'])) {
+            return response()->json(['message' => 'Only approved or scheduled cases can be closed.'], 422);
         }
 
         $case->update(['status' => 'closed']);
@@ -128,17 +109,12 @@ class LuponCasesController extends Controller
         ]);
     }
 
-    /**
-     * Schedule a summon — sets status to 'scheduled' and creates a schedule_summon row.
-     */
     public function summon(Request $request, $id)
     {
         $case = Lupon_Cases::findOrFail($id);
 
-        if ($case->status !== 'approved') {
-            return response()->json([
-                'message' => 'Only approved cases can be scheduled for summon.',
-            ], 422);
+        if (!in_array($case->status, ['approved', 'scheduled'])) {
+            return response()->json(['message' => 'Only approved cases can be scheduled for summon.'], 422);
         }
 
         $request->validate([
@@ -148,15 +124,17 @@ class LuponCasesController extends Controller
 
         $case->update(['status' => 'scheduled']);
 
-        $summon = Schedule_Summon::create([
-            'case_id' => $case->id,
-            'date'    => $request->date,
-            'notes'   => $request->notes,
-        ]);
+        $summon = Schedule_Summon::updateOrCreate(
+            ['case_id' => $case->id],
+            [
+                'date'  => $request->date,
+                'notes' => $request->notes,
+            ]
+        );
 
         return response()->json([
             'message' => 'Summon scheduled successfully.',
-            'case'    => $case->fresh(),
+            'case'    => $case->fresh()->load('summon'),
             'summon'  => $summon,
         ]);
     }
