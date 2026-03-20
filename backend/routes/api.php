@@ -52,9 +52,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('lupon')->group(function () {
         Route::get('/cases',                    [LuponController::class, 'index']);
+        Route::get('/cases/approved',           [LuponController::class, 'approvedCases']);
         Route::get('/cases/{id}',               [LuponController::class, 'show']);
         Route::put('/cases/{id}/approve',       [LuponController::class, 'approve']);
         Route::put('/cases/{id}/disapprove',    [LuponController::class, 'disapprove']);
+        Route::put('/cases/{id}/close',         [LuponController::class, 'close']);
+        Route::post('/cases/{id}/summon',       [LuponController::class, 'summon']);
     });
 
     // Admin API routes

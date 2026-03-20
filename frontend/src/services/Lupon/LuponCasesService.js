@@ -23,6 +23,21 @@ const LuponCasesService = {
     return data;
   },
 
+  async approvedCases() {
+    const { data } = await api.get("/api/lupon/cases/approved");
+    return data;
+  },
+
+  async closeCase(id) {
+    const { data } = await api.put(`/api/lupon/cases/${id}/close`);
+    return data;
+  },
+
+  async scheduleSummon(id, payload) {
+    const { data } = await api.post(`/api/lupon/cases/${id}/summon`, payload);
+    return data;
+  },
+
   // ── Resident ───────────────────────────────────────────────────
 
   async getMyCases() {
