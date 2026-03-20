@@ -357,6 +357,23 @@
                 <p class="text-[10px] text-slate-400 ml-auto">{{ form.description.length }}/1000</p>
               </div>
             </div>
+
+            <!-- Confirmation — now blue -->
+            <div class="bg-blue-50/60 border border-blue-200/60 rounded-xl px-4 py-3.5">
+              <label class="flex items-start gap-3 cursor-pointer" @click="form.confirmed = !form.confirmed">
+                <div class="mt-0.5 w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all"
+                  :class="form.confirmed ? 'border-[#3d4f7c] bg-[#3d4f7c]' : 'border-slate-300 bg-white'">
+                  <svg v-if="form.confirmed" width="9" height="9" fill="none" stroke="white" stroke-width="3" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </div>
+                <span class="text-xs text-blue-800 leading-relaxed select-none">
+                  I hereby confirm that the information provided above is truthful and accurate. I understand that filing a false report may be subject to barangay sanctions.
+                </span>
+              </label>
+              <p v-if="errors.confirmed" class="text-[10px] text-red-400 mt-2 ml-7">{{ errors.confirmed }}</p>
+            </div>
+
           </div>
 
           <!-- Modal Footer -->
@@ -467,13 +484,45 @@
               </div>
             </div>
 
-            <!-- Pending Notice — now blue -->
+            <!-- Status Notice -->
             <div v-if="selectedComplaint.status === 'pending'"
-              class="rounded-2xl border border-blue-200/60 bg-blue-50/30 px-4 py-3.5 flex items-start gap-3">
+              class="rounded-2xl border border-blue-200/60 bg-blue-50/40 px-4 py-3.5 flex items-start gap-3">
               <svg class="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
-              <p class="text-xs text-blue-700 leading-relaxed">Your complaint is under review by the Barangay. You will be notified once a Lupon member is assigned.</p>
+              <p class="text-xs text-blue-700 leading-relaxed">Your complaint is under review by the Barangay. You will be notified of any updates.</p>
+            </div>
+
+            <div v-else-if="selectedComplaint.status === 'approved'"
+              class="rounded-2xl border border-emerald-200/60 bg-emerald-50/40 px-4 py-3.5 flex items-start gap-3">
+              <svg class="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <p class="text-xs text-emerald-700 leading-relaxed">Your complaint has been approved and is being processed by the Barangay Lupon.</p>
+            </div>
+
+            <div v-else-if="selectedComplaint.status === 'scheduled'"
+              class="rounded-2xl border border-violet-200/60 bg-violet-50/40 px-4 py-3.5 flex items-start gap-3">
+              <svg class="w-4 h-4 text-violet-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              <p class="text-xs text-violet-700 leading-relaxed">A mediation session has been scheduled. Please check with the Barangay for the date and time.</p>
+            </div>
+
+            <div v-else-if="selectedComplaint.status === 'disapproved'"
+              class="rounded-2xl border border-red-200/60 bg-red-50/40 px-4 py-3.5 flex items-start gap-3">
+              <svg class="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <p class="text-xs text-red-700 leading-relaxed">Your complaint was not approved. Please visit the Barangay Hall for more information.</p>
+            </div>
+
+            <div v-else-if="selectedComplaint.status === 'closed'"
+              class="rounded-2xl border border-slate-200/60 bg-slate-50/40 px-4 py-3.5 flex items-start gap-3">
+              <svg class="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              <p class="text-xs text-slate-500 leading-relaxed">This case has been closed. Thank you for bringing this matter to the Barangay.</p>
             </div>
 
           </div>
@@ -495,12 +544,6 @@
 import { ref, computed, onMounted } from 'vue'
 import Swal from 'sweetalert2'
 import LuponCasesService from '@/services/Resident/LuponCasesService'
-import { 
-  getLuponCases, 
-  hasLuponCasesData, 
-  setLuponCases,
-  clearData 
-} from "@/utils/dataStore";
 
 // ── State ─────────────────────────────────────────────────────
 const loading    = ref(false)
@@ -513,6 +556,7 @@ const currentPage           = ref(1)
 const itemsPerPage          = 8
 const today = new Date().toISOString().split('T')[0]
 
+// Maps exactly to the DB `type` enum values
 const complaintTypes = [
   { value: 'incident', label: 'Incident Report' },
   { value: 'dispute',  label: 'Dispute' },
@@ -520,12 +564,14 @@ const complaintTypes = [
   { value: 'other',    label: 'Other' },
 ]
 
+// Form fields match DB columns exactly: type, title, incident_date, location, description
 const form = ref({
   type:          'incident',
   title:         '',
   incident_date: '',
   location:      '',
   description:   '',
+  confirmed:     false,
 })
 
 const errors = ref({})
@@ -560,66 +606,63 @@ function formatDate(d) {
   catch { return d }
 }
 function formatStatus(s) {
-  return { pending: 'Pending', processing: 'Processing', escalated: 'Escalated', resolved: 'Resolved', closed: 'Closed' }[s] || s
+  return {
+    pending:     'Pending',
+    approved:    'Approved',
+    disapproved: 'Disapproved',
+    scheduled:   'Scheduled',
+    closed:      'Closed',
+  }[s] || s
 }
 function statusBadge(s) {
   return {
-    pending:    'bg-blue-50 text-blue-700 border border-blue-200',
-    processing: 'bg-blue-50 text-blue-700 border border-blue-200',
-    escalated:  'bg-red-50 text-red-700 border border-red-200',
-    resolved:   'bg-emerald-50 text-emerald-700 border border-emerald-200',
-    closed:     'bg-slate-100 text-slate-600 border border-slate-200',
-  }[s] || 'bg-slate-100 text-slate-600'
+    pending:     'bg-blue-50 text-blue-700 border border-blue-200',
+    approved:    'bg-emerald-50 text-emerald-700 border border-emerald-200',
+    disapproved: 'bg-red-50 text-red-700 border border-red-200',
+    scheduled:   'bg-violet-50 text-violet-700 border border-violet-200',
+    closed:      'bg-slate-100 text-slate-500 border border-slate-200',
+  }[s] || 'bg-slate-100 text-slate-500 border border-slate-200'
 }
 function statusDot(s) {
-  return { pending: 'bg-blue-400', processing: 'bg-blue-400', escalated: 'bg-red-400', resolved: 'bg-emerald-400', closed: 'bg-slate-400' }[s] || 'bg-slate-400'
+  return {
+    pending:     'bg-blue-400',
+    approved:    'bg-emerald-400',
+    disapproved: 'bg-red-400',
+    scheduled:   'bg-violet-400',
+    closed:      'bg-slate-400',
+  }[s] || 'bg-slate-400'
 }
 function statusDotSolid(s) {
-  return { pending: 'bg-blue-500', processing: 'bg-blue-500', escalated: 'bg-red-500', resolved: 'bg-emerald-500', closed: 'bg-slate-500' }[s] || 'bg-slate-500'
+  return {
+    pending:     'bg-blue-500',
+    approved:    'bg-emerald-500',
+    disapproved: 'bg-red-500',
+    scheduled:   'bg-violet-500',
+    closed:      'bg-slate-500',
+  }[s] || 'bg-slate-500'
 }
 
-// ── Fetch with cache ──────────────────────────────────────────
-async function fetchMyComplaints(showLoading = true, forceRefresh = false) {
+// ── Fetch ─────────────────────────────────────────────────────
+async function fetchMyComplaints(showLoading = true) {
   if (showLoading) loading.value = true
-  
   try {
-    if (!forceRefresh && hasLuponCasesData()) {
-      myComplaints.value = getLuponCases();
-    } else {
-      const data = await LuponCasesService.getMyCases();
-      myComplaints.value = Array.isArray(data) ? data : (data.data ?? []);
-      setLuponCases(myComplaints.value);
-    }
-  } catch (error) {
-    console.error('Failed to load complaints:', error);
-    Swal.fire({ 
-      icon: 'error', 
-      title: 'Error', 
-      text: 'Failed to load your complaints.', 
-      confirmButtonColor: '#3d4f7c' 
-    });
+    const data = await LuponCasesService.getMyCases()
+    // Handle both array and paginated { data: [] } responses
+    myComplaints.value = Array.isArray(data) ? data : (data.data ?? [])
+  } catch {
+    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load your complaints.', confirmButtonColor: '#3d4f7c' })
   } finally {
-    if (showLoading) loading.value = false;
+    if (showLoading) loading.value = false
   }
 }
 
 // ── Modals ────────────────────────────────────────────────────
 function openNewComplaintModal() {
-  form.value = { 
-    type: 'incident', 
-    title: '', 
-    incident_date: '', 
-    location: '', 
-    description: '', 
-  }
+  form.value = { type: 'incident', title: '', incident_date: '', location: '', description: '', confirmed: false }
   errors.value = {}
   showNewComplaintModal.value = true
 }
-
-function viewComplaint(c) { 
-  selectedComplaint.value = c; 
-  showViewModal.value = true 
-}
+function viewComplaint(c) { selectedComplaint.value = c; showViewModal.value = true }
 
 // ── Validation ────────────────────────────────────────────────
 function validateForm() {
@@ -627,19 +670,10 @@ function validateForm() {
   if (!form.value.type)                               e.type          = 'Please select a complaint type'
   if (!form.value.title?.trim())                       e.title         = 'Title is required'
   if (!form.value.incident_date)                       e.incident_date = 'Incident date is required'
-  
-  // Validate incident date is not in the future
-  const selectedDate = new Date(form.value.incident_date);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  if (selectedDate > today) {
-    e.incident_date = 'Incident date cannot be in the future';
-  }
-  
   if (!form.value.location?.trim())                    e.location      = 'Location is required'
   if (!form.value.description?.trim())                 e.description   = 'Description is required'
   else if (form.value.description.trim().length < 20)  e.description   = 'Please provide more detail (at least 20 characters)'
+  if (!form.value.confirmed)                           e.confirmed     = 'You must confirm the information is truthful'
   errors.value = e
   return Object.keys(e).length === 0
 }
@@ -647,9 +681,7 @@ function validateForm() {
 // ── Submit — payload matches DB columns exactly ───────────────
 async function submitComplaint() {
   if (!validateForm()) return
-  
   submitting.value = true
-  
   try {
     await LuponCasesService.createCase({
       type:          form.value.type,
@@ -658,29 +690,13 @@ async function submitComplaint() {
       location:      form.value.location,
       description:   form.value.description,
     })
-    
     showNewComplaintModal.value = false
-    
-    Swal.fire({ 
-      icon: 'success', 
-      title: 'Complaint Filed', 
-      text: 'Your complaint has been submitted successfully.', 
-      timer: 2000, 
-      showConfirmButton: false 
-    })
-    
-    // Force refresh from API to get the new complaint
-    await fetchMyComplaints(false, true)
-    
+    Swal.fire({ icon: 'success', title: 'Complaint Filed', text: 'Your complaint has been submitted successfully.', timer: 2000, showConfirmButton: false })
+    await fetchMyComplaints(false)
   } catch (error) {
     // Show each validation error from Laravel if available
     const msg = error.response?.data?.message || 'Failed to submit complaint. Please try again.'
-    Swal.fire({ 
-      icon: 'error', 
-      title: 'Submission Failed', 
-      text: msg, 
-      confirmButtonColor: '#3d4f7c' 
-    })
+    Swal.fire({ icon: 'error', title: 'Submission Failed', text: msg, confirmButtonColor: '#3d4f7c' })
   } finally {
     submitting.value = false
   }
@@ -698,33 +714,17 @@ async function cancelComplaint(id) {
     confirmButtonText: 'Yes, cancel it',
     cancelButtonText: 'No, keep it',
   })
-  
   if (!result.isConfirmed) return
-  
   try {
     await LuponCasesService.deleteCase(id)
-    
-    // Force refresh from API to get updated list
-    await fetchMyComplaints(false, true)
-    
-    Swal.fire({ 
-      icon: 'success', 
-      title: 'Withdrawn', 
-      text: 'Your complaint has been cancelled.', 
-      timer: 1500, 
-      showConfirmButton: false 
-    })
+    await fetchMyComplaints(false)
+    Swal.fire({ icon: 'success', title: 'Withdrawn', text: 'Your complaint has been cancelled.', timer: 1500, showConfirmButton: false })
   } catch {
-    Swal.fire({ 
-      icon: 'error', 
-      title: 'Error', 
-      text: 'Failed to cancel complaint.', 
-      confirmButtonColor: '#3d4f7c' 
-    })
+    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to cancel complaint.', confirmButtonColor: '#3d4f7c' })
   }
 }
 
-onMounted(() => fetchMyComplaints(true, false))
+onMounted(() => fetchMyComplaints())
 </script>
 
 <style scoped>

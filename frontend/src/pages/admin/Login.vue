@@ -199,7 +199,14 @@ import authService from "@/services/authService";
 import UserService from "@/services/Admin/UserService";
 import ResidentService from "@/services/Admin/ResidentService";
 import ServiceRequestService from "@/services/Admin/ServiceRequestService";
-import { setUsers, setRoles, setResidents, setServiceRequests } from "@/utils/dataStore";
+import LuponCasesService from "@/services/Resident/LuponCasesService";
+import { 
+  setUsers, 
+  setRoles, 
+  setResidents, 
+  setServiceRequests, 
+  setLuponCases 
+} from "@/utils/dataStore";
 
 const router = useRouter()
 
@@ -231,7 +238,11 @@ const handleLogin = async () => {
   });
 
   try {
+    console.log('Attempting login with:', form.email);
+    
     const data = await authService.login(form);
+    console.log('Login response:', data);
+    
     const { first_name, last_name, role } = data.user;
 
     localStorage.setItem('auth_token', data.token || 'authenticated');
@@ -255,34 +266,57 @@ const handleLogin = async () => {
 
     if (role.toLowerCase() === 'resident') {
       router.push({ name: 'resident.dashboard' });
+    } else if (role.toLowerCase() === 'lupon') {
+      router.push({ name: 'lupon.residents' });
     } else {
       router.push({ name: 'admin.dashboard' });
     }
 
     if (role.toLowerCase() !== 'resident') {
-      Promise.all([
+      const promises = [
         UserService.getUsers(),
         UserService.getRoles(),
         ResidentService.getResidents(),
-        ServiceRequestService.getAll()
-      ]).then(([users, roles, residents, serviceRequests]) => {
-        setUsers(users);
-        setRoles(roles);
-        setResidents(residents);
-        setServiceRequests(serviceRequests);
-      }).catch(error => {
-        console.error('Failed to prefetch data:', error);
-      });
+        ServiceRequestService.getAll(),
+        LuponCasesService.adminCases() 
+      ];
+
+      Promise.all(promises)
+        .then(([users, roles, residents, serviceRequests, luponCases]) => {
+          setUsers(users);
+          setRoles(roles);
+          setResidents(residents);
+          setServiceRequests(serviceRequests);
+          setLuponCases(luponCases);
+        })
+        .catch(error => {
+          console.error('Failed to prefetch data:', error);
+        });
     }
 
   } catch (err) {
+    console.error('Login error details:', {
+      message: err.message,
+      response: err.response?.data,
+      status: err.response?.status,
+    });
+    
+    let errorMessage = "Invalid credentials. Please try again.";
+    
+    if (err.response?.data?.message) {
+      errorMessage = err.response.data.message;
+    } else if (err.response?.data?.error) {
+      errorMessage = err.response.data.error;
+    } else if (err.message) {
+      errorMessage = err.message;
+    }
+    
     Swal.fire({
       icon: "error",
       title: "Login Failed",
-      text:
-        err.response?.data?.message ?? "Invalid credentials. Please try again.",
-      showConfirmButton: false,
-      timer: 1000,
+      text: errorMessage,
+      showConfirmButton: true,
+      confirmButtonColor: "#3d4f7c",
     });
   } finally {
     isLoading.value = false;

@@ -25,6 +25,8 @@ import ResidentComplaints from "@/pages/resident/Complaints.vue";
 
 // Lupon routes
 import LuponComplaints from "@/pages/lupon/Complaints.vue";
+import ApprovedCases from "@/pages/lupon/ApprovedCases.vue";
+import DisapprovedCases from "@/pages/lupon/DisapprovedCases.vue";
 
 // Secretary routes
 import SecretaryResident from "@/pages/secretary/Resident.vue";
@@ -95,7 +97,7 @@ const routes = [
 
   // Lupon routes
   {
-    path: "/lupon",
+   path: "/lupon",
     component: () => import("@/layout/lupon/Layout.vue"),
     meta: { requiresAuth: true, role: 'lupon' },
     children: [
@@ -115,6 +117,18 @@ const routes = [
         component: LuponComplaints,
         meta: { title: "Lupon Cases" },
       },
+            {
+        path: "complaints/approved",
+        name: "lupon.complaints.approved",
+        component: ApprovedCases,
+        meta: { title: "Approved Cases" },
+      },
+      {
+        path: "complaints/disapproved",
+        name: "lupon.complaints.disapproved",
+        component: DisapprovedCases,
+        meta: { title: "Disapproved Cases" },
+      }
     ],
   },
 
