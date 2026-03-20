@@ -38,10 +38,8 @@
             class="flex-1 sm:flex-none appearance-none bg-slate-50 border border-slate-200 text-slate-600 text-xs font-semibold rounded-xl px-3 py-2.5 cursor-pointer hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#3d4f7c]/20 focus:border-[#3d4f7c] transition-all">
             <option value="">All Status</option>
             <option value="pending">Pending</option>
-            <option value="mediation">In Mediation</option>
-            <option value="escalated">Escalated</option>
-            <option value="resolved">Resolved</option>
-            <option value="closed">Closed</option>
+            <option value="approved">Approved</option>
+            <option value="disapproved">Disapproved</option>
           </select>
           <select v-model="filters.type"
             class="flex-1 sm:flex-none appearance-none bg-slate-50 border border-slate-200 text-slate-600 text-xs font-semibold rounded-xl px-3 py-2.5 cursor-pointer hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#3d4f7c]/20 focus:border-[#3d4f7c] transition-all">
@@ -150,10 +148,8 @@
                   <span class="text-sm text-slate-500">{{ formatDate(case_.created_at) }}</span>
                 </td>
 
-                <!-- Actions -->
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-1">
-                    <!-- View -->
                     <button @click="openViewModal(case_)"
                       class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#3d4f7c]/10 text-[#3d4f7c] border border-[#3d4f7c]/20 hover:bg-[#3d4f7c] hover:text-white hover:shadow-md active:scale-95 transition-all duration-150 cursor-pointer"
                       title="View Details">
@@ -285,143 +281,184 @@
     </div>
 
     <!-- ── View Modal ── -->
-        <Transition name="modal">
-          <div v-if="showViewModal" class="fixed inset-0 z-50 flex flex-col sm:items-center sm:justify-center sm:p-4">
-            <div class="fixed inset-0 bg-black/55 backdrop-blur-md"></div>
-            <div class="relative bg-white w-full h-full sm:h-auto sm:rounded-3xl sm:max-w-2xl sm:max-h-[90vh] flex flex-col overflow-hidden"
-              style="box-shadow:0 40px 80px -12px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.04);">
+    <Transition name="modal">
+      <div v-if="showViewModal" class="fixed inset-0 z-50 flex flex-col sm:items-center sm:justify-center sm:p-4">
+        <div class="fixed inset-0 bg-black/55 backdrop-blur-md" @click="showViewModal = false"></div>
+        <div class="relative bg-white w-full h-full sm:h-auto sm:rounded-3xl sm:max-w-2xl sm:max-h-[90vh] flex flex-col overflow-hidden"
+          style="box-shadow:0 40px 80px -12px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.04);">
 
-              <!-- Header -->
-              <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
-                <div class="flex items-center gap-3">
-                  <div class="w-1 h-9 rounded-full bg-[#3d4f7c]"></div>
-                  <div>
-                    <h3 class="text-base font-bold text-slate-800 tracking-tight">Case Details</h3>
-                    <p class="text-xs text-slate-400 font-mono mt-0.5">#C-{{ selectedCase ? String(selectedCase.id).padStart(5, '0') : '' }}</p>
-                  </div>
-                </div>
-                <button @click="showViewModal = false"
-                  class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all cursor-pointer">
-                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                  </svg>
-                </button>
-              </div>
-
-              <div v-if="selectedCase" class="flex-1 overflow-y-auto scrollbar-thin px-6 py-5 space-y-4">
-
-                <!-- Status Banner -->
-                <div class="bg-slate-50 rounded-2xl px-5 py-3.5 flex items-center justify-between">
-                  <span :class="statusBadge(selectedCase.status)"
-                    class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold">
-                    <span class="relative flex h-2 w-2">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" :class="statusDot(selectedCase.status)"></span>
-                      <span class="relative inline-flex rounded-full h-2 w-2" :class="statusDotSolid(selectedCase.status)"></span>
-                    </span>
-                    {{ formatStatus(selectedCase.status) }}
-                  </span>
-                  <span class="text-xs font-medium text-slate-400">Filed: {{ formatDate(selectedCase.created_at) }}</span>
-                </div>
-
-                <!-- Case Info -->
-                <div class="rounded-2xl border border-slate-200/70 overflow-hidden">
-                  <div class="px-5 py-3 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-lg bg-[#3d4f7c]/10 flex items-center justify-center">
-                      <svg class="w-3.5 h-3.5 text-[#3d4f7c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                      </svg>
-                    </div>
-                    <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Case Information</p>
-                  </div>
-                  <div class="divide-y divide-slate-100">
-                    <div class="px-5 py-3.5 flex justify-between items-center gap-4">
-                      <span class="text-sm text-slate-500 flex-shrink-0">Type</span>
-                      <span class="text-sm font-semibold text-slate-800 text-right">{{ typeLabel(selectedCase.type) }}</span>
-                    </div>
-                    <div class="px-5 py-3.5 flex justify-between items-center gap-4">
-                      <span class="text-sm text-slate-500 flex-shrink-0">Title</span>
-                      <span class="text-sm font-semibold text-slate-800 text-right max-w-[280px]">{{ selectedCase.title }}</span>
-                    </div>
-                    <div class="px-5 py-3.5 flex justify-between items-center gap-4">
-                      <span class="text-sm text-slate-500 flex-shrink-0">Incident Date</span>
-                      <span class="text-sm font-semibold text-slate-800 text-right">{{ formatDate(selectedCase.incident_date) }}</span>
-                    </div>
-                    <div class="px-5 py-3.5 flex justify-between items-center gap-4">
-                      <span class="text-sm text-slate-500 flex-shrink-0">Location</span>
-                      <span class="text-sm font-semibold text-slate-800 text-right max-w-[280px]">{{ selectedCase.location }}</span>
-                    </div>
-                    <div class="px-5 py-3.5 flex justify-between items-center gap-4">
-                      <span class="text-sm text-slate-500 flex-shrink-0">Filed By</span>
-                      <span class="text-sm font-semibold text-slate-800 text-right">
-                        {{ selectedCase.user?.name ?? `User #${selectedCase.user_id}` }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Description -->
-                <div class="rounded-2xl border border-blue-200/60 overflow-hidden">
-                  <div class="px-5 py-3 bg-blue-50/60 border-b border-blue-100/80 flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center">
-                      <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-                      </svg>
-                    </div>
-                    <p class="text-xs font-bold text-blue-600 uppercase tracking-widest">Description</p>
-                  </div>
-                  <div class="px-5 py-4 bg-blue-50/20">
-                    <p class="text-sm text-slate-600 leading-relaxed">{{ selectedCase.description || 'No description provided.' }}</p>
-                  </div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div v-if="selectedCase.status === 'pending' || selectedCase.status === 'mediation'"
-                  class="grid grid-cols-2 gap-3 pt-1">
-                  <button @click="handleApprove(selectedCase)"
-                    class="flex items-center justify-center gap-2 px-4 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer shadow-sm hover:shadow-md">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                    Approve
-                  </button>
-                  <button @click="handleDisapprove(selectedCase)"
-                    class="flex items-center justify-center gap-2 px-4 py-3.5 bg-red-600 hover:bg-red-700 text-white rounded-2xl text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer shadow-sm hover:shadow-md">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    Disapprove
-                  </button>
-                </div>
-
-              </div>
-
-              <!-- Footer -->
-              <div class="flex-shrink-0 flex justify-end px-6 py-4 border-t border-slate-100 bg-slate-50/60">
-                <button @click="showViewModal = false"
-                  class="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all cursor-pointer">
-                  Close
-                </button>
+          <!-- Header -->
+          <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-3">
+              <div class="w-1 h-9 rounded-full bg-[#3d4f7c]"></div>
+              <div>
+                <h3 class="text-base font-bold text-slate-800 tracking-tight">Case Details</h3>
+                <p class="text-xs text-slate-400 font-mono mt-0.5">#C-{{ selectedCase ? String(selectedCase.id).padStart(5, '0') : '' }}</p>
               </div>
             </div>
+            <button @click="showViewModal = false"
+              class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all cursor-pointer">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
           </div>
-        </Transition>
+
+          <div v-if="selectedCase" class="flex-1 overflow-y-auto scrollbar-thin px-6 py-5 space-y-4">
+
+            <!-- Status Banner -->
+            <div class="bg-slate-50 rounded-2xl px-5 py-3.5 flex items-center justify-between">
+              <span :class="statusBadge(selectedCase.status)"
+                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold">
+                <span class="relative flex h-2 w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" :class="statusDot(selectedCase.status)"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2" :class="statusDotSolid(selectedCase.status)"></span>
+                </span>
+                {{ formatStatus(selectedCase.status) }}
+              </span>
+              <span class="text-xs font-medium text-slate-400">Filed: {{ formatDate(selectedCase.created_at) }}</span>
+            </div>
+
+            <!-- Case Info -->
+            <div class="rounded-2xl border border-slate-200/70 overflow-hidden">
+              <div class="px-5 py-3 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
+                <div class="w-6 h-6 rounded-lg bg-[#3d4f7c]/10 flex items-center justify-center">
+                  <svg class="w-3.5 h-3.5 text-[#3d4f7c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  </svg>
+                </div>
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Case Information</p>
+              </div>
+              <div class="divide-y divide-slate-100">
+                <div class="px-5 py-3.5 flex justify-between items-center gap-4">
+                  <span class="text-sm text-slate-500 flex-shrink-0">Type</span>
+                  <span class="text-sm font-semibold text-slate-800 text-right">{{ typeLabel(selectedCase.type) }}</span>
+                </div>
+                <div class="px-5 py-3.5 flex justify-between items-center gap-4">
+                  <span class="text-sm text-slate-500 flex-shrink-0">Title</span>
+                  <span class="text-sm font-semibold text-slate-800 text-right max-w-[280px]">{{ selectedCase.title }}</span>
+                </div>
+                <div class="px-5 py-3.5 flex justify-between items-center gap-4">
+                  <span class="text-sm text-slate-500 flex-shrink-0">Incident Date</span>
+                  <span class="text-sm font-semibold text-slate-800 text-right">{{ formatDate(selectedCase.incident_date) }}</span>
+                </div>
+                <div class="px-5 py-3.5 flex justify-between items-center gap-4">
+                  <span class="text-sm text-slate-500 flex-shrink-0">Location</span>
+                  <span class="text-sm font-semibold text-slate-800 text-right max-w-[280px]">{{ selectedCase.location }}</span>
+                </div>
+                <div class="px-5 py-3.5 flex justify-between items-center gap-4">
+                  <span class="text-sm text-slate-500 flex-shrink-0">Filed By</span>
+                  <span class="text-sm font-semibold text-slate-800 text-right">
+                    {{ selectedCase.user?.name ?? `User #${selectedCase.user_id}` }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="rounded-2xl border border-blue-200/60 overflow-hidden">
+              <div class="px-5 py-3 bg-blue-50/60 border-b border-blue-100/80 flex items-center gap-2">
+                <div class="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                  </svg>
+                </div>
+                <p class="text-xs font-bold text-blue-600 uppercase tracking-widest">Description</p>
+              </div>
+              <div class="px-5 py-4 bg-blue-50/20">
+                <p class="text-sm text-slate-600 leading-relaxed">{{ selectedCase.description || 'No description provided.' }}</p>
+              </div>
+            </div>
+
+            <!-- Remarks (if any) -->
+            <div v-if="selectedCase.remarks" class="rounded-2xl border border-amber-200/60 overflow-hidden">
+              <div class="px-5 py-3 bg-amber-50/60 border-b border-amber-100/80 flex items-center gap-2">
+                <div class="w-6 h-6 rounded-lg bg-amber-100 flex items-center justify-center">
+                  <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+                  </svg>
+                </div>
+                <p class="text-xs font-bold text-amber-600 uppercase tracking-widest">Official Remarks</p>
+              </div>
+              <div class="px-5 py-4 bg-amber-50/20">
+                <p class="text-sm text-slate-600 leading-relaxed">{{ selectedCase.remarks }}</p>
+              </div>
+            </div>
+
+            <!-- Action Buttons — only show if case is actionable -->
+            <div v-if="isActionable(selectedCase.status)" class="grid grid-cols-2 gap-3 pt-1">
+              <button
+                @click="handleApprove(selectedCase)"
+                :disabled="actionLoading"
+                class="flex items-center justify-center gap-2 px-4 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer shadow-sm hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
+                <svg v-if="actionLoading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                </svg>
+                <svg v-else width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                Approve
+              </button>
+              <button
+                @click="handleDisapprove(selectedCase)"
+                :disabled="actionLoading"
+                class="flex items-center justify-center gap-2 px-4 py-3.5 bg-red-600 hover:bg-red-700 text-white rounded-2xl text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer shadow-sm hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
+                <svg v-if="actionLoading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                </svg>
+                <svg v-else width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Disapprove
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Footer -->
+          <div class="flex-shrink-0 flex justify-end px-6 py-4 border-t border-slate-100 bg-slate-50/60">
+            <button @click="showViewModal = false"
+              class="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all cursor-pointer">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import Swal from 'sweetalert2'
-import LuponCasesService from '@/services/Resident/LuponCasesService'
-import { getLuponCases, hasLuponCasesData, setLuponCases } from "@/utils/dataStore";
+import LuponCasesService from '@/services/Lupon/LuponCasesService'
 
 // ── State ─────────────────────────────────────────────────────
-const loading = ref(false)
-const currentPage = ref(1)
+const loading      = ref(false)
+const actionLoading = ref(false)
+const currentPage  = ref(1)
 const itemsPerPage = 8
 const showViewModal = ref(false)
-const selectedCase = ref(null)
-const complaints = ref([])
+const selectedCase  = ref(null)
+const complaints    = ref([])
 const filters = reactive({ search: '', status: '', type: '' })
+
+// ── Fetch ─────────────────────────────────────────────────────
+async function fetchComplaints() {
+  loading.value = true
+  try {
+    const data = await LuponCasesService.adminCases()
+    complaints.value = Array.isArray(data) ? data : (data.data ?? [])
+  } catch (err) {
+    console.error('Fetch error:', err)
+    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load complaints.', confirmButtonColor: '#3d4f7c' })
+  } finally {
+    loading.value = false
+  }
+}
 
 // ── Helpers ───────────────────────────────────────────────────
 function typeLabel(t) {
@@ -444,42 +481,25 @@ function formatDate(d) {
   catch { return d }
 }
 function formatStatus(s) {
-  return { pending: 'Pending', mediation: 'In Mediation', escalated: 'Escalated', resolved: 'Resolved', closed: 'Closed' }[s] || s
+  return { pending: 'Pending', approved: 'Approved', disapproved: 'Disapproved' }[s] || s
 }
 function statusBadge(s) {
   return {
-    pending:   'bg-amber-50 text-amber-700 border border-amber-200',
-    mediation: 'bg-blue-50 text-blue-700 border border-blue-200',
-    escalated: 'bg-red-50 text-red-700 border border-red-200',
-    resolved:  'bg-emerald-50 text-emerald-700 border border-emerald-200',
-    closed:    'bg-slate-100 text-slate-600 border border-slate-200',
+    pending:  'bg-amber-50 text-amber-700 border border-amber-200',
+    approved: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+    disapproved:   'bg-slate-100 text-slate-600 border border-slate-200',
   }[s] || 'bg-slate-100 text-slate-600'
 }
 function statusDot(s) {
-  return { pending: 'bg-amber-400', mediation: 'bg-blue-400', escalated: 'bg-red-400', resolved: 'bg-emerald-400', closed: 'bg-slate-400' }[s] || 'bg-slate-400'
+  return { pending: 'bg-amber-400', approved: 'bg-emerald-400', disapproved: 'bg-slate-400' }[s] || 'bg-slate-400'
 }
 function statusDotSolid(s) {
-  return { pending: 'bg-amber-500', mediation: 'bg-blue-500', escalated: 'bg-red-500', resolved: 'bg-emerald-500', closed: 'bg-slate-500' }[s] || 'bg-slate-500'
+  return { pending: 'bg-amber-500', approved: 'bg-emerald-500', disapproved: 'bg-slate-500' }[s] || 'bg-slate-500'
 }
 
-async function fetchComplaints() {
-  if (hasLuponCasesData()) {
-    complaints.value = getLuponCases()
-    return
-  }
-
-  loading.value = true
-  try {
-    const data = await LuponCasesService.adminCases()
-    const result = Array.isArray(data) ? data : (data.data ?? [])
-    setLuponCases(result)
-    complaints.value = result
-  } catch (err) {
-    console.error('Fetch error:', err)
-    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load complaints.', confirmButtonColor: '#3d4f7c' })
-  } finally {
-    loading.value = false
-  }
+// Only show action buttons for actionable statuses
+function isActionable(status) {
+  return status === 'pending'
 }
 
 // ── Filters & Pagination ──────────────────────────────────────
@@ -507,51 +527,74 @@ const paginatedComplaints = computed(() => {
   return filteredComplaints.value.slice(s, s + itemsPerPage)
 })
 
-function resetFilters() { 
-  filters.search = ''; 
-  filters.status = ''; 
-  filters.type = ''; 
-  currentPage.value = 1 
+function resetFilters() {
+  filters.search = ''
+  filters.status = ''
+  filters.type   = ''
+  currentPage.value = 1
 }
 
 watch(filters, () => { currentPage.value = 1 }, { deep: true })
 
-function openViewModal(c) { 
-  console.log('Opening modal for case:', c)
-  selectedCase.value = c; 
-  showViewModal.value = true 
+function openViewModal(c) {
+  selectedCase.value  = c
+  showViewModal.value = true
 }
 
-function handleApprove(case_) {
-  Swal.fire({
+// ── Update local list after action ────────────────────────────
+function syncCase(updated) {
+  const idx = complaints.value.findIndex(c => c.id === updated.id)
+  if (idx !== -1) complaints.value[idx] = updated
+  // Keep modal in sync
+  if (selectedCase.value?.id === updated.id) selectedCase.value = updated
+}
+
+// ── Approve ───────────────────────────────────────────────────
+async function handleApprove(case_) {
+  const result = await Swal.fire({
     title: 'Approve Case?',
-    text: `Are you sure you want to approve case #C-${String(case_.id).padStart(5, '0')}?`,
+    text: `Case #C-${String(case_.id).padStart(5, '0')} will be marked as Approved.`,
     icon: 'question',
     showCancelButton: true,
     confirmButtonColor: '#10b981',
-    cancelButtonColor: '#6b7280',
-    confirmButtonText: 'Yes, approve',
-  }).then(r => {
-    if (r.isConfirmed) {
-      Swal.fire({ 
-        icon: 'success', 
-        title: 'Approved', 
-        text: 'Case has been approved successfully.', 
-        confirmButtonColor: '#3d4f7c' 
-      })
-    }
+    cancelButtonColor:  '#6b7280',
+    confirmButtonText:  'Yes, approve',
+    cancelButtonText:   'Cancel',
   })
+
+  if (!result.isConfirmed) return
+
+  actionLoading.value = true
+  try {
+    const data = await LuponCasesService.approveCase(case_.id)
+    syncCase(data.case)
+    Swal.fire({
+      icon: 'success',
+      title: 'Approved',
+      text: 'Case has been approved successfully.',
+      timer: 2000,
+      showConfirmButton: false,
+    })
+  } catch (err) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: err.response?.data?.message || 'Failed to approve case.',
+      confirmButtonColor: '#3d4f7c',
+    })
+  } finally {
+    actionLoading.value = false
+  }
 }
 
-
-function handleDisapprove(case_) {
-  Swal.fire({
+// ── Disapprove ────────────────────────────────────────────────
+async function handleDisapprove(case_) {
+  const result = await Swal.fire({
     title: 'Disapprove Case?',
     html: `
       <p class="text-sm text-slate-500 mb-4">
-        You are about to disapprove case
-        <span class="font-semibold text-slate-700">#C-${String(case_.id).padStart(5, '0')}</span>.
-        Please provide a reason.
+        Case <span class="font-semibold text-slate-700">#C-${String(case_.id).padStart(5, '0')}</span>
+        will be disapproved. Please provide a reason.
       </p>
       <textarea
         id="swal-remarks"
@@ -564,9 +607,9 @@ function handleDisapprove(case_) {
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#dc2626',
-    cancelButtonColor: '#6b7280',
-    confirmButtonText: 'Disapprove',
-    cancelButtonText: 'Cancel',
+    cancelButtonColor:  '#6b7280',
+    confirmButtonText:  'Disapprove',
+    cancelButtonText:   'Cancel',
     focusConfirm: false,
     preConfirm: () => {
       const remarks = document.getElementById('swal-remarks').value.trim()
@@ -576,17 +619,31 @@ function handleDisapprove(case_) {
       }
       return remarks
     },
-  }).then(r => {
-    if (r.isConfirmed) {
-      console.log('Disapproval remarks:', r.value)
-      Swal.fire({
-        icon: 'info',
-        title: 'Disapproved',
-        text: 'Case has been disapproved.',
-        confirmButtonColor: '#3d4f7c',
-      })
-    }
   })
+
+  if (!result.isConfirmed) return
+
+  actionLoading.value = true
+  try {
+    const data = await LuponCasesService.disapproveCase(case_.id, result.value)
+    syncCase(data.case)
+    Swal.fire({
+      icon: 'info',
+      title: 'Disapproved',
+      text: 'Case has been disapproved and disapproved.',
+      timer: 2000,
+      showConfirmButton: false,
+    })
+  } catch (err) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: err.response?.data?.message || 'Failed to disapprove case.',
+      confirmButtonColor: '#3d4f7c',
+    })
+  } finally {
+    actionLoading.value = false
+  }
 }
 
 onMounted(() => fetchComplaints())

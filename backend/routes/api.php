@@ -10,6 +10,7 @@ use App\Http\Controllers\Resident\LuponCasesController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Resident\ServiceRequestController as ResidentServiceRequestController;
+use App\Http\Controllers\Lupon\LuponCasesController as LuponController;
 
 Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth:sanctum');
@@ -47,6 +48,17 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/{id}/approve', [ServiceRequestController::class, 'approve']);
         Route::put('/{id}/reject', [ServiceRequestController::class, 'reject']);
         Route::put('/{id}/release', [ServiceRequestController::class, 'release']);
+    });
+
+    Route::prefix('lupon')->group(function () {
+        Route::get('/cases',                    [LuponController::class, 'index']);
+        Route::get('/cases/approved',           [LuponController::class, 'approvedCases']);
+        Route::get('/cases/disapproved',        [LuponController::class, 'disapprovedCases']);
+        Route::get('/cases/{id}',               [LuponController::class, 'show']);
+        Route::put('/cases/{id}/approve',       [LuponController::class, 'approve']);
+        Route::put('/cases/{id}/disapprove',    [LuponController::class, 'disapprove']);
+        Route::put('/cases/{id}/close',         [LuponController::class, 'close']);
+        Route::post('/cases/{id}/summon',       [LuponController::class, 'summon']);
     });
 
     // Admin API routes

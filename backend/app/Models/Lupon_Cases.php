@@ -15,7 +15,9 @@ class Lupon_Cases extends Model
         'incident_date',
         'location',
         'description',
-        'status'
+        'status',
+        'remarks',
+        'involved_user',
     ];
 
     public function user()
