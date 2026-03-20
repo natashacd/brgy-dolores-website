@@ -31,6 +31,18 @@ class LuponCasesController extends Controller
     }
 
     /**
+     * List only disapproved cases.
+     */
+    public function disapprovedCases()
+    {
+        $cases = Lupon_Cases::where('status', 'disapproved')
+            ->latest()
+            ->get();
+
+        return response()->json($cases);
+    }
+
+    /**
      * View a single case.
      */
     public function show($id)

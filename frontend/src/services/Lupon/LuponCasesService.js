@@ -28,6 +28,11 @@ const LuponCasesService = {
     return data;
   },
 
+  async disapprovedCases() {
+    const { data } = await api.get("/api/lupon/cases/disapproved");
+    return data;
+  },
+
   async closeCase(id) {
     const { data } = await api.put(`/api/lupon/cases/${id}/close`);
     return data;
