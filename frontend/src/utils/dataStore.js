@@ -6,6 +6,7 @@ const dataStore = {
   luponCases: null,
   announcements: null,
   complaints: null,
+  auditLogs: null,
   timestamp: null,
 };
 
@@ -39,6 +40,11 @@ export const setComplaints = (complaints) => {
   dataStore.timestamp = Date.now();
 };
 
+export const setAuditLogs = (logs) => {
+  dataStore.auditLogs = logs;
+  dataStore.timestamp = Date.now();
+};
+
 export const setAnnouncements = (announcements) => {
   dataStore.announcements = announcements;
   dataStore.timestamp = Date.now();
@@ -58,13 +64,14 @@ export const getComplaints = () => dataStore.complaints;
 
 export const getAnnouncements = () => dataStore.announcements;
 
+export const getAuditLogs = () => dataStore.auditLogs;
+
 
 export const hasData = () => {
   return (
     dataStore.users !== null &&
     dataStore.roles !== null &&
-    dataStore.residents !== null &&
-    dataStore.announcements !== null
+    dataStore.residents !== null
   );
 };
 
@@ -80,6 +87,8 @@ export const hasAnnouncementsData = () => dataStore.announcements !== null;
 
 export const hasComplaintsData = () => dataStore.complaints !== null;
 
+export const hasAuditLogsData = () => dataStore.auditLogs !== null;
+
 
 export const clearAnnouncementsData = () => {
   dataStore.announcements = null;
@@ -93,8 +102,10 @@ export const clearData = () => {
   dataStore.luponCases = null;
   dataStore.complaints = null;
   dataStore.announcements = null;
+  dataStore.auditLogs = null;
   dataStore.timestamp = null;
 };
+
 
 export default {
   setUsers,
@@ -104,6 +115,7 @@ export default {
   setLuponCases,
   setComplaints,
   setAnnouncements,
+  setAuditLogs,
   getUsers,
   getRoles,
   getResidents,
@@ -111,10 +123,12 @@ export default {
   getLuponCases,
   getComplaints,
   getAnnouncements,
+  getAuditLogs,
   hasData,
   hasResidentsData,
   hasAnnouncementsData,
   hasComplaintsData,
+  hasAuditLogsData,
   clearData,
   clearAnnouncementsData,
 };
