@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use App\Models\Audit_Logs;
 
 class ResidentController extends Controller
 {
@@ -87,6 +88,15 @@ class ResidentController extends Controller
                 'status'  => 1,
             ]);
 
+            Audit_Logs::create([
+                'name' => $user->information?->first_name . ' ' . $user->information?->last_name,
+                'role' => $user->role?->role_name,
+                'action' => 'Create',
+                'description' => 'Created a new resident.',
+                'user_agent' => $request->userAgent(),
+                'ip_address' => $request->ip(),
+            ]);
+
             return response()->json([
                 'message'  => 'Resident created successfully.',
                 'resident' => $user->load(['information', 'status', 'role', 'address']),
@@ -157,6 +167,15 @@ class ResidentController extends Controller
                 ['status' => $request->status]
             );
 
+            Audit_Logs::create([
+                'name' => $user->information?->first_name . ' ' . $user->information?->last_name,
+                'role' => $user->role?->role_name,
+                'action' => 'Update',
+                'description' => 'Updated resident information.',
+                'user_agent' => $request->userAgent(),
+                'ip_address' => $request->ip(),
+            ]);
+
             return response()->json([
                 'message'  => 'Resident updated successfully.',
                 'resident' => $user->load(['information', 'status', 'role', 'address']),
@@ -173,6 +192,15 @@ class ResidentController extends Controller
                 'password' => Hash::make('adminadmin'),
             ]);
 
+            Audit_Logs::create([
+                'name' => $user->information?->first_name . ' ' . $user->information?->last_name,
+                'role' => $user->role?->role_name,
+                'action' => 'Update',
+                'description' => 'Reset password to default.',
+                'user_agent' => request()->userAgent(),
+                'ip_address' => request()->ip(),
+            ]);
+
             return response()->json(['message' => 'Password reset to default successfully.']);
         });
     }
@@ -187,6 +215,15 @@ class ResidentController extends Controller
             }
 
             User::where('id', $user->id)->delete();
+
+            Audit_Logs::create([
+                'name' => $user->information?->first_name . ' ' . $user->information?->last_name,
+                'role' => $user->role?->role_name,
+                'action' => 'Delete',
+                'description' => 'Deleted resident.',
+                'user_agent' => request()->userAgent(),
+                'ip_address' => request()->ip(),
+            ]);
 
             return response()->json(['message' => 'Resident deleted successfully.']);
         });

@@ -8,7 +8,7 @@ class Lupon_Cases extends Model
 {
     protected $table = 'lupon_cases';
 
-    protected $fillable = [
+    protected $fillable = [ 
         'user_id',
         'type',
         'title',

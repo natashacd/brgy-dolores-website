@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Audit_Logs;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -18,6 +19,15 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = $request->user()->load(['information', 'role', 'status', 'address']);
+
+        Audit_Logs::create([
+            'name' => $user->information?->first_name . ' ' . $user->information?->last_name,
+            'role' => $user->role?->role_name,
+            'action' => 'Login',
+            'description' => 'logged in to the system.',
+            'user_agent' => $request->userAgent(),
+            'ip_address' => $request->ip(),
+        ]);
 
         return response()->json([
             'message' => 'success',
@@ -35,6 +45,16 @@ class AuthenticatedSessionController extends Controller
 
     public function destroy(Request $request): Response
     {
+
+        Audit_Logs::create([
+            'name' => $request->user()->information?->first_name . ' ' . $request->user()->information?->last_name,
+            'role' => $request->user()->role?->role_name,
+            'action' => 'Logout',
+            'description' => 'logged out of the system.',
+            'user_agent' => $request->userAgent(),
+            'ip_address' => $request->ip(),
+        ]);
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
