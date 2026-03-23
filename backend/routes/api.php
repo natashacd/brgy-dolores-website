@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Resident\ServiceRequestController as ResidentServiceRequestController;
 use App\Http\Controllers\Lupon\LuponCasesController as LuponController;
 use App\Http\Controllers\AuditLogsController;
+use App\Http\Controllers\AccountController;
 
 Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth:sanctum');
@@ -22,6 +23,12 @@ Route::post('/visitor/track', [VisitorCounterController::class, 'trackVisitor'])
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
+    });
+
+    Route::prefix('account')->group(function () {
+        Route::get('/', [AccountController::class, 'show']);
+        Route::put('/profile', [AccountController::class, 'updateProfile']);
+        Route::put('/password', [AccountController::class, 'changePassword']);
     });
 
     // User management routes
