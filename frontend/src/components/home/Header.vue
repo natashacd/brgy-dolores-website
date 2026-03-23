@@ -16,7 +16,7 @@
     <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-24 gap-6">
 
-        <!-- Brand - Expanded -->
+        <!-- Brand -->
         <div class="flex items-center gap-5 flex-shrink-0">
           <div class="relative" style="width:68px;height:68px">
             <div
@@ -39,7 +39,7 @@
           </div>
         </div>
 
-        <!-- Desktop Nav Links - Expanded -->
+        <!-- Desktop Nav Links -->
         <div class="hidden md:flex items-center gap-1">
           <router-link
             v-for="link in navLinks"
@@ -56,6 +56,20 @@
               style="background:#f5c518"
               :class="isActiveRoute(link.path) ? 'scale-x-100' : 'scale-x-0'"
             ></span>
+          </router-link>
+
+          <!-- Login Button -->
+          <router-link
+            to="/login"
+            class="ml-3 flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold tracking-wide no-underline transition-all duration-200 active:scale-[0.97]"
+            style="background: linear-gradient(135deg, #f5c518 0%, #e6b800 100%); color: #0f2d6b; box-shadow: 0 2px 12px rgba(245,197,24,0.35)"
+            @mouseenter="e => e.currentTarget.style.boxShadow = '0 4px 20px rgba(245,197,24,0.55)'"
+            @mouseleave="e => e.currentTarget.style.boxShadow = '0 2px 12px rgba(245,197,24,0.35)'"
+          >
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/>
+            </svg>
+            Login
           </router-link>
         </div>
 
@@ -94,6 +108,19 @@
               @click="mobileMenuOpen = false"
             >
               {{ link.name }}
+            </router-link>
+
+            <!-- Mobile Login Button -->
+            <router-link
+              to="/login"
+              class="mx-2 mt-2 flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold no-underline transition-all duration-200 active:scale-[0.98]"
+              style="background: linear-gradient(135deg, #f5c518 0%, #e6b800 100%); color: #0f2d6b;"
+              @click="mobileMenuOpen = false"
+            >
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/>
+              </svg>
+              Login to Portal
             </router-link>
           </div>
         </div>

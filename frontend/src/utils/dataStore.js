@@ -4,6 +4,8 @@ const dataStore = {
   residents: null,
   serviceRequests: null,
   luponCases: null,
+  announcements: null,
+  complaints: null,
   timestamp: null,
 };
 
@@ -30,7 +32,17 @@ export const setServiceRequests = (requests) => {
 export const setLuponCases = (cases) => {
   dataStore.luponCases = cases;
   dataStore.timestamp = Date.now();
-}
+};
+
+export const setComplaints = (complaints) => {
+  dataStore.complaints = complaints;
+  dataStore.timestamp = Date.now();
+};
+
+export const setAnnouncements = (announcements) => {
+  dataStore.announcements = announcements;
+  dataStore.timestamp = Date.now();
+};
 
 export const getUsers = () => dataStore.users;
 
@@ -42,12 +54,17 @@ export const getServiceRequests = () => dataStore.serviceRequests;
 
 export const getLuponCases = () => dataStore.luponCases;
 
+export const getComplaints = () => dataStore.complaints;
+
+export const getAnnouncements = () => dataStore.announcements;
+
 
 export const hasData = () => {
   return (
     dataStore.users !== null &&
     dataStore.roles !== null &&
-    dataStore.residents !== null
+    dataStore.residents !== null &&
+    dataStore.announcements !== null
   );
 };
 
@@ -59,12 +76,23 @@ export const hasServiceRequestsData = () => dataStore.serviceRequests !== null;
 
 export const hasLuponCasesData = () => dataStore.luponCases !== null;
 
+export const hasAnnouncementsData = () => dataStore.announcements !== null;
+
+export const hasComplaintsData = () => dataStore.complaints !== null;
+
+
+export const clearAnnouncementsData = () => {
+  dataStore.announcements = null;
+};
+
 export const clearData = () => {
   dataStore.users = null;
   dataStore.roles = null;
   dataStore.residents = null;
   dataStore.serviceRequests = null;
   dataStore.luponCases = null;
+  dataStore.complaints = null;
+  dataStore.announcements = null;
   dataStore.timestamp = null;
 };
 
@@ -74,12 +102,19 @@ export default {
   setResidents,
   setServiceRequests,
   setLuponCases,
+  setComplaints,
+  setAnnouncements,
   getUsers,
   getRoles,
   getResidents,
   getServiceRequests,
   getLuponCases,
+  getComplaints,
+  getAnnouncements,
   hasData,
   hasResidentsData,
+  hasAnnouncementsData,
+  hasComplaintsData,
   clearData,
+  clearAnnouncementsData,
 };

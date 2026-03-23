@@ -430,7 +430,6 @@ import Swal from 'sweetalert2'
 import LuponCasesService from '@/services/Lupon/LuponCasesService.js'
 import { getLuponCases, hasLuponCasesData, setLuponCases } from '@/utils/dataStore'
  
-// ── State ──────────────────────────────────────────────────
 const loading       = ref(false)
 const currentPage   = ref(1)
 const itemsPerPage  = 8
@@ -462,7 +461,6 @@ async function fetchDisapprovedCases() {
   }
 }
  
-// ── Helpers ────────────────────────────────────────────────
 function getFiledBy(c) {
   if (c.user?.information) {
     const i = c.user.information
@@ -489,7 +487,6 @@ function formatDate(d) {
   catch { return d }
 }
  
-// ── Filters & Pagination ───────────────────────────────────
 const hasActiveFilters = computed(() => filters.search || filters.type)
  
 const filteredCases = computed(() => {

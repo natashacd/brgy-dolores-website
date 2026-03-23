@@ -22,6 +22,12 @@ class Lupon_Cases extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+         return $this->belongsTo(User::class)->withDefault([
+        'name' => 'Unknown',
+    ]);
+    }
+    public function summon()
+    {
+        return $this->hasOne(Schedule_Summon::class, 'case_id');
     }
 }
