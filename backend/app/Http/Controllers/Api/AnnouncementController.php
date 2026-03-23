@@ -7,6 +7,7 @@ use App\Models\Announcement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Audit_Logs;
 
 class AnnouncementController extends Controller
 {
@@ -164,6 +165,17 @@ class AnnouncementController extends Controller
             $data['attachments'] = $attachments;
         }
 
+        $user = $request->user();
+
+        Audit_Logs::create([
+            'name' => $user->information?->first_name . ' ' . $user->information?->last_name,
+            'role' => $user->role?->role_name,
+            'action' => 'Create',
+            'description' => 'Created a new announcement.',
+            'user_agent' => $request->userAgent(),
+            'ip_address' => $request->ip(),
+        ]);
+
         $announcement = Announcement::create($data);
 
         return response()->json([
@@ -222,6 +234,17 @@ class AnnouncementController extends Controller
             $data['published_at'] = null;
         }
 
+        $user = $request->user();
+
+        Audit_Logs::create([
+            'name' => $user->information?->first_name . ' ' . $user->information?->last_name,
+            'role' => $user->role?->role_name,
+            'action' => 'Update',
+            'description' => 'Updated an announcement.',
+            'user_agent' => $request->userAgent(),
+            'ip_address' => $request->ip(),
+        ]);
+
         $announcement->update($data);
 
         return response()->json([
@@ -234,10 +257,21 @@ class AnnouncementController extends Controller
     /**
      * Soft delete (move to trash)
      */
-    public function destroy($id)
+    public function destroy($id, Request $request)
     {
         $announcement = Announcement::findOrFail($id);
-        
+        $user = $request->user();
+
+        Audit_Logs::create([
+            'name' => $user->information?->first_name . ' ' . $user->information?->last_name,
+            'role' => $user->role?->role_name,
+            'action' => 'Destroy',
+            'description' => 'Moved announcement to trash.',
+            'user_agent' => $request->userAgent(),
+            'ip_address' => $request->ip(),
+        ]);
+
+
         // Soft delete only - don't delete files yet
         $announcement->delete();
 
@@ -250,8 +284,20 @@ class AnnouncementController extends Controller
     /**
      * Restore from trash
      */
-    public function restore($id)
+    public function restore($id, Request $request)
     {
+        $user = $request->user();
+
+        Audit_Logs::create([
+            'name' => $user->information?->first_name . ' ' . $user->information?->last_name,
+            'role' => $user->role?->role_name,
+            'action' => 'Restore',
+            'description' => 'Restored announcement from trash.',
+            'user_agent' => $request->userAgent(),
+            'ip_address' => $request->ip(),
+        ]);
+
+
         try {
             $announcement = Announcement::withTrashed()->findOrFail($id);
             
@@ -279,8 +325,19 @@ class AnnouncementController extends Controller
     /**
      * Permanently delete from trash
      */
-    public function forceDelete($id)
+    public function forceDelete($id, Request $request)
     {
+        $user = $request->user();
+
+        Audit_Logs::create([
+            'name' => $user->information?->first_name . ' ' . $user->information?->last_name,
+            'role' => $user->role?->role_name,
+            'action' => 'Force Delete',
+            'description' => 'Permanently deleted announcement from trash.',
+            'user_agent' => $request->userAgent(),
+            'ip_address' => $request->ip(),
+        ]);
+
         try {
             $announcement = Announcement::withTrashed()->findOrFail($id);
             
@@ -327,8 +384,19 @@ class AnnouncementController extends Controller
     /**
      * Toggle urgent status
      */
-    public function toggleUrgent($id)
+    public function toggleUrgent($id, Request $request)
     {
+        $user = $request->user();
+
+        Audit_Logs::create([
+            'name' => $user->information?->first_name . ' ' . $user->information?->last_name,
+            'role' => $user->role?->role_name,
+            'action' => 'Toggle Urgent',
+            'description' => 'Toggled urgent status of announcement.',
+            'user_agent' => $request->userAgent(),
+            'ip_address' => $request->ip(),
+        ]);
+
         $announcement = Announcement::findOrFail($id);
         $announcement->update(['is_urgent' => !$announcement->is_urgent]);
 
@@ -344,6 +412,17 @@ class AnnouncementController extends Controller
      */
     public function bulkDelete(Request $request)
     {
+        $user = $request->user();
+
+        Audit_Logs::create([
+            'name' => $user->information?->first_name . ' ' . $user->information?->last_name,
+            'role' => $user->role?->role_name,
+            'action' => 'Bulk Delete',
+            'description' => 'Bulk deleted announcements.',
+            'user_agent' => $request->userAgent(),
+            'ip_address' => $request->ip(),
+        ]);
+
         $validator = Validator::make($request->all(), [
             'ids' => 'required|array',
             'ids.*' => 'exists:announcements,id'
@@ -367,6 +446,17 @@ class AnnouncementController extends Controller
      */
     public function bulkRestore(Request $request)
     {
+        $user = $request->user();
+
+        Audit_Logs::create([
+            'name' => $user->information?->first_name . ' ' . $user->information?->last_name,
+            'role' => $user->role?->role_name,
+            'action' => 'Bulk Restore',
+            'description' => 'Bulk restored announcements from trash.',
+            'user_agent' => $request->userAgent(),
+            'ip_address' => $request->ip(),
+        ]);
+
         $validator = Validator::make($request->all(), [
             'ids' => 'required|array',
             'ids.*' => 'required|integer'
@@ -396,6 +486,17 @@ class AnnouncementController extends Controller
      */
     public function bulkForceDelete(Request $request)
     {
+        $user = $request->user();
+
+        Audit_Logs::create([
+            'name' => $user->information?->first_name . ' ' . $user->information?->last_name,
+            'role' => $user->role?->role_name,
+            'action' => 'Bulk Force Delete',
+            'description' => 'Bulk permanently deleted announcements.',
+            'user_agent' => $request->userAgent(),
+            'ip_address' => $request->ip(),
+        ]);
+
         $validator = Validator::make($request->all(), [
             'ids' => 'required|array',
             'ids.*' => 'required|integer'
@@ -438,8 +539,19 @@ class AnnouncementController extends Controller
     /**
      * Empty trash (permanently delete all)
      */
-    public function emptyTrash()
+    public function emptyTrash(Request $request)
     {
+        $user = $request->user();
+
+        Audit_Logs::create([
+            'name' => $user->information?->first_name . ' ' . $user->information?->last_name,
+            'role' => $user->role?->role_name,
+            'action' => 'Empty Trash',
+            'description' => 'Permanently deleted all announcements from trash.',
+            'user_agent' => $request->userAgent(),
+            'ip_address' => $request->ip(),
+        ]);
+
         $announcements = Announcement::onlyTrashed()->get();
         $count = $announcements->count();
         
@@ -476,6 +588,17 @@ class AnnouncementController extends Controller
      */
     public function bulkUpdateStatus(Request $request)
     {
+        $user = $request->user();
+
+        Audit_Logs::create([
+            'name' => $user->information?->first_name . ' ' . $user->information?->last_name,
+            'role' => $user->role?->role_name,
+            'action' => 'Bulk Update Status',
+            'description' => 'Bulk updated status of announcements.',
+            'user_agent' => $request->userAgent(),
+            'ip_address' => $request->ip(),
+        ]);
+
         $validator = Validator::make($request->all(), [
             'ids' => 'required|array',
             'ids.*' => 'exists:announcements,id',
@@ -502,8 +625,19 @@ class AnnouncementController extends Controller
     /**
      * Duplicate announcement
      */
-    public function duplicate($id)
+    public function duplicate(Request $request, $id)
     {
+        $user = $request->user();
+
+        Audit_Logs::create([
+            'name' => $user->information?->first_name . ' ' . $user->information?->last_name,
+            'role' => $user->role?->role_name,
+            'action' => 'Duplicate Announcement',
+            'description' => 'Duplicated an announcement.',
+            'user_agent' => $request->userAgent(),
+            'ip_address' => $request->ip(),
+        ]);
+
         $announcement = Announcement::findOrFail($id);
 
         $newAnnouncement = $announcement->replicate();

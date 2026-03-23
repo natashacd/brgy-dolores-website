@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Resident_Service_Request;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Models\Audit_Logs;
 
 class ServiceRequestController extends Controller
 {
@@ -56,10 +58,21 @@ class ServiceRequestController extends Controller
         return response()->json($requests);
     }
 
-    public function approve($id)
+    public function approve($id, Request $request)
     {
-        $request = Resident_Service_Request::findOrFail($id);
-        $request->update(['status' => 'approved']);
+        $serviceRequest = Resident_Service_Request::findOrFail($id);
+        $serviceRequest->update(['status' => 'approved']);
+
+        $user = $request->user();
+
+        Audit_Logs::create([
+            'name' => ($user->information?->first_name ?? '') . ' ' . ($user->information?->last_name ?? ''),
+            'role' => $user->role?->role_name,
+            'action' => 'Approve',
+            'description' => 'Approved service request.',
+            'user_agent' => $request->userAgent(),
+            'ip_address' => $request->ip(),
+        ]);
 
         return response()->json(['message' => 'Request approved successfully.']);
     }
@@ -72,14 +85,36 @@ class ServiceRequestController extends Controller
             'remarks' => $request->remarks ?? null,
         ]);
 
+        $user = $request->user();
+
+        Audit_Logs::create([
+            'name' => ($user->information?->first_name ?? '') . ' ' . ($user->information?->last_name ?? ''),
+            'role' => $user->role?->role_name,
+            'action' => 'Disapproved',
+            'description' => 'Rejected service request.',
+            'user_agent' => $request->userAgent(),
+            'ip_address' => $request->ip(),
+        ]);
+
         return response()->json(['message' => 'Request disapproved successfully.']);
     }
 
-    public function release($id)
+    public function release($id, Request $request)
     {
         $serviceRequest = Resident_Service_Request::findOrFail($id);
         $serviceRequest->update([
             'status'  => 'released',
+        ]);
+
+        $user = $request->user();
+
+        Audit_Logs::create([
+            'name' => ($user->information?->first_name ?? '') . ' ' . ($user->information?->last_name ?? ''),
+            'role' => $user->role?->role_name,
+            'action' => 'Released',
+            'description' => 'Released service request.',
+            'user_agent' => $request->userAgent(),
+            'ip_address' => $request->ip(),
         ]);
 
         return response()->json(['message' => 'Request released successfully.']);

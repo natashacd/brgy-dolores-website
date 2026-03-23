@@ -7,6 +7,7 @@ use App\Models\Lupon_Cases;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use App\Models\Audit_Logs;
 
 class LuponCasesController extends Controller
 {
@@ -45,6 +46,15 @@ class LuponCasesController extends Controller
             'status'        => 'pending',
         ]);
 
+        Audit_Logs::create([
+            'name' => Auth::user()->information?->first_name . ' ' . Auth::user()->information?->last_name,
+            'role' => Auth::user()->role?->role_name,
+            'action' => 'File Complaint',
+            'description' => 'Filed a new lupon case.',
+            'user_agent' => $request->userAgent(),
+            'ip_address' => $request->ip(),
+        ]);
+
         return response()->json([
             'message' => 'Complaint filed successfully.',
             'case'    => $case,
@@ -60,11 +70,20 @@ class LuponCasesController extends Controller
         return response()->json($case);
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $case = Lupon_Cases::where('id', $id)
             ->where('user_id', Auth::id())
             ->firstOrFail();
+
+        Audit_Logs::create([
+            'name' => Auth::user()->information?->first_name . ' ' . Auth::user()->information?->last_name,
+            'role' => Auth::user()->role?->role_name,
+            'action' => 'Delete Case',
+            'description' => 'Deleted a lupon case.',
+            'user_agent' => $request->userAgent(),
+            'ip_address' => $request->ip(),
+        ]);
 
         if ($case->status !== 'pending') {
             return response()->json([

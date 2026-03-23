@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use App\Models\Audit_Logs;
 
 class UserController extends Controller
 {
@@ -38,10 +39,21 @@ class UserController extends Controller
             'role_id' => 'required|exists:roles,id',
         ]);
 
+
+
         return DB::transaction(function () use ($request, $user) {
             $user->update([
                 'email'   => $request->email,
                 'role_id' => $request->role_id,
+            ]);
+
+            Audit_Logs::create([
+                'name' => ($user->information?->first_name ?? '') . ' ' . ($user->information?->last_name ?? ''),
+                'role' => $user->role?->role_name,
+                'action' => 'Update',
+                'description' => 'Updated user information.',
+                'user_agent' => $request->userAgent(),
+                'ip_address' => $request->ip(),
             ]);
 
             return response()->json([
@@ -67,6 +79,15 @@ class UserController extends Controller
             $user = User::findOrFail($request->user_id);
             $user->update(['role_id' => $request->role_id]);
 
+            Audit_Logs::create([
+                'name' => ($user->information?->first_name ?? '') . ' ' . ($user->information?->last_name ?? ''),
+                'role' => $user->role?->role_name,
+                'action' => 'Appoint',
+                'description' => 'Appointed user to a new role.',
+                'user_agent' => $request->userAgent(),
+                'ip_address' => $request->ip(),
+            ]);
+
             return response()->json([
                 'message' => 'User appointed successfully.',
                 'user'    => $user->load(['information', 'status', 'role']),
@@ -74,21 +95,29 @@ class UserController extends Controller
         });
     }
 
-    public function resetPassword($id)
+    public function resetPassword($id, Request $request)
     {
         $user = User::findOrFail($id);
 
-        return DB::transaction(function () use ($user) {
+        return DB::transaction(function () use ($user, $request) {
             $user->update(['password' => Hash::make('adminadmin')]);
+            Audit_Logs::create([
+                'name' => ($user->information?->first_name ?? '') . ' ' . ($user->information?->last_name ?? ''),
+                'role' => $user->role?->role_name,
+                'action' => 'Reset Password',
+                'description' => 'Reset user password to default.',
+                'user_agent' => $request->userAgent(),
+                'ip_address' => $request->ip(),
+            ]);
             return response()->json(['message' => 'Password reset to default successfully.']);
         });
     }
 
-    public function destroy($id)
+    public function destroy($id, Request $request)
     {
         $user = User::findOrFail($id);
 
-        return DB::transaction(function () use ($user) {
+        return DB::transaction(function () use ($user, $request) {
             $residentRole = Role::where('role_name', 'Resident')->first();
 
             if (!$residentRole) {
@@ -96,6 +125,15 @@ class UserController extends Controller
             }
 
             $user->update(['role_id' => $residentRole->id]);
+
+            Audit_Logs::create([
+                'name' => ($user->information?->first_name ?? '') . ' ' . ($user->information?->last_name ?? ''),
+                'role' => $user->role?->role_name,
+                'action' => 'Destroy',
+                'description' => 'Changed user role to Resident.',
+                'user_agent' => $request->userAgent(),
+                'ip_address' => $request->ip(),
+            ]);
 
             return response()->json(['message' => 'User role changed to Resident successfully.']);
         });

@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Resident\ServiceRequestController as ResidentServiceRequestController;
 use App\Http\Controllers\Lupon\LuponCasesController as LuponController;
+use App\Http\Controllers\AuditLogsController;
 
 Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth:sanctum');
@@ -88,6 +89,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/announcements/bulk-update-status', [AnnouncementController::class, 'bulkUpdateStatus']);
 
         Route::get('/lupon-cases', [LuponCasesController::class, 'adminIndex']);
+
+        Route::get('/audit-logs', [AuditLogsController::class, 'index']);
     });
 
     Route::prefix('resident')->group(function () {

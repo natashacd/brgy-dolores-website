@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
+use App\Models\Audit_Logs;
 
 class ServiceRequestController extends Controller
 {
@@ -55,6 +56,15 @@ class ServiceRequestController extends Controller
             'status'         => 'pending',
         ]);
 
+        Audit_Logs::create([
+            'name' => $user->information?->first_name . ' ' . $user->information?->last_name,
+            'role' => $user->role?->role_name,
+            'action' => 'Submit Service Request',
+            'description' => "Submitted a new service request for {$mappedType}.",
+            'user_agent' => $request->userAgent(),
+            'ip_address' => $request->ip(),
+        ]);
+
         return response()->json([
             'message' => 'Service request submitted successfully.',
             'request' => $serviceRequest,
@@ -97,13 +107,24 @@ class ServiceRequestController extends Controller
             'status'         => 'pending',
         ]);
 
+        $user = $request->user();
+
+        Audit_Logs::create([
+            'name' => $user->information?->first_name . ' ' . $user->information?->last_name,
+            'role' => $user->role?->role_name,
+            'action' => 'Resubmit Service Request',
+            'description' => "Resubmitted service request for {$serviceRequest->type}.",
+            'user_agent' => $request->userAgent(),
+            'ip_address' => $request->ip(),
+        ]);
+
         return response()->json([
             'message' => 'Request resubmitted successfully.',
             'request' => $serviceRequest->fresh(),
         ]);
     }
 
-    public function cancel($id)
+    public function cancel(Request $request, $id)
     {
         $serviceRequest = Resident_Service_Request::where('id', $id)
             ->where('resident_id', Auth::id())
@@ -112,6 +133,17 @@ class ServiceRequestController extends Controller
         if ($serviceRequest->status !== 'pending') {
             return response()->json(['message' => 'Only pending requests can be cancelled.'], 422);
         }
+
+        $user = $request->user();
+
+        Audit_Logs::create([
+            'name' => $user->information?->first_name . ' ' . $user->information?->last_name,
+            'role' => $user->role?->role_name,
+            'action' => 'Cancel Service Request',
+            'description' => "Cancelled service request for {$serviceRequest->type}.",
+            'user_agent' => $request->userAgent(),
+            'ip_address' => $request->ip(),
+        ]);
 
         if ($serviceRequest->image_path && Storage::disk('public')->exists($serviceRequest->image_path)) {
             Storage::disk('public')->delete($serviceRequest->image_path);
