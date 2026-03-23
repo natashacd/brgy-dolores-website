@@ -205,7 +205,7 @@ import {
   setRoles, 
   setResidents, 
   setServiceRequests, 
-  setLuponCases 
+  setLuponCases
 } from "@/utils/dataStore";
 
 const router = useRouter()
@@ -216,17 +216,11 @@ const isLoading = ref(false);
 
 const handleLogin = async () => {
   if (!form.email || !form.password) {
-    Swal.fire({
-      icon: "warning",
-      title: "Invalid Inputs",
-      text: "Please fill in all fields",
-      showConfirmButton: false,
-      timer: 1500,
-    });
-    return;
+    Swal.fire({ icon: "warning", title: "Invalid Inputs", text: "Please fill in all fields", showConfirmButton: false, timer: 1500 })
+    return
   }
 
-  isLoading.value = true;
+  isLoading.value = true
 
   Swal.fire({
     title: "Signing in...",
@@ -235,94 +229,53 @@ const handleLogin = async () => {
     allowEscapeKey: false,
     showConfirmButton: false,
     didOpen: () => Swal.showLoading(),
-  });
+  })
 
   try {
-    console.log('Attempting login with:', form.email);
-    
-    const data = await authService.login(form);
-    console.log('Login response:', data);
-    
-    const { first_name, last_name, role } = data.user;
+    const data = await authService.login(form)
+    const { first_name, last_name, role } = data.user
 
-    localStorage.setItem('auth_token', data.token || 'authenticated');
-    localStorage.setItem('user_role', role.toLowerCase());
-    localStorage.setItem('user_name', `${first_name} ${last_name}`);
-
-    Swal.fire({
-      icon: "success",
-      title: "Login Successful!",
-      html: `
-        <p style="color:#374151;">Welcome back,</p>
-        <p style="font-size:1.2rem; font-weight:700; color:#111827; margin-top:4px;">${first_name} ${last_name}</p>
-        <span style="display:inline-block; margin-top:8px; padding:4px 14px; background:#dbeafe; color:#1e3a8a; font-size:13px; font-weight:600; border-radius:999px;">
-          ${role}
-        </span>
-      `,
-      showConfirmButton: false,
-      timer: 1000,
-      timerProgressBar: true,
-    });
+    localStorage.setItem('auth_token', data.token || 'authenticated')
+    localStorage.setItem('user_role', role.toLowerCase())
+    localStorage.setItem('user_name', `${first_name} ${last_name}`)
+    localStorage.setItem('user_id', data.user.id)
 
     if (role.toLowerCase() === 'resident') {
-      router.push({ name: 'resident.dashboard' });
-    } else if (role.toLowerCase() === 'lupon') {
-      router.push({ name: 'lupon.residents' });
-    } else {
-      router.push({ name: 'admin.dashboard' });
-    }
+      Swal.fire({ icon: 'success', title: `Welcome, ${first_name}!`, showConfirmButton: false, timer: 800 })
+      router.push({ name: 'resident.dashboard' })
 
-    if (role.toLowerCase() !== 'resident') {
-      const promises = [
+    } else if (role.toLowerCase() === 'lupon') {
+      Swal.fire({ icon: 'success', title: `Welcome, ${first_name}!`, showConfirmButton: false, timer: 800 })
+      router.push({ name: 'lupon.residents' })
+
+    } else {
+      // ── Prefetch while "Signing in..." spinner is still showing ──
+      const [users, rolesData, residents, serviceRequests, luponCases] = await Promise.all([
         UserService.getUsers(),
         UserService.getRoles(),
         ResidentService.getResidents(),
         ServiceRequestService.getAll(),
-        LuponCasesService.adminCases() 
-      ];
+        LuponCasesService.adminCases(),
+      ])
 
-      Promise.all(promises)
-        .then(([users, roles, residents, serviceRequests, luponCases]) => {
-          setUsers(users);
-          setRoles(roles);
-          setResidents(residents);
-          setServiceRequests(serviceRequests);
-          setLuponCases(luponCases);
-        })
-        .catch(error => {
-          console.error('Failed to prefetch data:', error);
-        });
+      setUsers(users)
+      setRoles(rolesData)
+      setResidents(residents)
+      setServiceRequests(serviceRequests)
+      setLuponCases(luponCases)
+
+      Swal.fire({ icon: 'success', title: `Welcome, ${first_name}!`, showConfirmButton: false, timer: 800 })
+      router.push({ name: 'admin.dashboard' })
     }
 
   } catch (err) {
-    console.error('Login error details:', {
-      message: err.message,
-      response: err.response?.data,
-      status: err.response?.status,
-    });
-    
-    let errorMessage = "Invalid credentials. Please try again.";
-    
-    if (err.response?.data?.message) {
-      errorMessage = err.response.data.message;
-    } else if (err.response?.data?.error) {
-      errorMessage = err.response.data.error;
-    } else if (err.message) {
-      errorMessage = err.message;
-    }
-    
-    Swal.fire({
-      icon: "error",
-      title: "Login Failed",
-      text: errorMessage,
-      showConfirmButton: true,
-      confirmButtonColor: "#3d4f7c",
-    });
+    const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || "Invalid credentials."
+    Swal.fire({ icon: "error", title: "Login Failed", text: errorMessage, confirmButtonColor: "#3d4f7c" })
   } finally {
-    isLoading.value = false;
-    form.password = "";
+    isLoading.value = false
+    form.password = ""
   }
-};
+}
 </script>
 
 <style scoped>

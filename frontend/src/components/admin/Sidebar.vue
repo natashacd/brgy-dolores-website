@@ -498,13 +498,32 @@ const confirmLogout = async () => {
 
 const handleLogout = async () => {
   try {
-    import('@/utils/dataStore').then(({ clearData }) => clearData())
+    const { default: api } = await import('@/api/api')
+    await api.post('/api/logout')
+    
+    const { clearData } = await import('@/utils/dataStore')
+    clearData()
+    
     ;['auth_token', 'user', 'user_name', 'user_role', 'user_email'].forEach(k => localStorage.removeItem(k))
     sessionStorage.removeItem('auth_token')
-    await Swal.fire({ icon: 'success', title: 'Logged out!', text: 'You have been successfully logged out.', timer: 1500, showConfirmButton: false })
+    
+    await Swal.fire({ 
+      icon: 'success', 
+      title: 'Logged out!', 
+      text: 'You have been successfully logged out.', 
+      timer: 1500, 
+      showConfirmButton: false 
+    })
+    
     await router.push('/login')
-  } catch {
-    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to logout. Please try again.', confirmButtonColor: '#3085d6' })
+  } catch (error) {
+    console.error('Logout error:', error)
+    Swal.fire({ 
+      icon: 'error', 
+      title: 'Error', 
+      text: 'Failed to logout properly. Please try again.', 
+      confirmButtonColor: '#3085d6' 
+    })
   }
 }
 </script>
