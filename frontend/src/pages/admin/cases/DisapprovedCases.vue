@@ -428,22 +428,31 @@
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import Swal from 'sweetalert2'
 import LuponCasesService from '@/services/Lupon/LuponCasesService.js'
-
-// ── State ──────────────────────────────────────────────────
+import { getLuponCases, hasLuponCasesData, setLuponCases } from '@/utils/dataStore'
+ 
 const loading       = ref(false)
 const currentPage   = ref(1)
 const itemsPerPage  = 8
 const showViewModal = ref(false)
 const selectedCase  = ref(null)
 const cases         = ref([])
-const filters = reactive({ search: '', type: '' })
-
-// ── Fetch ──────────────────────────────────────────────────
+const filters       = reactive({ search: '', type: '' })
+ 
 async function fetchDisapprovedCases() {
+  if (hasLuponCasesData()) {
+    const cached = getLuponCases()
+    cases.value = cached.filter(c => c.status === 'disapproved')
+    return
+  }
+ 
   loading.value = true
   try {
     const data = await LuponCasesService.disapprovedCases()
-    cases.value = Array.isArray(data) ? data : (data.data ?? [])
+    const raw = Array.isArray(data) ? data : (data.data ?? [])
+    cases.value = raw
+    const existing = hasLuponCasesData() ? getLuponCases() : []
+    const others = existing.filter(c => c.status !== 'disapproved')
+    setLuponCases([...others, ...raw])
   } catch (err) {
     console.error('Fetch error:', err)
     Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load disapproved cases.', confirmButtonColor: '#3d4f7c' })
@@ -451,35 +460,7 @@ async function fetchDisapprovedCases() {
     loading.value = false
   }
 }
-
-// ── Helpers ────────────────────────────────────────────────
-function typeLabel(t) {
-  return { incident: 'Incident Report', dispute: 'Dispute', report: 'General Report', other: 'Other' }[t] || t
-}
-function typeIconBg(t) {
-  return { incident: 'bg-red-100', dispute: 'bg-amber-100', report: 'bg-blue-100', other: 'bg-purple-100' }[t] || 'bg-slate-100'
-}
-function typeIconColor(t) {
-  return { incident: 'text-red-600', dispute: 'text-amber-600', report: 'text-blue-600', other: 'text-purple-600' }[t] || 'text-slate-500'
-}
-function typeChipClass(t) {
-  return {
-    incident: 'bg-red-50 text-red-600',
-    dispute:  'bg-amber-50 text-amber-600',
-    report:   'bg-blue-50 text-blue-600',
-    other:    'bg-purple-50 text-purple-600',
-  }[t] || 'bg-slate-100 text-slate-500'
-}
-function typeIcon(t) {
-  if (t === 'incident') return '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>'
-  if (t === 'dispute')  return '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>'
-  return '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>'
-}
-function formatDate(d) {
-  if (!d) return '—'
-  try { return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) }
-  catch { return d }
-}
+ 
 function getFiledBy(c) {
   if (c.user?.information) {
     const i = c.user.information
@@ -489,10 +470,25 @@ function getFiledBy(c) {
   if (c.user?.name) return c.user.name
   return `User #${c.user_id}`
 }
-
-// ── Filters & Pagination ───────────────────────────────────
+function typeLabel(t) { return { incident: 'Incident Report', dispute: 'Dispute', report: 'General Report', other: 'Other' }[t] || t }
+function typeIconBg(t) { return { incident: 'bg-red-100', dispute: 'bg-amber-100', report: 'bg-blue-100', other: 'bg-purple-100' }[t] || 'bg-slate-100' }
+function typeIconColor(t) { return { incident: 'text-red-600', dispute: 'text-amber-600', report: 'text-blue-600', other: 'text-purple-600' }[t] || 'text-slate-500' }
+function typeChipClass(t) {
+  return { incident: 'bg-red-50 text-red-600', dispute: 'bg-amber-50 text-amber-600', report: 'bg-blue-50 text-blue-600', other: 'bg-purple-50 text-purple-600' }[t] || 'bg-slate-100 text-slate-500'
+}
+function typeIcon(t) {
+  if (t === 'incident') return '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>'
+  if (t === 'dispute') return '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>'
+  return '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>'
+}
+function formatDate(d) {
+  if (!d) return '—'
+  try { return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) }
+  catch { return d }
+}
+ 
 const hasActiveFilters = computed(() => filters.search || filters.type)
-
+ 
 const filteredCases = computed(() => {
   let f = [...cases.value]
   if (filters.search) {
@@ -502,23 +498,24 @@ const filteredCases = computed(() => {
       c.location?.toLowerCase().includes(s) ||
       c.type?.toLowerCase().includes(s) ||
       c.remarks?.toLowerCase().includes(s) ||
+      getFiledBy(c).toLowerCase().includes(s) ||
       String(c.id).includes(s)
     )
   }
   if (filters.type) f = f.filter(c => c.type === filters.type)
   return f
 })
-
+ 
 const totalPages = computed(() => Math.max(1, Math.ceil(filteredCases.value.length / itemsPerPage)))
 const paginatedCases = computed(() => {
   const s = (currentPage.value - 1) * itemsPerPage
   return filteredCases.value.slice(s, s + itemsPerPage)
 })
-
+ 
 function resetFilters() { filters.search = ''; filters.type = ''; currentPage.value = 1 }
 watch(filters, () => { currentPage.value = 1 }, { deep: true })
 function openViewModal(c) { selectedCase.value = c; showViewModal.value = true }
-
+ 
 onMounted(() => fetchDisapprovedCases())
 </script>
 
