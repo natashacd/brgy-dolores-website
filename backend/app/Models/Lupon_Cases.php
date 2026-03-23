@@ -1,0 +1,33 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Lupon_Cases extends Model
+{
+    protected $table = 'lupon_cases';
+
+    protected $fillable = [ 
+        'user_id',
+        'type',
+        'title',
+        'incident_date',
+        'location',
+        'description',
+        'status',
+        'remarks',
+        'involved_user',
+    ];
+
+    public function user()
+    {
+         return $this->belongsTo(User::class)->withDefault([
+        'name' => 'Unknown',
+    ]);
+    }
+    public function summon()
+    {
+        return $this->hasOne(Schedule_Summon::class, 'case_id');
+    }
+}
