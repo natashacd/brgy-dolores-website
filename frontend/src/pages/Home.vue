@@ -403,78 +403,82 @@
     <p class="text-gray-500 max-w-2xl mx-auto text-lg">Stay informed about the latest news and programs in Barangay Dolores</p>
   </div>
 
-  <!-- Featured Announcement -->
-  <div class="mb-20 relative">
-    <!-- Decorative elements -->
-    <div class="absolute -top-4 -left-4 w-24 h-24 bg-yellow-400/10 rounded-full blur-2xl"></div>
-    <div class="absolute -bottom-4 -right-4 w-32 h-32 bg-blue-900/10 rounded-full blur-2xl"></div>
-    
-    <div class="bg-white rounded-3xl border border-gray-100 shadow-2xl overflow-hidden relative">
-      <!-- Gradient accent line -->
-      <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-900 via-yellow-400 to-red-600"></div>
-      
-      <div class="p-8 md:p-12">
-        <div class="grid md:grid-cols-5 gap-8">
-          <!-- Left Content - Takes 3 columns -->
-          <div class="md:col-span-3">
-            <!-- Featured Tag with icon -->
-            <div class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-900 to-blue-800 text-white rounded-full mb-6 shadow-lg">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0118 18.75h-2.25m-7.5 0H7.5a2.25 2.25 0 01-2.25-2.25V6.108c0-1.135.845-2.098 1.976-2.192.374-.03.748-.057 1.124-.08" />
-              </svg>
-              <span class="text-xs font-bold uppercase tracking-wider">BARANGAY ORDINANCE</span>
-            </div>
-            
-            <!-- Title with gradient effect -->
-            <h3 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
-              <span class="bg-gradient-to-r from-blue-900 to-red-600 bg-clip-text text-transparent">
-                New Ordinance on Waste Management
-              </span>
-              <br>Effective April 2026
-            </h3>
-            
-            <!-- Date with icon -->
-            <div class="flex items-center gap-2 mb-6">
-              <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                <svg class="w-4 h-4 text-blue-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <span class="text-sm font-semibold text-gray-700">March 5, 2026</span>
-            </div>
-            
-            <!-- Description with improved readability -->
-            <p class="text-gray-600 leading-relaxed mb-8 text-lg">
-              The Sangguniang Barangay has passed Ordinance No. 2026-05, implementing a new waste management system 
-              for all households and establishments in Barangay Dolores. This includes mandatory segregation, 
-              scheduled collection, and composting programs. Fines for non-compliance will take effect starting April 2026.
-            </p>
-            
-            
-            <!-- Buttons with enhanced design -->
-            <div class="flex flex-wrap gap-4">
-              <router-link to="/news" class="group relative px-8 py-3 bg-blue-900 text-white rounded-xl text-sm font-semibold hover:bg-blue-800 transition-all duration-200 hover:-translate-y-0.5 shadow-lg hover:shadow-xl flex items-center gap-2 overflow-hidden">
-                <span class="absolute inset-0 bg-gradient-to-r from-yellow-400 to-yellow-500 opacity-0 group-hover:opacity-20 transition-opacity"></span>
-                <span>Read full ordinance</span>
-                <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                </svg>
-              </router-link>
+  <!-- Loading State -->
+  <div v-if="announcementsLoading" class="flex flex-col items-center justify-center py-20 gap-4">
+    <div class="relative w-12 h-12">
+      <div class="absolute inset-0 border-[3px] border-blue-100 rounded-full"></div>
+      <div class="absolute inset-0 border-[3px] border-blue-900 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+    <p class="text-sm text-gray-400 font-medium">Loading announcements...</p>
+  </div>
 
+  <template v-else>
+    <!-- Featured Announcement -->
+    <div v-if="featuredAnnouncement" class="mb-20 relative">
+      <div class="absolute -top-4 -left-4 w-24 h-24 bg-yellow-400/10 rounded-full blur-2xl"></div>
+      <div class="absolute -bottom-4 -right-4 w-32 h-32 bg-blue-900/10 rounded-full blur-2xl"></div>
+
+      <div class="bg-white rounded-3xl border border-gray-100 shadow-2xl overflow-hidden relative">
+        <!-- Gradient accent line -->
+        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-900 via-yellow-400 to-red-600"></div>
+
+        <div class="p-8 md:p-12">
+          <div class="grid md:grid-cols-5 gap-8">
+            <!-- Left Content -->
+            <div class="md:col-span-3">
+              <!-- Category Tag -->
+              <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 shadow-lg text-white text-xs font-bold uppercase tracking-wider"
+                :style="`background: ${categoryColor(featuredAnnouncement.category)}`">
+                <span>{{ categoryIcon(featuredAnnouncement.category) }}</span>
+                <span>{{ categoryLabel(featuredAnnouncement.category) }}</span>
+              </div>
+
+              <!-- Urgent badge -->
+              <span v-if="featuredAnnouncement.is_urgent"
+                class="ml-2 inline-flex items-center gap-1 px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded-full text-xs font-bold uppercase tracking-wider">
+                🔴 Urgent
+              </span>
+
+              <!-- Title -->
+              <h3 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight mt-4">
+                <span class="bg-gradient-to-r from-blue-900 to-red-600 bg-clip-text text-transparent">
+                  {{ featuredAnnouncement.title }}
+                </span>
+              </h3>
+
+              <!-- Date -->
+              <div class="flex items-center gap-2 mb-6">
+                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                  <svg class="w-4 h-4 text-blue-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                </div>
+                <span class="text-sm font-semibold text-gray-700">{{ formatDate(featuredAnnouncement.created_at) }}</span>
+                <span v-if="featuredAnnouncement.creator" class="text-xs text-gray-400">
+                  
+                </span>
+              </div>
+
+              <!-- Description -->
+              <p class="text-gray-600 leading-relaxed mb-8 text-lg">
+                {{ stripHtml(featuredAnnouncement.content) || featuredAnnouncement.excerpt }}
+              </p>
             </div>
-          </div>
-          
-          <!-- Right Side - Visual Element -->
-          <div class="md:col-span-2 hidden md:block">
-            <div class="relative h-full flex items-center justify-center">
-              <!-- Decorative circles -->
-              <div class="relative w-64 h-64">
+
+            <!-- Right Side - Featured Image or Visual -->
+            <div class="md:col-span-2 hidden md:flex items-center justify-center">
+              <div v-if="featuredAnnouncement.featured_image" class="w-full h-64 rounded-2xl overflow-hidden shadow-xl">
+                <img
+                  :src="featuredAnnouncement.featured_image_url || '/storage/' + featuredAnnouncement.featured_image"
+                  class="w-full h-full object-cover"
+                  @error="e => e.target.style.display='none'"
+                />
+              </div>
+              <div v-else class="relative w-64 h-64">
                 <div class="absolute inset-0 bg-gradient-to-br from-blue-900/10 to-red-600/10 rounded-full animate-pulse"></div>
                 <div class="absolute inset-4 bg-gradient-to-br from-yellow-400/10 to-orange-400/10 rounded-full"></div>
                 <div class="absolute inset-8 bg-white rounded-full shadow-2xl flex items-center justify-center">
-                  <svg class="w-24 h-24 text-blue-900/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 21v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2m8-10a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
+                  <span class="text-6xl">{{ categoryIcon(featuredAnnouncement.category) }}</span>
                 </div>
               </div>
             </div>
@@ -482,85 +486,111 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- More Announcements -->
-  <div class="relative">
-    <!-- Section header -->
-    <div class="flex items-center justify-between mb-8">
-      <div class="flex items-center gap-3">
-        <div class="w-1 h-8 bg-gradient-to-b from-blue-900 to-red-600 rounded-full"></div>
-        <h3 class="text-2xl font-bold text-gray-800">Recent Barangay Updates</h3>
-      </div>
-      <router-link to="/news" class="group flex items-center gap-2 text-blue-900 font-medium hover:gap-3 transition-all duration-200">
-        <span>View all announcements</span>
-        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-          <svg class="w-4 h-4 text-blue-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-          </svg>
+    <!-- Recent Announcements Grid -->
+    <div v-if="recentAnnouncements.length > 0" class="relative">
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-3">
+          <div class="w-1 h-8 bg-gradient-to-b from-blue-900 to-red-600 rounded-full"></div>
+          <h3 class="text-2xl font-bold text-gray-800">Recent Barangay Updates</h3>
         </div>
-      </router-link>
-    </div>
-    
-    <!-- Cards Grid -->
-    <div class="grid md:grid-cols-3 gap-6">
-      <div v-for="(news, i) in latestNews" :key="news.title"
-        class="group bg-white rounded-2xl border border-gray-100 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden news-card relative"
-        :style="`animation-delay: ${i * 0.12 + 0.1}s`">
-        
-        <!-- Top color accent -->
-        <div class="h-1.5 w-full" :style="`background: linear-gradient(90deg, ${news.color1}, ${news.color2})`"></div>
-        
-        <div class="p-6">
-          <!-- Category with icon -->
-          <div class="flex items-center justify-between mb-4">
-            <span class="text-xs font-bold px-3 py-1 rounded-full" 
-                  :style="`background: ${news.color1}15; color: ${news.color1}`">
-              {{ news.category }}
-            </span>
-            <span class="text-xs text-gray-400">{{ news.date }}</span>
+        <router-link to="/news" class="group flex items-center gap-2 text-blue-900 font-medium hover:gap-3 transition-all duration-200">
+          <span>View all announcements</span>
+          <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+            <svg class="w-4 h-4 text-blue-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+            </svg>
           </div>
-          
-          <!-- Title -->
-          <h4 class="text-lg font-bold text-gray-900 mb-3 leading-snug group-hover:text-blue-900 transition-colors line-clamp-2">
-            {{ news.title }}
-          </h4>
-          
-          <!-- Excerpt with gradient fade -->
-          <div class="relative">
-            <p class="text-sm text-gray-500 leading-relaxed line-clamp-3 mb-4">
-              {{ news.excerpt }}
-            </p>
-            <div class="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
+        </router-link>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <div
+          v-for="(news, i) in recentAnnouncements"
+          :key="news.id"
+          class="group bg-white rounded-2xl border border-gray-100 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden news-card relative"
+          :style="`animation-delay: ${i * 0.12 + 0.1}s`"
+        >
+          <!-- Top color accent -->
+          <div class="h-1.5 w-full" :style="`background: linear-gradient(90deg, ${categoryColor(news.category)}, ${categoryColorSecondary(news.category)})`"></div>
+
+          <!-- Featured image -->
+          <div v-if="news.featured_image" class="h-40 overflow-hidden">
+            <img
+              :src="news.featured_image_url || '/storage/' + news.featured_image"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              @error="e => e.target.parentElement.style.display='none'"
+            />
           </div>
-          
-          <!-- Read More with arrow animation -->
-          <div class="flex items-center justify-between pt-4 border-t border-gray-100">
-            <span class="text-xs text-gray-400">Posted by: Barangay Secretariat</span>
-            <div class="flex items-center gap-2 text-sm font-medium text-blue-900 group-hover:gap-3 transition-all">
-              Read more
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-              </svg>
+
+          <div class="p-6">
+            <!-- Category + Date -->
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold px-3 py-1 rounded-full"
+                  :style="`background: ${categoryColor(news.category)}15; color: ${categoryColor(news.category)}`">
+                  {{ categoryIcon(news.category) }} {{ categoryLabel(news.category) }}
+                </span>
+                <span v-if="news.is_urgent" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-50 text-red-600 border border-red-200">
+                  URGENT
+                </span>
+              </div>
+              <span class="text-xs text-gray-400">{{ formatDate(news.created_at) }}</span>
+            </div>
+
+            <!-- Title -->
+            <h4 class="text-lg font-bold text-gray-900 mb-3 leading-snug group-hover:text-blue-900 transition-colors line-clamp-2">
+              {{ news.title }}
+            </h4>
+
+            <!-- Excerpt -->
+            <div class="mb-4">
+              <p class="text-sm text-gray-500 leading-relaxed">
+                {{ news.excerpt || stripHtml(news.content) }}
+              </p>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+              <span class="text-xs text-gray-400">{{ getAuthorName(news) }}</span>
+              <router-link to="/news" class="flex items-center gap-1.5 text-sm font-medium text-blue-900 group-hover:gap-2.5 transition-all">
+                Read more
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </router-link>
             </div>
           </div>
+
+          <!-- Hover glow -->
+          <div class="absolute inset-0 -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"
+            :style="`background: linear-gradient(135deg, ${categoryColor(news.category)}08, ${categoryColorSecondary(news.category)}08)`">
+          </div>
         </div>
-        
-        <!-- Hover glow effect -->
-        <div class="absolute inset-0 -z-10 bg-gradient-to-br from-blue-900/5 to-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
+      </div>
+
+      <!-- Mobile view all -->
+      <div class="text-center mt-10 md:hidden">
+        <router-link to="/news" class="inline-flex items-center gap-2 px-6 py-3 bg-blue-900 text-white rounded-xl font-medium">
+          View all announcements
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+          </svg>
+        </router-link>
       </div>
     </div>
-    
-    <!-- View all mobile button -->
-    <div class="text-center mt-10 md:hidden">
-      <router-link to="/news" class="inline-flex items-center gap-2 px-6 py-3 bg-blue-900 text-white rounded-xl font-medium">
-        View all announcements
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+
+    <!-- Empty State -->
+    <div v-else-if="!featuredAnnouncement" class="text-center py-20">
+      <div class="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
         </svg>
-      </router-link>
+      </div>
+      <p class="text-gray-500 font-medium">No announcements yet.</p>
+      <p class="text-sm text-gray-400 mt-1">Check back soon for barangay updates.</p>
     </div>
-  </div>
+  </template>
 </section>
 
 
@@ -631,6 +661,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { announcementService } from '@/services/announcementService'
 
 // ── Preloader ────────────────────────────────────────────────────
 const isLoading      = ref(true)
@@ -718,6 +749,68 @@ const slides = [
     icon: '⚙️',
   },
 ]
+
+//Announcement
+const announcementsLoading  = ref(false)
+const featuredAnnouncement  = ref(null)
+const recentAnnouncements   = ref([])
+
+async function fetchPublicAnnouncements() {
+  announcementsLoading.value = true
+  try {
+    const response = await announcementService.getAnnouncements({
+      status: 'published',
+      per_page: 4
+    })
+    const all = response.data?.data ?? []
+    // Urgent items bubble to top
+    const sorted = [...all].sort((a, b) => {
+      if (a.is_urgent && !b.is_urgent) return -1
+      if (!a.is_urgent && b.is_urgent) return 1
+      return new Date(b.created_at) - new Date(a.created_at)
+    })
+    featuredAnnouncement.value = sorted[0] ?? null
+    recentAnnouncements.value  = sorted.slice(1, 4)
+  } catch (e) {
+    console.error('Failed to fetch announcements', e)
+  } finally {
+    announcementsLoading.value = false
+  }
+}
+
+// ── Announcement helpers ─────────────────────────────────────────
+const CATEGORY_MAP = {
+  event:     { label: 'Events & Activities', icon: '🎉', color: '#7c3aed', colorSecondary: '#a855f7' },
+  advisory:  { label: 'Public Advisories',   icon: '📢', color: '#0f2d6b', colorSecondary: '#1d4ed8' },
+  emergency: { label: 'Emergency Alerts',    icon: '🚨', color: '#dc2626', colorSecondary: '#ef4444' },
+  meeting:   { label: 'Community Meetings',  icon: '🤝', color: '#059669', colorSecondary: '#10b981' },
+  program:   { label: 'Government Programs', icon: '🏛️', color: '#d97706', colorSecondary: '#f59e0b' },
+}
+
+function categoryLabel(cat)         { return CATEGORY_MAP[cat]?.label         ?? 'General' }
+function categoryIcon(cat)          { return CATEGORY_MAP[cat]?.icon           ?? '📄' }
+function categoryColor(cat)         { return CATEGORY_MAP[cat]?.color          ?? '#0f2d6b' }
+function categoryColorSecondary(cat){ return CATEGORY_MAP[cat]?.colorSecondary ?? '#1d4ed8' }
+
+function formatDate(date) {
+  if (!date) return '—'
+  return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+}
+
+function stripHtml(html) {
+  if (!html) return ''
+  return html.replace(/<[^>]*>/g, '').trim()
+}
+
+function getAuthorName(announcement) {
+  if (!announcement.creator) return 'Barangay Secretariat'
+  const info = announcement.creator.information
+  if (info) {
+    const name = `${info.first_name || ''} ${info.last_name || ''}`.trim()
+    if (name) return name
+  }
+  return announcement.creator.name ?? announcement.creator.email?.split('@')[0] ?? 'Barangay Secretariat'
+}
 
 const current  = ref(0)
 const nextIdx  = ref(1)
@@ -820,6 +913,7 @@ function observeSection(el, visibleRef) {
 
 onMounted(() => {
   runPreloader()
+  fetchPublicAnnouncements()
   resetAuto()
   setTimeout(() => {
     observeSection(aboutRef.value,    aboutVisible)
