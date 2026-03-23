@@ -534,6 +534,7 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { announcementService } from '@/services/announcementService'
 import Swal from 'sweetalert2'
 import AnnouncementModal from '@/components/modals/admin/announcement/AnnouncementModal.vue'
+import { getAnnouncements, hasAnnouncementsData, setAnnouncements, clearAnnouncementsData } from '@/utils/dataStore'
 
 const announcements = ref([])
 const stats = ref({})
@@ -580,19 +581,61 @@ const showSuccess = (msg) => Swal.fire({ icon: 'success', title: 'Success', text
 const showError = (msg) => Swal.fire({ icon: 'error', title: 'Error', text: msg, timer: 3000, showConfirmButton: false, position: 'top-end', toast: true })
 const showConfirmDialog = async (title, text) => { const r = await Swal.fire({ title, text, icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3d4f7c', confirmButtonText: 'Yes', cancelButtonText: 'Cancel' }); return r.isConfirmed }
 
-const fetchAnnouncements = async () => { loading.value = true; try { const r = await announcementService.getAnnouncements({ page: 1, per_page: 10, ...filters }); announcements.value = r.data.data; stats.value = r.stats; currentPage.value = 1 } catch { showError('Failed to fetch announcements') } finally { loading.value = false } }
-const fetchTrashedAnnouncements = async () => { loading.value = true; try { const r = await announcementService.getTrashedAnnouncements({ search: filters.search, category: filters.category !== 'all' ? filters.category : undefined }); announcements.value = r.data.data; stats.value = r.stats; currentPage.value = 1 } catch { showError('Failed to fetch trashed announcements') } finally { loading.value = false } }
 
-const handleSave = async (formData) => { saving.value = true; try { if (modalMode.value === 'create') { await announcementService.createAnnouncement(formData); showSuccess('Created successfully') } else { await announcementService.updateAnnouncement(formData.id, formData); showSuccess('Updated successfully') } closeModal(); showTrash.value ? await fetchTrashedAnnouncements() : await fetchAnnouncements() } catch { showError('Failed to save') } finally { saving.value = false } }
-const restoreAnnouncement = async (id) => { if (await showConfirmDialog('Restore', 'Restore this announcement?')) { try { await announcementService.restoreAnnouncement(id); showSuccess('Restored'); await fetchTrashedAnnouncements() } catch { showError('Failed') } } }
+const fetchAnnouncements = async (forceRefresh = false) => {
+  if (!forceRefresh && !hasActiveFilters.value && hasAnnouncementsData()) {
+    const cached = getAnnouncements()
+    announcements.value = cached.list
+    stats.value = cached.stats
+    currentPage.value = 1
+    return
+  }
+  loading.value = true
+  try {
+    const r = await announcementService.getAnnouncements({ page: 1, per_page: 10, ...filters })
+    announcements.value = r.data.data
+    stats.value = r.stats
+    currentPage.value = 1
+    if (!hasActiveFilters.value) {
+      setAnnouncements({ list: r.data.data, stats: r.stats })
+    }
+  } catch { showError('Failed to fetch announcements') } finally { loading.value = false }
+}
+
+const fetchTrashedAnnouncements = async () => {
+  loading.value = true
+  try {
+    const r = await announcementService.getTrashedAnnouncements({ search: filters.search, category: filters.category !== 'all' ? filters.category : undefined })
+    announcements.value = r.data.data
+    stats.value = r.stats
+    currentPage.value = 1
+  } catch { showError('Failed to fetch trashed announcements') } finally { loading.value = false }
+}
+
+const invalidateAndRefetch = async () => {
+  clearAnnouncementsData()
+  await fetchAnnouncements(true)
+}
+
+const handleSave = async (formData) => {
+  saving.value = true
+  try {
+    if (modalMode.value === 'create') { await announcementService.createAnnouncement(formData); showSuccess('Created successfully') }
+    else { await announcementService.updateAnnouncement(formData.id, formData); showSuccess('Updated successfully') }
+    closeModal()
+    showTrash.value ? await fetchTrashedAnnouncements() : await invalidateAndRefetch()
+  } catch { showError('Failed to save') } finally { saving.value = false }
+}
+
+const restoreAnnouncement = async (id) => { if (await showConfirmDialog('Restore', 'Restore this announcement?')) { try { await announcementService.restoreAnnouncement(id); showSuccess('Restored'); clearAnnouncementsData(); await fetchTrashedAnnouncements() } catch { showError('Failed') } } }
 const forceDeleteAnnouncement = async (id) => { if (await showConfirmDialog('Delete Permanently', 'This cannot be undone.')) { try { await announcementService.forceDeleteAnnouncement(id); showSuccess('Deleted'); await fetchTrashedAnnouncements() } catch { showError('Failed') } } }
 const emptyTrash = async () => { if (await showConfirmDialog('Empty Trash', 'Delete all trash items permanently?')) { try { await announcementService.emptyTrash(); showSuccess('Trash emptied'); await fetchTrashedAnnouncements() } catch { showError('Failed') } } }
-const confirmBulkRestore = async () => { if (await showConfirmDialog('Restore Multiple', `Restore ${selectedItems.value.length} items?`)) { try { await announcementService.bulkRestore({ ids: selectedItems.value }); showSuccess('Restored'); selectedItems.value = []; await fetchTrashedAnnouncements() } catch { showError('Failed') } } }
+const confirmBulkRestore = async () => { if (await showConfirmDialog('Restore Multiple', `Restore ${selectedItems.value.length} items?`)) { try { await announcementService.bulkRestore({ ids: selectedItems.value }); showSuccess('Restored'); selectedItems.value = []; clearAnnouncementsData(); await fetchTrashedAnnouncements() } catch { showError('Failed') } } }
 const confirmBulkForceDelete = async () => { if (await showConfirmDialog('Delete Multiple', `Permanently delete ${selectedItems.value.length} items?`)) { try { await announcementService.bulkForceDelete({ ids: selectedItems.value }); showSuccess('Deleted'); selectedItems.value = []; await fetchTrashedAnnouncements() } catch { showError('Failed') } } }
-const confirmDelete = async (a) => { if (await showConfirmDialog('Move to Trash', `Move "${a.title}" to trash?`)) { try { await announcementService.deleteAnnouncement(a.id); showSuccess('Moved to trash'); await fetchAnnouncements() } catch { showError('Failed') } } }
-const confirmBulkDelete = async () => { if (await showConfirmDialog('Move to Trash', `Move ${selectedItems.value.length} items to trash?`)) { try { await announcementService.bulkDelete({ ids: selectedItems.value }); showSuccess('Moved to trash'); selectedItems.value = []; await fetchAnnouncements() } catch { showError('Failed') } } }
-const bulkUpdateStatus = async () => { try { await announcementService.bulkUpdateStatus({ ids: selectedItems.value, status: bulkStatus.value }); showSuccess('Status updated'); selectedItems.value = []; showTrash.value ? await fetchTrashedAnnouncements() : await fetchAnnouncements() } catch { showError('Failed') } }
-const toggleUrgent = async (a) => { try { await announcementService.toggleUrgent(a.id); showSuccess(a.is_urgent ? 'Removed urgent' : 'Marked urgent'); showTrash.value ? await fetchTrashedAnnouncements() : await fetchAnnouncements() } catch { showError('Failed') } }
+const confirmDelete = async (a) => { if (await showConfirmDialog('Move to Trash', `Move "${a.title}" to trash?`)) { try { await announcementService.deleteAnnouncement(a.id); showSuccess('Moved to trash'); await invalidateAndRefetch() } catch { showError('Failed') } } }
+const confirmBulkDelete = async () => { if (await showConfirmDialog('Move to Trash', `Move ${selectedItems.value.length} items to trash?`)) { try { await announcementService.bulkDelete({ ids: selectedItems.value }); showSuccess('Moved to trash'); selectedItems.value = []; await invalidateAndRefetch() } catch { showError('Failed') } } }
+const bulkUpdateStatus = async () => { try { await announcementService.bulkUpdateStatus({ ids: selectedItems.value, status: bulkStatus.value }); showSuccess('Status updated'); selectedItems.value = []; showTrash.value ? await fetchTrashedAnnouncements() : await invalidateAndRefetch() } catch { showError('Failed') } }
+const toggleUrgent = async (a) => { try { await announcementService.toggleUrgent(a.id); showSuccess(a.is_urgent ? 'Removed urgent' : 'Marked urgent'); showTrash.value ? await fetchTrashedAnnouncements() : await invalidateAndRefetch() } catch { showError('Failed') } }
 
 const statusBadgeClass = (s) => ({ published: 'bg-emerald-50 text-emerald-700 border border-emerald-200', draft: 'bg-amber-50 text-amber-700 border border-amber-200', archived: 'bg-slate-100 text-slate-600 border border-slate-200' }[s] || 'bg-slate-100 text-slate-600')
 const categoryBadgeClass = (c) => ({ event: 'bg-purple-50 text-purple-700 border border-purple-200', advisory: 'bg-blue-50 text-blue-700 border border-blue-200', emergency: 'bg-red-50 text-red-700 border border-red-200', meeting: 'bg-emerald-50 text-emerald-700 border border-emerald-200', program: 'bg-amber-50 text-amber-700 border border-amber-200' }[c] || 'bg-slate-100 text-slate-600')
@@ -603,7 +646,7 @@ const closeModal = () => { showModal.value = false; selectedAnnouncement.value =
 const closePreviewModal = () => { showPreviewModal.value = false; previewData.value = null }
 const handleImageError = (e) => { e.target.style.display = 'none' }
 const selectAll = () => { selectedItems.value = allSelected.value ? paginatedAnnouncements.value.map(a => a.id) : [] }
-const resetFilters = () => { filters.search = ''; filters.status = 'all'; filters.category = 'all'; filters.urgent = 'all'; currentPage.value = 1; showTrash.value ? fetchTrashedAnnouncements() : fetchAnnouncements() }
+const resetFilters = () => { filters.search = ''; filters.status = 'all'; filters.category = 'all'; filters.urgent = 'all'; currentPage.value = 1; showTrash.value ? fetchTrashedAnnouncements() : fetchAnnouncements(true) }
 
 const getAuthorName = (a) => { if (!a.creator) return 'Unknown'; if (a.creator.information) { const i = a.creator.information; const n = `${i.first_name || ''} ${i.last_name || ''}`.trim(); if (n) return n } return a.creator.name || a.creator.email?.split('@')[0] || 'Unknown' }
 const getAuthorInitials = (a) => { const n = getAuthorName(a); if (n === 'Unknown' || !n) return '?'; const p = n.split(' '); return p.length === 1 ? p[0][0]?.toUpperCase() || '?' : (p[0][0] + p[p.length - 1][0]).toUpperCase() }
@@ -620,5 +663,5 @@ onMounted(() => fetchAnnouncements())
 <style scoped>
 .modal-enter-active, .modal-leave-active { transition: opacity 0.2s ease; }
 .modal-enter-from, .modal-leave-to { opacity: 0; }
-.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-clamp: 2; }
+.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 </style>

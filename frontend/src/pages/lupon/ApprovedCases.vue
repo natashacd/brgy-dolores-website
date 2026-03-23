@@ -71,6 +71,12 @@
             <h2 class="text-base sm:text-lg font-semibold text-white tracking-tight">Approved Cases List</h2>
           </div>
           <div class="flex items-center gap-3">
+            <!-- Mini legend -->
+            <div class="hidden sm:flex items-center gap-3 text-[10px] text-white/60">
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>Approved</span>
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-violet-400"></span>Scheduled</span>
+            </div>
+            <span class="text-xs text-white/50">{{ filteredCases.length }} case{{ filteredCases.length !== 1 ? 's' : '' }}</span>
           </div>
         </div>
       </div>
@@ -91,10 +97,10 @@
             <thead>
               <tr class="border-b border-slate-100 bg-slate-50/60">
                 <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Case #</th>
-                <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Filed By</th>
                 <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Type</th>
                 <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Title</th>
                 <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Location</th>
+                <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Filed By</th>
                 <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Incident Date</th>
                 <!-- Sub-status column -->
                 <th class="text-left px-6 py-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Progress</th>
@@ -114,10 +120,6 @@
                 </td>
 
                 <td class="px-6 py-4">
-                  <p class="text-sm text-slate-600 font-medium">{{ getFiledBy(case_) }}</p>
-                </td>
-
-                <td class="px-6 py-4">
                   <div class="flex items-center gap-2">
                     <div class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" :class="typeIconBg(case_.type)">
                       <svg class="w-3 h-3" :class="typeIconColor(case_.type)" fill="none" stroke="currentColor" viewBox="0 0 24 24" v-html="typeIcon(case_.type)"></svg>
@@ -132,6 +134,10 @@
 
                 <td class="px-6 py-4">
                   <p class="text-sm text-slate-500 truncate max-w-[140px]">{{ case_.location }}</p>
+                </td>
+
+                <td class="px-6 py-4">
+                  <p class="text-sm text-slate-600 font-medium">User #{{ case_.user_id }}</p>
                 </td>
 
                 <td class="px-6 py-4">
@@ -228,7 +234,7 @@
                   </div>
                   <div class="min-w-0">
                     <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Filed By</p>
-                    <p class="text-xs font-semibold text-slate-700 mt-0.5 truncate">User #{{ case_.user_id }}</p>
+                    <p class="text-xs font-semibold text-slate-700 mt-0.5 truncate">{{ getFiledBy(case_) }}</p>
                   </div>
                 </div>
                 <div class="flex items-start gap-2 p-2 rounded-xl">
@@ -384,7 +390,7 @@
                 </div>
                 <div class="px-4 py-2.5 flex justify-between items-center gap-2">
                   <span class="text-[11px] text-slate-400 flex-shrink-0">Filed By</span>
-                  <span class="text-[11px] font-semibold text-slate-700 text-right">User #{{ selectedCase.user_id }}</span>
+                  <span class="text-[11px] font-semibold text-slate-700 text-right">{{ getFiledBy(selectedCase) }}</span>
                 </div>
               </div>
             </div>
@@ -492,6 +498,7 @@
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import Swal from 'sweetalert2'
 import LuponCasesService from '@/services/Lupon/LuponCasesService.js'
+import { getLuponCases, hasLuponCasesData, setLuponCases } from '@/utils/dataStore'
 
 // ── State ──────────────────────────────────────────────────
 const loading       = ref(false)
@@ -520,8 +527,18 @@ function statusDotSolid(s) {
   return { approved: 'bg-emerald-500', scheduled: 'bg-violet-500' }[s] || 'bg-emerald-500'
 }
 
-// ── Fetch — status comes directly from DB, no derivation needed ──
-async function fetchApprovedCases() {
+async function fetchApprovedCases(forceRefresh = false) {
+  if (!forceRefresh && hasLuponCasesData()) {
+    const cached = getLuponCases()
+    const approved = cached.filter(c => ['approved', 'scheduled'].includes(c.status))
+    cases.value = approved.map(c => ({
+      ...c,
+      summon_date:  c.summon?.date  || null,
+      summon_notes: c.summon?.notes || null,
+    }))
+    return
+  }
+
   loading.value = true
   try {
     const data = await LuponCasesService.approvedCases()
@@ -531,6 +548,9 @@ async function fetchApprovedCases() {
       summon_date:  c.summon?.date  || null,
       summon_notes: c.summon?.notes || null,
     }))
+    const existing = hasLuponCasesData() ? getLuponCases() : []
+    const others = existing.filter(c => !['approved', 'scheduled'].includes(c.status))
+    setLuponCases([...others, ...raw])
   } catch (err) {
     console.error('Fetch error:', err)
     Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load approved cases.', confirmButtonColor: '#3d4f7c' })
@@ -581,7 +601,7 @@ const filteredCases = computed(() => {
       c.title?.toLowerCase().includes(s) ||
       c.location?.toLowerCase().includes(s) ||
       c.type?.toLowerCase().includes(s) ||
-      c.user_id?.toString().includes(s) ||
+      getFiledBy(c).toLowerCase().includes(s) ||
       String(c.id).includes(s)
     )
   }
@@ -600,7 +620,6 @@ function resetFilters() { filters.search = ''; filters.type = ''; filters.status
 watch(filters, () => { currentPage.value = 1 }, { deep: true })
 function openViewModal(c) { selectedCase.value = c; showViewModal.value = true }
 
-// ── Update status locally after API action ─────────────────
 function updateStatus(id, status, extra = {}) {
   const idx = cases.value.findIndex(c => c.id === id)
   if (idx !== -1) {
@@ -611,29 +630,41 @@ function updateStatus(id, status, extra = {}) {
   }
 }
 
-// ── Remove from list (close case → goes to closed module) ──
 function removeCase(id) {
   cases.value = cases.value.filter(c => c.id !== id)
   if (selectedCase.value?.id === id) showViewModal.value = false
 }
 
-// ── Case Closed — removes from approved, goes to closed ────
 async function handleClosedCase(case_) {
   const result = await Swal.fire({
     title: 'Close Case?',
-    text: `Mark case #C-${String(case_.id).padStart(5, '0')} as closed? It will move to Closed Cases.`,
+    html: `
+      <p class="text-sm text-slate-500 mb-4">
+        Closing case <span class="font-semibold text-slate-700">#C-${String(case_.id).padStart(5, '0')}</span>.
+        It will move to Closed Cases.
+      </p>
+      <textarea id="swal-close-remarks" rows="3" placeholder="Enter closing remarks or resolution summary…"
+        class="w-full text-sm text-slate-700 border border-slate-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-slate-300 focus:border-slate-400 transition-all"
+        style="font-family:inherit;"></textarea>
+    `,
     icon: 'question',
     showCancelButton: true,
     confirmButtonColor: '#475569',
     cancelButtonColor: '#6b7280',
     confirmButtonText: 'Yes, close it',
     cancelButtonText: 'Cancel',
+    focusConfirm: false,
+    preConfirm: () => {
+      const remarks = document.getElementById('swal-close-remarks').value.trim()
+      if (!remarks) { Swal.showValidationMessage('Closing remarks are required.'); return false }
+      return remarks
+    },
   })
   if (!result.isConfirmed) return
 
   actionLoading.value = true
   try {
-    await LuponCasesService.closeCase(case_.id)
+    await LuponCasesService.closeCase(case_.id, { remarks: result.value })
     removeCase(case_.id)
     Swal.fire({ icon: 'success', title: 'Case Closed', text: 'The case has been moved to Closed Cases.', timer: 2000, showConfirmButton: false })
   } catch (err) {
@@ -643,7 +674,6 @@ async function handleClosedCase(case_) {
   }
 }
 
-// ── Schedule Summon — changes status to scheduled in DB ──
 async function handleScheduleSummon(case_) {
   const result = await Swal.fire({
     title: 'Schedule Summon',
@@ -674,15 +704,22 @@ async function handleScheduleSummon(case_) {
   actionLoading.value = true
   try {
     await LuponCasesService.scheduleSummon(case_.id, result.value)
-    // Status changes to 'scheduled' in DB — update locally
     updateStatus(case_.id, 'scheduled', {
       summon_date:  result.value.date,
       summon_notes: result.value.notes,
     })
+    if (hasLuponCasesData()) {
+      const updated = getLuponCases().map(c =>
+        c.id === case_.id
+          ? { ...c, status: 'scheduled', summon: { date: result.value.date, notes: result.value.notes } }
+          : c
+      )
+      setLuponCases(updated)
+    }
     Swal.fire({
       icon: 'success',
       title: 'Summon Scheduled',
-      text: `Summon set for ${new Date(result.value.date).toLocaleString()}.`,
+      text: `Summon set for ${new Date(result.value.date).toLocaleString()}. Case remains in Approved Cases.`,
       timer: 3000,
       showConfirmButton: false,
     })
@@ -693,7 +730,6 @@ async function handleScheduleSummon(case_) {
   }
 }
 
-// ── Certificate to File — just prints, no status change ────
 function handleCertificate(case_) {
   Swal.fire({
     title: 'Print Certificate to File Action',
@@ -712,6 +748,7 @@ function handleCertificate(case_) {
     cancelButtonText: 'Cancel',
   }).then(result => {
     if (result.isConfirmed) {
+
       window.print()
     }
   })

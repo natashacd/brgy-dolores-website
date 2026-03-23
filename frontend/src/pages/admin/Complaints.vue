@@ -380,9 +380,10 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 import LuponCasesService from '@/services/Lupon/LuponCasesService'
-
+import { getLuponCases, hasLuponCasesData, setLuponCases, clearData } from '@/utils/dataStore'
+ 
 const router = useRouter()
-
+ 
 const loading       = ref(false)
 const actionLoading = ref(false)
 const currentPage   = ref(1)
@@ -391,8 +392,7 @@ const showViewModal = ref(false)
 const selectedCase  = ref(null)
 const complaints    = ref([])
 const filters       = reactive({ search: '', type: '' })
-
-// ── Get filer name from user relationship ─────────────────────
+ 
 function getFiledBy(c) {
   if (c.user?.information) {
     const i = c.user.information
@@ -402,7 +402,7 @@ function getFiledBy(c) {
   if (c.user?.name) return c.user.name
   return `User #${c.user_id}`
 }
-
+ 
 const AVATAR_COLORS = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#9333ea','#ea580c']
 function getAvatarColor(name = '') {
   if (!name) return '#94a3b8'
@@ -415,13 +415,21 @@ function getInitials(name = '') {
   const p = name.trim().split(' ')
   return p.length === 1 ? p[0][0]?.toUpperCase() || '?' : (p[0][0] + p[p.length - 1][0]).toUpperCase()
 }
-
-// ── Fetch — uses allCases() which includes user.information ───
+ 
 async function fetchComplaints() {
+  if (hasLuponCasesData()) {
+    const cached = getLuponCases()
+    if (cached) {
+      complaints.value = cached.filter(c => c.status === 'pending')
+      return
+    }
+  }
+ 
   loading.value = true
   try {
     const data = await LuponCasesService.allCases()
     const all = Array.isArray(data) ? data : (data.data ?? [])
+    setLuponCases(all)
     complaints.value = all.filter(c => c.status === 'pending')
   } catch (err) {
     console.error('Fetch error:', err)
@@ -430,7 +438,7 @@ async function fetchComplaints() {
     loading.value = false
   }
 }
-
+ 
 function typeLabel(t) { return { incident: 'Incident Report', dispute: 'Dispute', report: 'General Report', other: 'Other' }[t] || t }
 function typeIconBg(t) { return { incident: 'bg-red-100', dispute: 'bg-amber-100', report: 'bg-blue-100', other: 'bg-purple-100' }[t] || 'bg-slate-100' }
 function typeIconColor(t) { return { incident: 'text-red-600', dispute: 'text-amber-600', report: 'text-blue-600', other: 'text-purple-600' }[t] || 'text-slate-500' }
@@ -444,9 +452,9 @@ function formatDate(d) {
   try { return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) }
   catch { return d }
 }
-
+ 
 const hasActiveFilters = computed(() => filters.search || filters.type)
-
+ 
 const filteredComplaints = computed(() => {
   let f = [...complaints.value]
   if (filters.search) {
@@ -462,17 +470,70 @@ const filteredComplaints = computed(() => {
   if (filters.type) f = f.filter(c => c.type === filters.type)
   return f
 })
-
+ 
 const totalPages = computed(() => Math.max(1, Math.ceil(filteredComplaints.value.length / itemsPerPage)))
 const paginatedComplaints = computed(() => {
   const s = (currentPage.value - 1) * itemsPerPage
   return filteredComplaints.value.slice(s, s + itemsPerPage)
 })
-
+ 
 function resetFilters() { filters.search = ''; filters.type = ''; currentPage.value = 1 }
 watch(filters, () => { currentPage.value = 1 }, { deep: true })
 function openViewModal(c) { selectedCase.value = c; showViewModal.value = true }
-
+ 
+async function handleApprove(case_) {
+  const result = await Swal.fire({
+    title: 'Approve Case?',
+    text: `Case #C-${String(case_.id).padStart(5, '0')} will be marked as Approved.`,
+    icon: 'question', showCancelButton: true,
+    confirmButtonColor: '#10b981', cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Yes, approve', cancelButtonText: 'Cancel',
+  })
+  if (!result.isConfirmed) return
+  actionLoading.value = true
+  try {
+    await LuponCasesService.approveCase(case_.id)
+    complaints.value = complaints.value.filter(c => c.id !== case_.id)
+    clearData()
+    showViewModal.value = false
+    Swal.fire({ icon: 'success', title: 'Approved', text: 'Case approved successfully.', timer: 2000, showConfirmButton: false })
+    setTimeout(() => router.push('/lupon/complaints/approved'), 1500)
+  } catch (err) {
+    Swal.fire({ icon: 'error', title: 'Error', text: err.response?.data?.message || 'Failed to approve.', confirmButtonColor: '#3d4f7c' })
+  } finally { actionLoading.value = false }
+}
+ 
+async function handleDisapprove(case_) {
+  const result = await Swal.fire({
+    title: 'Disapprove Case?',
+    html: `<p class="text-sm text-slate-500 mb-4">Case <span class="font-semibold text-slate-700">#C-${String(case_.id).padStart(5, '0')}</span> will be disapproved. Please provide a reason.</p>
+      <textarea id="swal-remarks" rows="4" placeholder="Enter remarks or reason for disapproval…"
+        class="w-full text-sm text-slate-700 border border-slate-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-red-300 focus:border-red-400 transition-all"
+        style="font-family:inherit;"></textarea>`,
+    icon: 'warning', showCancelButton: true,
+    confirmButtonColor: '#dc2626', cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Disapprove', cancelButtonText: 'Cancel',
+    focusConfirm: false,
+    preConfirm: () => {
+      const r = document.getElementById('swal-remarks').value.trim()
+      if (!r) { Swal.showValidationMessage('Please enter a remark.'); return false }
+      return r
+    },
+  })
+  if (!result.isConfirmed) return
+  actionLoading.value = true
+  try {
+    await LuponCasesService.disapproveCase(case_.id, result.value)
+    complaints.value = complaints.value.filter(c => c.id !== case_.id)
+    clearData()
+    showViewModal.value = false
+    Swal.fire({ icon: 'info', title: 'Disapproved', text: 'Case has been disapproved.', timer: 2000, showConfirmButton: false })
+    setTimeout(() => router.push('/lupon/complaints/disapproved'), 1500)
+  } catch (err) {
+    Swal.fire({ icon: 'error', title: 'Error', text: err.response?.data?.message || 'Failed to disapprove.', confirmButtonColor: '#3d4f7c' })
+  } finally { actionLoading.value = false }
+}
+ 
 onMounted(() => fetchComplaints())
 </script>
 

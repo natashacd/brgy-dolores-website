@@ -421,7 +421,8 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import Swal from 'sweetalert2'
 import LuponCasesService from '@/services/Lupon/LuponCasesService'
-
+import { getLuponCases, hasLuponCasesData, setLuponCases } from '@/utils/dataStore'
+ 
 // ── State ─────────────────────────────────────────────────────
 const loading       = ref(false)
 const currentPage   = ref(1)
@@ -430,13 +431,22 @@ const showViewModal = ref(false)
 const selectedCase  = ref(null)
 const closedCases   = ref([])
 const filters       = reactive({ search: '', type: '' })
-
-// ── Fetch from API ────────────────────────────────────────────
+ 
 async function fetchClosedCases() {
+  if (hasLuponCasesData()) {
+    const cached = getLuponCases()
+    closedCases.value = cached.filter(c => c.status === 'closed')
+    return
+  }
+ 
   loading.value = true
   try {
     const data = await LuponCasesService.closedCases()
-    closedCases.value = Array.isArray(data) ? data : (data.data ?? [])
+    const raw = Array.isArray(data) ? data : (data.data ?? [])
+    closedCases.value = raw
+    const existing = hasLuponCasesData() ? getLuponCases() : []
+    const others = existing.filter(c => c.status !== 'closed')
+    setLuponCases([...others, ...raw])
   } catch (err) {
     console.error('Fetch error:', err)
     Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load closed cases.', confirmButtonColor: '#3d4f7c' })
@@ -444,20 +454,8 @@ async function fetchClosedCases() {
     loading.value = false
   }
 }
-
-// ── Computed Stats ────────────────────────────────────────────
-const closedThisMonth = computed(() => {
-  const now = new Date()
-  return closedCases.value.filter(c => {
-    const d = new Date(c.updated_at)
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
-  }).length
-})
-
-// ── Helpers ───────────────────────────────────────────────────
-
-// Your DB stores user_id — display as User #ID unless user relationship is loaded
-function getFiledBy(c) {
+ 
+ function getFiledBy(c) {
   if (c.user?.information) {
     const i = c.user.information
     const name = `${i.first_name || ''} ${i.last_name || ''}`.trim()
@@ -466,7 +464,7 @@ function getFiledBy(c) {
   if (c.user?.name) return c.user.name
   return `User #${c.user_id}`
 }
-
+ 
 const AVATAR_COLORS = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#9333ea','#ea580c']
 function getAvatarColor(name = '') {
   if (!name) return '#94a3b8'
@@ -479,7 +477,7 @@ function getInitials(name = '') {
   const parts = name.trim().split(' ')
   return parts.length === 1 ? parts[0][0]?.toUpperCase() || '?' : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
-
+ 
 function typeLabel(t) {
   return { incident: 'Incident Report', dispute: 'Dispute', report: 'General Report', other: 'Other' }[t] || t
 }
@@ -499,10 +497,10 @@ function formatDate(d) {
   try { return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) }
   catch { return d }
 }
-
+ 
 // ── Filters & Pagination ──────────────────────────────────────
 const hasActiveFilters = computed(() => filters.search || filters.type)
-
+ 
 const filteredCases = computed(() => {
   let f = [...closedCases.value]
   if (filters.search) {
@@ -511,24 +509,24 @@ const filteredCases = computed(() => {
       c.title?.toLowerCase().includes(s) ||
       c.location?.toLowerCase().includes(s) ||
       c.type?.toLowerCase().includes(s) ||
-      String(c.user_id).includes(s) ||
+      getFiledBy(c).toLowerCase().includes(s) ||
       String(c.id).includes(s)
     )
   }
   if (filters.type) f = f.filter(c => c.type === filters.type)
   return f
 })
-
+ 
 const totalPages = computed(() => Math.max(1, Math.ceil(filteredCases.value.length / itemsPerPage)))
 const paginatedCases = computed(() => {
   const s = (currentPage.value - 1) * itemsPerPage
   return filteredCases.value.slice(s, s + itemsPerPage)
 })
-
+ 
 function resetFilters() { filters.search = ''; filters.type = ''; currentPage.value = 1 }
 watch(filters, () => { currentPage.value = 1 }, { deep: true })
 function openViewModal(c) { selectedCase.value = c; showViewModal.value = true }
-
+ 
 onMounted(() => fetchClosedCases())
 </script>
 

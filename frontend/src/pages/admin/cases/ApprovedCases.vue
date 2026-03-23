@@ -409,17 +409,18 @@
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import Swal from 'sweetalert2'
 import LuponCasesService from '@/services/Lupon/LuponCasesService.js'
-
+import { getLuponCases, hasLuponCasesData, setLuponCases, clearData } from '@/utils/dataStore'
+ 
 // ── State ──────────────────────────────────────────────────
 const loading       = ref(false)
+const actionLoading = ref(false)
 const currentPage   = ref(1)
 const itemsPerPage  = 8
 const showViewModal = ref(false)
 const selectedCase  = ref(null)
 const cases         = ref([])
 const filters       = reactive({ search: '', type: '', status: '' })
-
-// ── Status badge helpers ──
+ 
 function statusLabel(s) {
   return { approved: 'Approved', scheduled: 'Scheduled' }[s] || 'Approved'
 }
@@ -435,9 +436,20 @@ function statusDot(s) {
 function statusDotSolid(s) {
   return { approved: 'bg-emerald-500', scheduled: 'bg-violet-500' }[s] || 'bg-emerald-500'
 }
+ 
+async function fetchApprovedCases(forceRefresh = false) {
 
-// ── Fetch approved cases ──
-async function fetchApprovedCases() {
+  if (!forceRefresh && hasLuponCasesData()) {
+    const cached = getLuponCases()
+    const approved = cached.filter(c => ['approved', 'scheduled'].includes(c.status))
+    cases.value = approved.map(c => ({
+      ...c,
+      summon_date:  c.summon?.date  || null,
+      summon_notes: c.summon?.notes || null,
+    }))
+    return
+  }
+ 
   loading.value = true
   try {
     const data = await LuponCasesService.approvedCases()
@@ -447,6 +459,10 @@ async function fetchApprovedCases() {
       summon_date:  c.summon?.date  || null,
       summon_notes: c.summon?.notes || null,
     }))
+    // Merge into cache: replace approved/scheduled entries, keep others intact
+    const existing = hasLuponCasesData() ? getLuponCases() : []
+    const others = existing.filter(c => !['approved', 'scheduled'].includes(c.status))
+    setLuponCases([...others, ...raw])
   } catch (err) {
     console.error('Fetch error:', err)
     Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load approved cases.', confirmButtonColor: '#3d4f7c' })
@@ -454,7 +470,7 @@ async function fetchApprovedCases() {
     loading.value = false
   }
 }
-
+ 
 // ── Helpers ────────────────────────────────────────────────
 function typeLabel(t) {
   return { incident: 'Incident Report', dispute: 'Dispute', report: 'General Report', other: 'Other' }[t] || t
@@ -475,7 +491,7 @@ function formatDate(d) {
   try { return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) }
   catch { return d }
 }
-
+ 
 function getFiledBy(c) {
   if (c.user?.information) {
     const i = c.user.information
@@ -485,10 +501,10 @@ function getFiledBy(c) {
   if (c.user?.name) return c.user.name
   return `User #${c.user_id}`
 }
-
+ 
 // ── Filters & Pagination ───────────────────────────────────
 const hasActiveFilters = computed(() => filters.search || filters.type || filters.status)
-
+ 
 const filteredCases = computed(() => {
   let f = [...cases.value]
   if (filters.search) {
@@ -497,7 +513,7 @@ const filteredCases = computed(() => {
       c.title?.toLowerCase().includes(s) ||
       c.location?.toLowerCase().includes(s) ||
       c.type?.toLowerCase().includes(s) ||
-      c.user_id?.toString().includes(s) ||
+      getFiledBy(c).toLowerCase().includes(s) ||
       String(c.id).includes(s)
     )
   }
@@ -505,27 +521,137 @@ const filteredCases = computed(() => {
   if (filters.status) f = f.filter(c => c.status === filters.status)
   return f
 })
-
+ 
 const totalPages = computed(() => Math.max(1, Math.ceil(filteredCases.value.length / itemsPerPage)))
 const paginatedCases = computed(() => {
   const s = (currentPage.value - 1) * itemsPerPage
   return filteredCases.value.slice(s, s + itemsPerPage)
 })
-
-function resetFilters() { 
-  filters.search = ''; 
-  filters.type = ''; 
-  filters.status = ''; 
-  currentPage.value = 1 
-}
-
+ 
+function resetFilters() { filters.search = ''; filters.type = ''; filters.status = ''; currentPage.value = 1 }
 watch(filters, () => { currentPage.value = 1 }, { deep: true })
-
-function openViewModal(c) { 
-  selectedCase.value = c; 
-  showViewModal.value = true 
+function openViewModal(c) { selectedCase.value = c; showViewModal.value = true }
+ 
+function updateStatus(id, status, extra = {}) {
+  const idx = cases.value.findIndex(c => c.id === id)
+  if (idx !== -1) {
+    cases.value[idx] = { ...cases.value[idx], status, ...extra }
+    if (selectedCase.value?.id === id) {
+      selectedCase.value = { ...selectedCase.value, status, ...extra }
+    }
+  }
 }
-
+ 
+function removeCase(id) {
+  cases.value = cases.value.filter(c => c.id !== id)
+  if (selectedCase.value?.id === id) showViewModal.value = false
+}
+ 
+async function handleClosedCase(case_) {
+  const result = await Swal.fire({
+    title: 'Close Case?',
+    text: `Mark case #C-${String(case_.id).padStart(5, '0')} as closed? It will move to Closed Cases.`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#475569',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Yes, close it',
+    cancelButtonText: 'Cancel',
+  })
+  if (!result.isConfirmed) return
+ 
+  actionLoading.value = true
+  try {
+    await LuponCasesService.closeCase(case_.id)
+    removeCase(case_.id)
+    clearData()
+    Swal.fire({ icon: 'success', title: 'Case Closed', text: 'The case has been moved to Closed Cases.', timer: 2000, showConfirmButton: false })
+  } catch (err) {
+    Swal.fire({ icon: 'error', title: 'Error', text: err.response?.data?.message || 'Failed to close case.', confirmButtonColor: '#3d4f7c' })
+  } finally {
+    actionLoading.value = false
+  }
+}
+ 
+async function handleScheduleSummon(case_) {
+  const result = await Swal.fire({
+    title: 'Schedule Summon',
+    html: `
+      <p class="text-sm text-slate-500 mb-4">Set a summon date and time for case <span class="font-semibold text-slate-700">#C-${String(case_.id).padStart(5, '0')}</span>.</p>
+      <input id="swal-summon-date" type="datetime-local"
+        class="w-full text-sm text-slate-700 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-violet-300 focus:border-violet-400 transition-all"
+        style="font-family:inherit;" />
+      <textarea id="swal-summon-notes" rows="3" placeholder="Additional notes (optional)…"
+        class="w-full mt-3 text-sm text-slate-700 border border-slate-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-violet-300 focus:border-violet-400 transition-all"
+        style="font-family:inherit;"></textarea>
+    `,
+    icon: 'info',
+    showCancelButton: true,
+    confirmButtonColor: '#7c3aed',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Schedule',
+    cancelButtonText: 'Cancel',
+    focusConfirm: false,
+    preConfirm: () => {
+      const date = document.getElementById('swal-summon-date').value
+      if (!date) { Swal.showValidationMessage('Please select a date and time.'); return false }
+      return { date, notes: document.getElementById('swal-summon-notes').value.trim() }
+    },
+  })
+  if (!result.isConfirmed) return
+ 
+  actionLoading.value = true
+  try {
+    await LuponCasesService.scheduleSummon(case_.id, result.value)
+    updateStatus(case_.id, 'scheduled', {
+      summon_date:  result.value.date,
+      summon_notes: result.value.notes,
+    })
+    if (hasLuponCasesData()) {
+      const updated = getLuponCases().map(c =>
+        c.id === case_.id
+          ? { ...c, status: 'scheduled', summon: { date: result.value.date, notes: result.value.notes } }
+          : c
+      )
+      setLuponCases(updated)
+    }
+    Swal.fire({
+      icon: 'success',
+      title: 'Summon Scheduled',
+      text: `Summon set for ${new Date(result.value.date).toLocaleString()}. Case remains in Approved Cases.`,
+      timer: 3000,
+      showConfirmButton: false,
+    })
+  } catch (err) {
+    Swal.fire({ icon: 'error', title: 'Error', text: err.response?.data?.message || 'Failed to schedule summon.', confirmButtonColor: '#3d4f7c' })
+  } finally {
+    actionLoading.value = false
+  }
+}
+ 
+function handleCertificate(case_) {
+  Swal.fire({
+    title: 'Print Certificate to File Action',
+    html: `
+      <p class="text-sm text-slate-500 mb-2">
+        You are about to print the <strong>Certificate to File Action</strong> for:<br/>
+        <span class="font-semibold text-slate-700">#C-${String(case_.id).padStart(5, '0')} — ${case_.title}</span>
+      </p>
+      <p class="text-xs text-slate-400">This will open the print dialog. No status will be changed.</p>
+    `,
+    icon: 'info',
+    showCancelButton: true,
+    confirmButtonColor: '#d97706',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Print',
+    cancelButtonText: 'Cancel',
+  }).then(result => {
+    if (result.isConfirmed) {
+      window.print()
+    }
+  })
+}
+ 
 onMounted(() => fetchApprovedCases())
 </script>
 

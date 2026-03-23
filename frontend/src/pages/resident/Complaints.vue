@@ -543,7 +543,8 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import Swal from 'sweetalert2'
 import LuponCasesService from '@/services/Resident/LuponCasesService'
-
+import { getComplaints, hasComplaintsData, setComplaints } from '@/utils/dataStore'
+ 
 const loading    = ref(false)
 const submitting = ref(false)
 const showNewComplaintModal = ref(false)
@@ -553,38 +554,37 @@ const myComplaints          = ref([])
 const currentPage           = ref(1)
 const itemsPerPage          = 8
 const today = new Date().toISOString().split('T')[0]
-
+ 
 const complaintTypes = [
   { value: 'incident', label: 'Incident Report' },
   { value: 'dispute',  label: 'Dispute' },
   { value: 'report',   label: 'General Report' },
   { value: 'other',    label: 'Other' },
 ]
-
+ 
 const form = ref({
   type:          'incident',
-  other_type:    '',       // shown when type === 'other'
+  other_type:    '',
   title:         '',
   incident_date: '',
   location:      '',
   description:   '',
-  involved_user: '',       // optional — person(s) involved
+  involved_user: '',
   confirmed:     false,
 })
-
+ 
 const errors = ref({})
-
-// Clear other_type when switching away from 'other'
+ 
 watch(() => form.value.type, (val) => {
   if (val !== 'other') form.value.other_type = ''
 })
-
+ 
 const totalPages = computed(() => Math.max(1, Math.ceil(myComplaints.value.length / itemsPerPage)))
 const paginatedComplaints = computed(() => {
   const s = (currentPage.value - 1) * itemsPerPage
   return myComplaints.value.slice(s, s + itemsPerPage)
 })
-
+ 
 function typeLabel(t) {
   return { incident: 'Incident Report', dispute: 'Dispute', report: 'General Report', other: 'Other' }[t] || t
 }
@@ -622,26 +622,32 @@ function statusDot(s) {
 function statusDotSolid(s) {
   return { pending: 'bg-blue-500', approved: 'bg-emerald-500', disapproved: 'bg-red-500', scheduled: 'bg-violet-500', closed: 'bg-slate-500' }[s] || 'bg-slate-500'
 }
-
-async function fetchMyComplaints(showLoading = true) {
+ 
+async function fetchMyComplaints(showLoading = true, forceRefresh = false) {
+  if (!forceRefresh && hasComplaintsData()) {
+    myComplaints.value = getComplaints()
+    return
+  }
   if (showLoading) loading.value = true
   try {
     const data = await LuponCasesService.getMyCases()
-    myComplaints.value = Array.isArray(data) ? data : (data.data ?? [])
+    const list = Array.isArray(data) ? data : (data.data ?? [])
+    myComplaints.value = list
+    setComplaints(list)
   } catch {
     Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load your complaints.', confirmButtonColor: '#3d4f7c' })
   } finally {
     if (showLoading) loading.value = false
   }
 }
-
+ 
 function openNewComplaintModal() {
   form.value = { type: 'incident', other_type: '', title: '', incident_date: '', location: '', description: '', involved_user: '', confirmed: false }
   errors.value = {}
   showNewComplaintModal.value = true
 }
 function viewComplaint(c) { selectedComplaint.value = c; showViewModal.value = true }
-
+ 
 function validateForm() {
   const e = {}
   if (!form.value.type)                              e.type          = 'Please select a complaint type'
@@ -655,7 +661,7 @@ function validateForm() {
   errors.value = e
   return Object.keys(e).length === 0
 }
-
+ 
 async function submitComplaint() {
   if (!validateForm()) return
   submitting.value = true
@@ -668,12 +674,11 @@ async function submitComplaint() {
       incident_date: form.value.incident_date,
       location:      form.value.location,
       description:   form.value.description,
-      // only send involved_user if filled
       ...(form.value.involved_user?.trim() && { involved_user: form.value.involved_user.trim() }),
     })
     showNewComplaintModal.value = false
     Swal.fire({ icon: 'success', title: 'Complaint Filed', text: 'Your complaint has been submitted successfully.', timer: 2000, showConfirmButton: false })
-    await fetchMyComplaints(false)
+    await fetchMyComplaints(false, true)
   } catch (error) {
     const msg = error.response?.data?.message || 'Failed to submit complaint. Please try again.'
     Swal.fire({ icon: 'error', title: 'Submission Failed', text: msg, confirmButtonColor: '#3d4f7c' })
@@ -681,7 +686,7 @@ async function submitComplaint() {
     submitting.value = false
   }
 }
-
+ 
 async function cancelComplaint(id) {
   const result = await Swal.fire({
     title: 'Cancel Complaint?', text: 'Are you sure you want to withdraw this complaint?',
@@ -692,13 +697,13 @@ async function cancelComplaint(id) {
   if (!result.isConfirmed) return
   try {
     await LuponCasesService.deleteCase(id)
-    await fetchMyComplaints(false)
+    await fetchMyComplaints(false, true)
     Swal.fire({ icon: 'success', title: 'Withdrawn', text: 'Your complaint has been cancelled.', timer: 1500, showConfirmButton: false })
   } catch {
     Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to cancel complaint.', confirmButtonColor: '#3d4f7c' })
   }
 }
-
+ 
 onMounted(() => fetchMyComplaints())
 </script>
 
