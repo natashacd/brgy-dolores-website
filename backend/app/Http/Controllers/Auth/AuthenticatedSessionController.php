@@ -45,15 +45,20 @@ class AuthenticatedSessionController extends Controller
 
     public function destroy(Request $request): Response
     {
-
-        Audit_Logs::create([
-            'name' => $request->user()->information?->first_name . ' ' . $request->user()->information?->last_name,
-            'role' => $request->user()->role?->role_name,
-            'action' => 'Logout',
-            'description' => 'logged out of the system.',
-            'user_agent' => $request->userAgent(),
-            'ip_address' => $request->ip(),
-        ]);
+        $user = $request->user();
+        
+        if ($user) {
+            $user->load(['information', 'role']);
+            
+            Audit_Logs::create([
+                'name' => ($user->information?->first_name ?? '') . ' ' . ($user->information?->last_name ?? ''),
+                'role' => $user->role?->role_name ?? 'Unknown',
+                'action' => 'Logout',
+                'description' => 'logged out of the system.',
+                'user_agent' => $request->userAgent(),
+                'ip_address' => $request->ip(),
+            ]);
+        }
 
         Auth::guard('web')->logout();
 
