@@ -758,12 +758,8 @@ const recentAnnouncements   = ref([])
 async function fetchPublicAnnouncements() {
   announcementsLoading.value = true
   try {
-    const response = await announcementService.getAnnouncements({
-      status: 'published',
-      per_page: 4
-    })
+    const response = await announcementService.getPublicAnnouncements({ per_page: 4 })
     const all = response.data?.data ?? []
-    // Urgent items bubble to top
     const sorted = [...all].sort((a, b) => {
       if (a.is_urgent && !b.is_urgent) return -1
       if (!a.is_urgent && b.is_urgent) return 1
@@ -777,7 +773,6 @@ async function fetchPublicAnnouncements() {
     announcementsLoading.value = false
   }
 }
-
 // ── Announcement helpers ─────────────────────────────────────────
 const CATEGORY_MAP = {
   event:     { label: 'Events & Activities', icon: '🎉', color: '#7c3aed', colorSecondary: '#a855f7' },

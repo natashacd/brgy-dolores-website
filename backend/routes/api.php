@@ -13,6 +13,8 @@ use App\Http\Controllers\Resident\ServiceRequestController as ResidentServiceReq
 use App\Http\Controllers\Lupon\LuponCasesController as LuponController;
 use App\Http\Controllers\AuditLogsController;
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\NotificationController;
 
 Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth:sanctum');
@@ -20,10 +22,21 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->midd
 Route::get('/visitor-count', [VisitorCounterController::class, 'getSimpleCount']);
 Route::post('/visitor/track', [VisitorCounterController::class, 'trackVisitor']);
 
+Route::get('/announcements/public', [AnnouncementController::class, 'publicIndex']);
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+
+    Route::prefix('notifications')->group(function () {
+        Route::get('/',              [NotificationController::class, 'index']);
+        Route::get('/unread-count',  [NotificationController::class, 'unreadCount']);
+        Route::patch('/{id}/read',   [NotificationController::class, 'markAsRead']);
+        Route::patch('/read-all',    [NotificationController::class, 'markAllAsRead']);
+    });
+
+    Route::get('/admin/dashboard/stats', [DashboardController::class, 'getStats']);
 
     Route::prefix('account')->group(function () {
         Route::get('/', [AccountController::class, 'show']);

@@ -140,7 +140,7 @@ class AnnouncementController extends Controller
             'category' => $request->category,
             'status' => $request->status,
             'is_urgent' => $request->boolean('is_urgent'),
-            'created_by' => auth()->id(),
+            'created_by' => $request->user()?->id,
             'published_at' => $request->status === 'published' ? now() : null
         ];
 
@@ -645,13 +645,26 @@ class AnnouncementController extends Controller
         $newAnnouncement->status = 'draft';
         $newAnnouncement->published_at = null;
         // 'views' removed
-        $newAnnouncement->created_by = auth()->id();
+        $newAnnouncement->created_by = $request->user()?->id;
         $newAnnouncement->save();
 
         return response()->json([
             'success' => true,
             'message' => 'Announcement duplicated successfully',
             'data' => $newAnnouncement
+        ]);
+    }
+
+    public function publicIndex(Request $request)
+    {
+        $query = Announcement::whereNull('deleted_at')
+            ->where('status', 'published');
+
+        $announcements = $query->latest()->paginate($request->get('per_page', 4));
+
+        return response()->json([
+            'success' => true,
+            'data' => $announcements
         ]);
     }
 }

@@ -23,31 +23,6 @@
       </div>
     </div>
 
-    <!-- Disapproved Requests Alert Banner -->
-    <div v-if="disapprovedCount > 0" class="mb-4 sm:mb-6">
-      <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
-          <div>
-            <p class="text-xs sm:text-sm font-semibold text-amber-800">
-              You have {{ disapprovedCount }} disapproved request{{ disapprovedCount > 1 ? 's' : '' }}
-            </p>
-            <p class="text-[10px] sm:text-xs text-amber-600">Please review the remarks and resubmit with corrections.</p>
-          </div>
-        </div>
-        <button
-          @click="scrollToDisapproved"
-          class="text-xs sm:text-sm font-semibold text-amber-700 bg-amber-100 hover:bg-amber-200 px-3 sm:px-4 py-2 sm:py-2 rounded-lg transition-colors cursor-pointer w-full sm:w-auto"
-        >
-          View Disapproved
-        </button>
-      </div>
-    </div>
-
     <!-- My Requests Section -->
     <div>
       <h2 class="text-base sm:text-lg lg:text-xl font-bold text-slate-800 mb-3 sm:mb-4 flex items-center gap-2">
