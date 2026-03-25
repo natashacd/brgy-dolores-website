@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Lupon;
 use App\Http\Controllers\Controller;
 use App\Models\Lupon_Cases;
 use App\Models\Schedule_Summon;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use App\Models\Audit_Logs;
 
 class LuponCasesController extends Controller
 {
+    public function __construct(protected NotificationService $notifications) {}
 
     public function index()
     {
@@ -23,7 +25,6 @@ class LuponCasesController extends Controller
             ->whereIn('status', ['approved', 'scheduled'])
             ->latest()
             ->get();
-
         return response()->json($cases);
     }
 
@@ -33,7 +34,6 @@ class LuponCasesController extends Controller
             ->where('status', 'disapproved')
             ->latest()
             ->get();
-
         return response()->json($cases);
     }
 
@@ -43,7 +43,6 @@ class LuponCasesController extends Controller
             ->where('status', 'closed')
             ->latest()
             ->get();
-
         return response()->json($cases);
     }
 
@@ -55,17 +54,7 @@ class LuponCasesController extends Controller
 
     public function approve(Request $request, $id)
     {
-        $user = $request->user();
         $case = Lupon_Cases::findOrFail($id);
-
-        Audit_Logs::create([
-            'name' => $user->information?->first_name . ' ' . $user->information?->last_name,
-            'role' => $user->role?->role_name,
-            'action' => 'Approve Case',
-            'description' => 'Approved a lupon case.',
-            'user_agent' => $request->userAgent(),
-            'ip_address' => $request->ip(),
-        ]);
 
         if ($case->status !== 'pending') {
             return response()->json(['message' => 'Only pending cases can be approved.'], 422);
@@ -76,26 +65,31 @@ class LuponCasesController extends Controller
             'remarks' => $request->remarks ?? $case->remarks,
         ]);
 
+        $this->notifications->luponCaseApproved(
+            $case->user_id,
+            $case->id,
+            $case->title
+        );
+
+        $user = $request->user();
+        Audit_Logs::create([
+            'name'        => $user->information?->first_name . ' ' . $user->information?->last_name,
+            'role'        => $user->role?->role_name,
+            'action'      => 'Approve Case',
+            'description' => 'Approved a lupon case.',
+            'user_agent'  => $request->userAgent(),
+            'ip_address'  => $request->ip(),
+        ]);
+
         return response()->json([
             'message' => 'Case approved successfully.',
             'case'    => $case->fresh()->load('summon'),
         ]);
     }
 
-
     public function disapprove(Request $request, $id)
     {
-        $user = $request->user();
         $case = Lupon_Cases::findOrFail($id);
-
-        Audit_Logs::create([
-            'name' => $user->information?->first_name . ' ' . $user->information?->last_name,
-            'role' => $user->role?->role_name,
-            'action' => 'Disapprove Case',
-            'description' => 'Disapproved a lupon case.',
-            'user_agent' => $request->userAgent(),
-            'ip_address' => $request->ip(),
-        ]);
 
         if ($case->status !== 'pending') {
             return response()->json(['message' => 'Only pending cases can be disapproved.'], 422);
@@ -108,6 +102,23 @@ class LuponCasesController extends Controller
             'remarks' => $request->remarks,
         ]);
 
+        $this->notifications->luponCaseDisapproved(
+            $case->user_id,
+            $case->id,
+            $case->title,
+            $request->remarks
+        );
+
+        $user = $request->user();
+        Audit_Logs::create([
+            'name'        => $user->information?->first_name . ' ' . $user->information?->last_name,
+            'role'        => $user->role?->role_name,
+            'action'      => 'Disapprove Case',
+            'description' => 'Disapproved a lupon case.',
+            'user_agent'  => $request->userAgent(),
+            'ip_address'  => $request->ip(),
+        ]);
+
         return response()->json([
             'message' => 'Case disapproved.',
             'case'    => $case->fresh(),
@@ -116,23 +127,29 @@ class LuponCasesController extends Controller
 
     public function close(Request $request, $id)
     {
-        $user = $request->user();
         $case = Lupon_Cases::findOrFail($id);
-
-        Audit_Logs::create([
-            'name' => $user->information?->first_name . ' ' . $user->information?->last_name,
-            'role' => $user->role?->role_name,
-            'action' => 'Close Case',
-            'description' => 'Closed a lupon case.',
-            'user_agent' => $request->userAgent(),
-            'ip_address' => $request->ip(),
-        ]);
 
         if (!in_array($case->status, ['approved', 'scheduled'])) {
             return response()->json(['message' => 'Only approved or scheduled cases can be closed.'], 422);
         }
 
         $case->update(['status' => 'closed']);
+
+        $this->notifications->luponCaseClosed(
+            $case->user_id,
+            $case->id,
+            $case->title
+        );
+
+        $user = $request->user();
+        Audit_Logs::create([
+            'name'        => $user->information?->first_name . ' ' . $user->information?->last_name,
+            'role'        => $user->role?->role_name,
+            'action'      => 'Close Case',
+            'description' => 'Closed a lupon case.',
+            'user_agent'  => $request->userAgent(),
+            'ip_address'  => $request->ip(),
+        ]);
 
         return response()->json([
             'message' => 'Case closed successfully.',
@@ -142,17 +159,7 @@ class LuponCasesController extends Controller
 
     public function summon(Request $request, $id)
     {
-        $user = $request->user();
         $case = Lupon_Cases::findOrFail($id);
-
-        Audit_Logs::create([
-            'name' => $user->information?->first_name . ' ' . $user->information?->last_name,
-            'role' => $user->role?->role_name,
-            'action' => 'Schedule Summon',
-            'description' => 'Scheduled a summon for a lupon case.',
-            'user_agent' => $request->userAgent(),
-            'ip_address' => $request->ip(),
-        ]);
 
         if (!in_array($case->status, ['approved', 'scheduled'])) {
             return response()->json(['message' => 'Only approved cases can be scheduled for summon.'], 422);
@@ -167,11 +174,25 @@ class LuponCasesController extends Controller
 
         $summon = Schedule_Summon::updateOrCreate(
             ['case_id' => $case->id],
-            [
-                'date'  => $request->date,
-                'notes' => $request->notes,
-            ]
+            ['date' => $request->date, 'notes' => $request->notes]
         );
+
+        $this->notifications->luponCaseScheduled(
+            $case->user_id,
+            $case->id,
+            $case->title,
+            $request->date
+        );
+
+        $user = $request->user();
+        Audit_Logs::create([
+            'name'        => $user->information?->first_name . ' ' . $user->information?->last_name,
+            'role'        => $user->role?->role_name,
+            'action'      => 'Schedule Summon',
+            'description' => 'Scheduled a summon for a lupon case.',
+            'user_agent'  => $request->userAgent(),
+            'ip_address'  => $request->ip(),
+        ]);
 
         return response()->json([
             'message' => 'Summon scheduled successfully.',

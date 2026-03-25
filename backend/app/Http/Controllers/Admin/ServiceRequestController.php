@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Resident_Service_Request;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Models\Audit_Logs;
 
 class ServiceRequestController extends Controller
 {
+    public function __construct(protected NotificationService $notifications) {}
+
     public function index(Request $request)
     {
         $query = Resident_Service_Request::with([
@@ -35,7 +37,6 @@ class ServiceRequestController extends Controller
                 'remarks'               => $req->remarks,
                 'created_at'            => $req->created_at,
                 'updated_at'            => $req->updated_at,
-
                 'resident_id'           => $req->resident_id,
                 'resident_name'         => $info
                     ? trim(($info->first_name ?? '') . ' ' . ($info->middle_name ? $info->middle_name . ' ' : '') . ($info->last_name ?? ''))
@@ -63,15 +64,20 @@ class ServiceRequestController extends Controller
         $serviceRequest = Resident_Service_Request::findOrFail($id);
         $serviceRequest->update(['status' => 'approved']);
 
-        $user = $request->user();
+        $this->notifications->serviceRequestApproved(
+            $serviceRequest->resident_id,
+            $serviceRequest->id,
+            $serviceRequest->type
+        );
 
+        $user = $request->user();
         Audit_Logs::create([
-            'name' => ($user->information?->first_name ?? '') . ' ' . ($user->information?->last_name ?? ''),
-            'role' => $user->role?->role_name,
-            'action' => 'Approve',
+            'name'        => ($user->information?->first_name ?? '') . ' ' . ($user->information?->last_name ?? ''),
+            'role'        => $user->role?->role_name,
+            'action'      => 'Approve',
             'description' => 'Approved service request.',
-            'user_agent' => $request->userAgent(),
-            'ip_address' => $request->ip(),
+            'user_agent'  => $request->userAgent(),
+            'ip_address'  => $request->ip(),
         ]);
 
         return response()->json(['message' => 'Request approved successfully.']);
@@ -85,15 +91,21 @@ class ServiceRequestController extends Controller
             'remarks' => $request->remarks ?? null,
         ]);
 
-        $user = $request->user();
+        $this->notifications->serviceRequestDisapproved(
+            $serviceRequest->resident_id,
+            $serviceRequest->id,
+            $serviceRequest->type,
+            $request->remarks
+        );
 
+        $user = $request->user();
         Audit_Logs::create([
-            'name' => ($user->information?->first_name ?? '') . ' ' . ($user->information?->last_name ?? ''),
-            'role' => $user->role?->role_name,
-            'action' => 'Disapproved',
+            'name'        => ($user->information?->first_name ?? '') . ' ' . ($user->information?->last_name ?? ''),
+            'role'        => $user->role?->role_name,
+            'action'      => 'Disapproved',
             'description' => 'Rejected service request.',
-            'user_agent' => $request->userAgent(),
-            'ip_address' => $request->ip(),
+            'user_agent'  => $request->userAgent(),
+            'ip_address'  => $request->ip(),
         ]);
 
         return response()->json(['message' => 'Request disapproved successfully.']);
@@ -102,22 +114,24 @@ class ServiceRequestController extends Controller
     public function release($id, Request $request)
     {
         $serviceRequest = Resident_Service_Request::findOrFail($id);
-        $serviceRequest->update([
-            'status'  => 'released',
-        ]);
+        $serviceRequest->update(['status' => 'released']);
+
+        $this->notifications->serviceRequestReleased(
+            $serviceRequest->resident_id,
+            $serviceRequest->id,
+            $serviceRequest->type
+        );
 
         $user = $request->user();
-
         Audit_Logs::create([
-            'name' => ($user->information?->first_name ?? '') . ' ' . ($user->information?->last_name ?? ''),
-            'role' => $user->role?->role_name,
-            'action' => 'Released',
+            'name'        => ($user->information?->first_name ?? '') . ' ' . ($user->information?->last_name ?? ''),
+            'role'        => $user->role?->role_name,
+            'action'      => 'Released',
             'description' => 'Released service request.',
-            'user_agent' => $request->userAgent(),
-            'ip_address' => $request->ip(),
+            'user_agent'  => $request->userAgent(),
+            'ip_address'  => $request->ip(),
         ]);
 
         return response()->json(['message' => 'Request released successfully.']);
     }
-
 }

@@ -1,4 +1,5 @@
 const dataStore = {
+  dashboardStats: null,
   users: null,
   roles: null,
   residents: null,
@@ -49,6 +50,15 @@ export const setAnnouncements = (announcements) => {
   dataStore.announcements = announcements;
   dataStore.timestamp = Date.now();
 };
+
+export const setDashboardStats = (stats) => {
+  dataStore.dashboardStats = stats;
+  dataStore.timestamp = Date.now();
+};
+
+export const getDashboardStats = () => dataStore.dashboardStats;
+
+export const hasDashboardStats = () => dataStore.dashboardStats !== null;
 
 export const getUsers = () => dataStore.users;
 
@@ -102,6 +112,7 @@ export const clearData = () => {
   dataStore.luponCases = null;
   dataStore.complaints = null;
   dataStore.announcements = null;
+  dataStore.dashboardStats = null;
   dataStore.auditLogs = null;
   dataStore.timestamp = null;
 };
@@ -116,6 +127,7 @@ export default {
   setComplaints,
   setAnnouncements,
   setAuditLogs,
+  setDashboardStats,
   getUsers,
   getRoles,
   getResidents,
@@ -124,11 +136,13 @@ export default {
   getComplaints,
   getAnnouncements,
   getAuditLogs,
+  getDashboardStats,
   hasData,
   hasResidentsData,
   hasAnnouncementsData,
   hasComplaintsData,
   hasAuditLogsData,
+  hasDashboardStats,
   clearData,
   clearAnnouncementsData,
 };

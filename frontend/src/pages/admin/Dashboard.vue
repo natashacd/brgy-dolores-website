@@ -361,11 +361,12 @@ import { ref, computed, onMounted } from 'vue'
 import Swal from 'sweetalert2'
 
 import {
-  getResidents, hasResidentsData, setResidents,
-  getUsers,     hasData,          setUsers,
-  getServiceRequests, hasServiceRequestsData, setServiceRequests,
-  getLuponCases, hasLuponCasesData, setLuponCases,   
+  getDashboardStats,
+  hasDashboardStats,
+  setDashboardStats,
 } from '@/utils/dataStore'
+
+import DashboardService from '@/services/Admin/DashboardService'
 
 // ── State ────────────────────────────────────────────────────
 const loading = ref(false)
@@ -417,17 +418,21 @@ function barWidth(val, total) {
 function typeLabel(t) {
   return { incident: 'Incident', dispute: 'Dispute', report: 'Report', other: 'Other' }[t] || t
 }
+
 function typeIconBg(t) {
   return { incident: 'bg-red-100', dispute: 'bg-amber-100', report: 'bg-blue-100', other: 'bg-purple-100' }[t] || 'bg-slate-100'
 }
+
 function typeIconColor(t) {
   return { incident: 'text-red-600', dispute: 'text-amber-600', report: 'text-blue-600', other: 'text-purple-600' }[t] || 'text-slate-500'
 }
+
 function typeIcon(t) {
   if (t === 'incident') return '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>'
   if (t === 'dispute')  return '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>'
   return '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>'
 }
+
 function formatDate(d) {
   if (!d) return '—'
   try { return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }
@@ -437,37 +442,27 @@ function formatDate(d) {
 async function fetchAll() {
   loading.value = true
   try {
-    // ── Residents ──────────────────────────────────────────
-    const residentsArr = Array.isArray(getResidents()) ? getResidents() : (getResidents()?.data ?? [])
-    stats.value.totalResidents = residentsArr.length
-
-    // ── Officials (Users) ──────────────────────────────────
-    const usersArr = Array.isArray(getUsers()) ? getUsers() : (getUsers()?.data ?? [])
-    stats.value.totalOfficials = usersArr.length
-
-    // ── Lupon Cases ────────────────────────────────────────
-    const casesArr = Array.isArray(getLuponCases()) ? getLuponCases() : (getLuponCases()?.data ?? [])
-    stats.value.totalCases       = casesArr.length
-    stats.value.pendingCases     = casesArr.filter(c => c.status === 'pending').length
-    stats.value.approvedCases    = casesArr.filter(c => c.status === 'approved').length
-    stats.value.scheduledCases   = casesArr.filter(c => c.status === 'scheduled').length
-    stats.value.disapprovedCases = casesArr.filter(c => c.status === 'disapproved').length
-    stats.value.closedCases      = casesArr.filter(c => c.status === 'closed').length
-    recentCases.value = casesArr
-      .filter(c => c.status === 'pending')
-      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-      .slice(0, 5)
-
-    // ── Service Requests ───────────────────────────────────
-    const requestsArr = Array.isArray(getServiceRequests()) ? getServiceRequests() : (getServiceRequests()?.data ?? [])
-    stats.value.totalRequests       = requestsArr.length
-    stats.value.pendingRequests     = requestsArr.filter(r => r.status === 'pending').length
-    stats.value.approvedRequests    = requestsArr.filter(r => r.status === 'approved').length
-    stats.value.disapprovedRequests = requestsArr.filter(r => ['disapproved','rejected'].includes(r.status)).length
-    stats.value.releasedRequests    = requestsArr.filter(r => ['released','completed'].includes(r.status)).length
-
+    const cachedData = getDashboardStats()
+    
+    if (cachedData && cachedData.stats && hasDashboardStats()) {
+      stats.value = cachedData.stats
+      recentCases.value = cachedData.recentCases || []
+    } else {
+      const freshData = await DashboardService.getStats()
+      
+      setDashboardStats(freshData)
+      
+      stats.value = freshData.stats
+      recentCases.value = freshData.recentCases || []
+    }
   } catch (err) {
     console.error('Dashboard fetch error:', err)
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Failed to load dashboard data',
+      confirmButtonColor: '#3d4f7c'
+    })
   } finally {
     loading.value = false
   }

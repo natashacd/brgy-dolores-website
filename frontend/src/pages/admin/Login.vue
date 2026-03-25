@@ -196,17 +196,8 @@ import { ref, reactive } from "vue";
 import { useRouter } from 'vue-router'
 import Swal from "sweetalert2";
 import authService from "@/services/authService";
-import UserService from "@/services/Admin/UserService";
-import ResidentService from "@/services/Admin/ResidentService";
-import ServiceRequestService from "@/services/Admin/ServiceRequestService";
-import LuponCasesService from "@/services/Resident/LuponCasesService";
-import { 
-  setUsers, 
-  setRoles, 
-  setResidents, 
-  setServiceRequests, 
-  setLuponCases
-} from "@/utils/dataStore";
+import DashboardService from "@/services/Admin/DashboardService"; // ADD THIS
+import { setDashboardStats } from "@/utils/dataStore"; // ADD THIS
 
 const router = useRouter()
 
@@ -249,20 +240,9 @@ const handleLogin = async () => {
       router.push({ name: 'lupon.residents' })
 
     } else {
-      // ── Prefetch while "Signing in..." spinner is still showing ──
-      const [users, rolesData, residents, serviceRequests, luponCases] = await Promise.all([
-        UserService.getUsers(),
-        UserService.getRoles(),
-        ResidentService.getResidents(),
-        ServiceRequestService.getAll(),
-        LuponCasesService.adminCases(),
-      ])
-
-      setUsers(users)
-      setRoles(rolesData)
-      setResidents(residents)
-      setServiceRequests(serviceRequests)
-      setLuponCases(luponCases)
+      // ── Fetch only dashboard stats during login ──
+      const dashboardData = await DashboardService.getStats()
+      setDashboardStats(dashboardData)
 
       Swal.fire({ icon: 'success', title: `Welcome, ${first_name}!`, showConfirmButton: false, timer: 800 })
       router.push({ name: 'admin.dashboard' })
