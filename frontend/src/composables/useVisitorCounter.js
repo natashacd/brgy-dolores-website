@@ -1,86 +1,54 @@
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useRoute } from 'vue-router'
-import api from '@/services/api'
+import { ref, onMounted, onUnmounted, watch } from "vue";
+import { useRoute } from "vue-router";
+import visitorService from "@/services/visitorService";
 
 export function useVisitorCounter() {
-  const count = ref(0)
-  const loading = ref(false)
-  const route = useRoute()
-  
-  // Track timeout to prevent multiple track calls
-  let trackTimeout = null
+  const count = ref(0);
+  const loading = ref(false);
+  const route = useRoute();
+  let trackTimeout = null;
 
   const fetchCount = async () => {
     try {
-      const response = await api.getVisitorCount()
-      count.value = response.data.data?.count || response.data.count || 0
+      const response = await visitorService.getVisitorCount();
+      count.value = response.data?.data?.count ?? 0; // ← data.data.count
     } catch (error) {
-      console.error('Error fetching visitor count:', error)
+      console.error("Error fetching visitor count:", error);
     }
-  }
+  };
 
-  const trackCurrentPage = async () => {
-    try {
-      // Clear any pending track timeout
-      if (trackTimeout) {
-        clearTimeout(trackTimeout)
+  const trackCurrentPage = () => {
+    if (trackTimeout) clearTimeout(trackTimeout);
+    trackTimeout = setTimeout(async () => {
+      try {
+        loading.value = true;
+        const response = await visitorService.trackVisitor(
+          window.location.pathname,
+        );
+        count.value = response.data?.data?.count ?? 0; // ← data.data.count
+      } catch (error) {
+        console.error("Error tracking visitor:", error);
+      } finally {
+        loading.value = false;
+        trackTimeout = null;
       }
-      
-      // Small delay to prevent tracking during rapid navigation
-      trackTimeout = setTimeout(async () => {
-        loading.value = true
-        const currentUrl = window.location.pathname
-        const response = await api.trackVisitor(currentUrl)
-        count.value = response.data.data?.count || response.data.count || 0
-        loading.value = false
-        trackTimeout = null
-      }, 500)
-    } catch (error) {
-      console.error('Error tracking visitor:', error)
-      loading.value = false
-    }
-  }
+    }, 500);
+  };
 
-  // Track on mount (first page load)
+  // Watch route changes
+  watch(
+    () => route.path,
+    () => trackCurrentPage(),
+  );
+
   onMounted(() => {
-    fetchCount()
-    
-    // Track this page view
-    trackCurrentPage()
-  })
+    fetchCount();
+    trackCurrentPage();
+  });
 
-  // Track on route changes
-  const unwatch = route ? route.path : null
-  if (route) {
-    // Using watchEffect would be better, but for simplicity:
-    const originalPushState = history.pushState
-    history.pushState = function() {
-      originalPushState.apply(this, arguments)
-      trackCurrentPage()
-    }
-    
-    const originalReplaceState = history.replaceState
-    history.replaceState = function() {
-      originalReplaceState.apply(this, arguments)
-      trackCurrentPage()
-    }
-    
-    // Listen for popstate (back/forward buttons)
-    window.addEventListener('popstate', trackCurrentPage)
-  }
-
-  // Cleanup
   onUnmounted(() => {
-    if (trackTimeout) {
-      clearTimeout(trackTimeout)
-    }
-    if (route) {
-      window.removeEventListener('popstate', trackCurrentPage)
-    }
-  })
+    if (trackTimeout) clearTimeout(trackTimeout);
+  });
 
-  return {
-    count,
-    loading
-  }
+  return { count, loading };
 }
